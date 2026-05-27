@@ -1,18 +1,85 @@
-import React from 'react'
+import React, { useMemo } from 'react'
+import { useWorkoutStore } from '../store/useWorkoutStore'
 
-export default function PastLogs() {
-  const dummyLogs = [
-    { id: 'log1', date: 'Today', totalVolume: 1250, sets: [{ set: 1, weight: 60, reps: 10 }, { set: 2, weight: 65, reps: 8 }, { set: 3, weight: 65, reps: 8 }] },
-    { id: 'log2', date: 'May 24', totalVolume: 1100, sets: [{ set: 1, weight: 60, reps: 10 }, { set: 2, weight: 60, reps: 8 }, { set: 3, weight: 60, reps: 6 }] },
-    { id: 'log3', date: 'May 20', totalVolume: 900, sets: [{ set: 1, weight: 50, reps: 12 }, { set: 2, weight: 50, reps: 10 }, { set: 3, weight: 50, reps: 10 }] },
-    { id: 'log4', date: 'May 16', totalVolume: 850, sets: [{ set: 1, weight: 50, reps: 10 }, { set: 2, weight: 50, reps: 10 }] },
-  ]
+export default function PastLogs({ activeExerciseId }) {
+  const workoutLogs = useWorkoutStore(state => state.workoutLogs);
+  const setRecords = useWorkoutStore(state => state.setRecords);
+  const exercises = useWorkoutStore(state => state.exercises);
+
+  const activeExercise = exercises.find(ex => ex.id === activeExerciseId);
+
+  const unit = useMemo(() => {
+    if (!activeExercise) return 'kg';
+    return activeExercise.unit || 'kg';
+  }, [activeExercise]);
+
+  const isBodyweight = useMemo(() => {
+    return unit === 'reps' || unit === 'sec';
+  }, [unit]);
+
+  const displayUnit = useMemo(() => {
+    if (unit === 'sec') return '초';
+    if (unit === 'reps') return '개';
+    return 'kg';
+  }, [unit]);
+
+  const pastLogs = useMemo(() => {
+    if (!activeExerciseId) return [];
+    
+    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId && sr.is_completed);
+    
+    const groupedByLogId = exerciseSets.reduce((acc, sr) => {
+      if (!acc[sr.workout_log_id]) acc[sr.workout_log_id] = [];
+      acc[sr.workout_log_id].push(sr);
+      return acc;
+    }, {});
+
+    const logIds = Object.keys(groupedByLogId);
+    
+    const logs = logIds.map(logId => {
+      const logInfo = workoutLogs.find(wl => wl.id === logId);
+      const sets = groupedByLogId[logId];
+      sets.sort((a, b) => a.set_number - b.set_number);
+      
+      const totalVolume = sets.reduce((sum, s) => {
+        const weight = Number(s.weight) || 0;
+        const reps = Number(s.record) || 0;
+        const val = isBodyweight ? reps : (weight * reps);
+        return sum + val;
+      }, 0);
+      
+      const dateStr = logInfo 
+        ? new Date(logInfo.start_time).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) 
+        : 'Unknown';
+        
+      return {
+        id: logId,
+        date: dateStr,
+        rawDate: logInfo ? new Date(logInfo.start_time).getTime() : 0,
+        totalVolume,
+        sets
+      };
+    });
+
+    logs.sort((a, b) => b.rawDate - a.rawDate);
+    return logs;
+  }, [activeExerciseId, workoutLogs, setRecords, isBodyweight]);
+
+  if (!activeExerciseId) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+        운동을 선택해주세요
+      </div>
+    );
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 100px 22px' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {dummyLogs.map((log) => (
+          {pastLogs.length === 0 ? (
+            <div style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>기록이 없습니다.</div>
+          ) : pastLogs.map((log) => (
             <div key={log.id} className="glass-card" style={{ padding: '16px' }}>
               <div style={{
                 display: 'flex',
@@ -21,16 +88,16 @@ export default function PastLogs() {
                 marginBottom: '10px'
               }}>
                 <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-bright)' }}>{log.date}</span>
-                <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '500' }}>{log.totalVolume} kg</span>
+                <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '500' }}>{log.totalVolume.toLocaleString()} {displayUnit}</span>
               </div>
 
               <table className="spreadsheet spreadsheet--readonly">
                 <tbody>
                   {log.sets.map((set, i) => (
-                    <tr key={i}>
-                      <td className="cell-set">{set.set}</td>
-                      <td className="cell-value">{set.weight}</td>
-                      <td className="cell-value">{set.reps}</td>
+                    <tr key={set.id}>
+                      <td className="cell-set">{set.set_number}</td>
+                      <td className="cell-value">{set.weight || '—'}</td>
+                      <td className="cell-value">{set.record}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -40,5 +107,5 @@ export default function PastLogs() {
         </div>
       </div>
     </div>
-  )
+  );
 }

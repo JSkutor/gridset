@@ -1,0 +1,4 @@
+# AI Assistant Rules (GridSet)
+
+- **Language Preference**: Whenever creating or updating user-facing markdown artifacts or documentation (e.g., `walkthrough.md`, `implementation_plan.md`, `task.md`), the AI assistant **MUST write them in Korean**.
+- 모든 설명용 산출물(계획서, 워크스루, 작업 목록 등)은 사용자의 편의를 위해 반드시 **한국어**로만 정중하고 명확하게 작성해 주세요.
