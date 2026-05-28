@@ -130,8 +130,8 @@ body::before {
 
 /* ─── Spreadsheet Grid ─── */
 .spreadsheet-wrap {
-  margin-left: -18px;
-  margin-right: -18px;
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .spreadsheet {
