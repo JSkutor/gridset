@@ -132,6 +132,17 @@ function formatMetric(value, exercise) {
   return `${rounded.toLocaleString()} kg`;
 }
 
+function getRecordColumnLabel(exercise) {
+  const unit = getExerciseUnit(exercise);
+  if (unit === 'sec') return '초';
+  if (unit === 'reps') return '회';
+  return 'Reps';
+}
+
+function formatSetCellValue(value) {
+  return value === null || value === undefined || value === '' ? '0' : value;
+}
+
 function buildCalendarCells(monthDate) {
   const firstDay = getMonthStart(monthDate);
   const sundayOffset = firstDay.getDay();
@@ -192,6 +203,39 @@ function StatPill({ label, value, icon: Icon }) {
       <Icon size={14} />
       <span>{label}</span>
       <strong>{value}</strong>
+    </div>
+  );
+}
+
+function SetRecordTable({ records, exercise, compact = false }) {
+  return (
+    <div className={`log-set-grid-wrap ${compact ? 'log-set-grid-wrap--compact' : ''}`}>
+      <table className="log-set-grid" aria-label={`${exercise?.name || '운동'} 세트 기록`}>
+        <thead>
+          <tr>
+            <th>
+              <span className="log-grid-header-badge">Set</span>
+            </th>
+            <th>
+              <span className="log-grid-header-badge log-grid-header-badge--accent">kg</span>
+            </th>
+            <th>
+              <span className="log-grid-header-badge log-grid-header-badge--accent">
+                {getRecordColumnLabel(exercise)}
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record) => (
+            <tr key={record.id}>
+              <td className="cell-set">{record.set_number}</td>
+              <td className="cell-value">{formatSetCellValue(record.weight)}</td>
+              <td className="cell-value">{formatSetCellValue(record.record)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
@@ -316,17 +360,11 @@ function DailyLogCard({ log, records, exercisesById, session, routine }) {
       <div className="log-exercise-stack">
         {groupedRecords.map(({ exercise, records: exerciseRecords }) => (
           <div className="log-exercise-record-row" key={exercise?.id || exerciseRecords[0]?.exercise_id}>
-            <div>
+            <div className="log-exercise-record-meta">
               <strong>{exercise?.name || '알 수 없는 운동'}</strong>
               <span>{exerciseRecords.length}세트</span>
             </div>
-            <div className="log-set-chip-row">
-              {exerciseRecords.map((record) => (
-                <span key={record.id} className="log-set-chip">
-                  {record.set_number}. {record.weight || 0} / {record.record || 0}
-                </span>
-              ))}
-            </div>
+            <SetRecordTable records={exerciseRecords} exercise={exercise} />
           </div>
         ))}
       </div>
@@ -592,17 +630,11 @@ function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerci
                       <span>{formatDate(log.date, { weekday: 'short' })}</span>
                     </div>
                     <div className="log-exercise-history-body">
-                      <div>
+                      <div className="log-exercise-history-summary">
                         <strong>{formatMetric(log.value, selectedExercise)}</strong>
                         <span>{log.records.length}세트 · {formatDateTime(log.startTime)}</span>
                       </div>
-                      <div className="log-set-chip-row">
-                        {log.records.map((record) => (
-                          <span key={record.id} className="log-set-chip">
-                            {record.set_number}. {record.weight || 0} / {record.record || 0}
-                          </span>
-                        ))}
-                      </div>
+                      <SetRecordTable records={log.records} exercise={selectedExercise} compact />
                       {log.notes.length > 0 && (
                         <p className="log-inline-note">{log.notes.join(' · ')}</p>
                       )}
