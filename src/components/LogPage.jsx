@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Activity,
   BarChart3,
@@ -9,11 +9,10 @@ import {
   Dumbbell,
   History,
   ListChecks,
-  NotebookText,
   Timer,
 } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
-import { getFormattedSessionName } from '../utils/sessionHelper';
+import { getFormattedSessionName, getSessionColor } from '../utils/sessionHelper';
 
 const LOG_VIEWS = [
   {
@@ -36,7 +35,25 @@ const LOG_VIEWS = [
   },
 ];
 
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+const BRANCH_VIEWBOX_WIDTH = 1000;
+const BRANCH_VIEWBOX_HEIGHT = 150;
+const BRANCH_START_Y = 12;
+const BRANCH_JOINT_Y = 60;
+const BRANCH_END_Y = 132;
+
+function getTimelineX(index, count) {
+  if (count <= 0) return BRANCH_VIEWBOX_WIDTH / 2;
+  return Math.round(((index + 0.5) / count) * BRANCH_VIEWBOX_WIDTH);
+}
+
+function getBranchPath(sourceX, targetX) {
+  return [
+    `M ${sourceX} ${BRANCH_START_Y}`,
+    `C ${sourceX} ${BRANCH_JOINT_Y - 30}, ${sourceX} ${BRANCH_JOINT_Y - 10}, ${sourceX} ${BRANCH_JOINT_Y}`,
+    `C ${sourceX} ${BRANCH_JOINT_Y + 42}, ${targetX} ${BRANCH_JOINT_Y + 42}, ${targetX} ${BRANCH_END_Y}`,
+  ].join(' ');
+}
 
 function toDate(value) {
   if (!value) return null;
@@ -132,11 +149,15 @@ function formatMetric(value, exercise) {
   return `${rounded.toLocaleString()} kg`;
 }
 
+function formatSetCellValue(value) {
+  return value === null || value === undefined || value === '' ? '0' : value;
+}
+
 function buildCalendarCells(monthDate) {
   const firstDay = getMonthStart(monthDate);
-  const mondayOffset = (firstDay.getDay() + 6) % 7;
+  const sundayOffset = firstDay.getDay();
   const cursor = new Date(firstDay);
-  cursor.setDate(cursor.getDate() - mondayOffset);
+  cursor.setDate(cursor.getDate() - sundayOffset);
 
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(cursor);
@@ -160,6 +181,22 @@ function groupByDate(items, getDate) {
   }, new Map());
 }
 
+function getCalendarMarkerColors(dayItems, sessionsById) {
+  const seen = new Set();
+  const colors = [];
+
+  dayItems.forEach((log) => {
+    const session = sessionsById.get(log.session_id);
+    const key = session?.id || 'free-workout';
+    if (seen.has(key)) return;
+
+    seen.add(key);
+    colors.push(session ? getSessionColor(session) : '#6B7394');
+  });
+
+  return colors;
+}
+
 function EmptyState({ title, body }) {
   return (
     <div className="log-empty-state">
@@ -180,12 +217,61 @@ function StatPill({ label, value, icon: Icon }) {
   );
 }
 
-function LogCalendar({ monthDate, selectedDateKey, activityByDate, onSelectDate, onMonthChange }) {
+function SetRecordTable({ records, exercise, compact = false }) {
+  const hasMemo = records.some((record) => record.memo && record.memo.trim());
+
+  return (
+    <div className={`log-set-grid-wrap ${compact ? 'log-set-grid-wrap--compact' : ''}`}>
+      <table className={`log-set-grid ${hasMemo ? 'has-memo' : ''}`} aria-label={`${exercise?.name || '운동'} 세트 기록`}>
+        <colgroup>
+          <col className="log-set-col" />
+          <col className="log-value-col" />
+          <col className="log-value-col" />
+          {hasMemo && <col className="log-memo-col" />}
+        </colgroup>
+        <thead>
+          <tr>
+            <th>
+              <span className="log-grid-header-badge">Set</span>
+            </th>
+            <th>
+              <span className="log-grid-header-badge log-grid-header-badge--accent">kg</span>
+            </th>
+            <th>
+              <span className="log-grid-header-badge log-grid-header-badge--accent">reps</span>
+            </th>
+            {hasMemo && (
+              <th>
+                <span className="log-grid-header-badge log-grid-header-badge--memo">memo</span>
+              </th>
+            )}
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((record) => (
+            <tr key={record.id}>
+              <td className="cell-set">{record.set_number}</td>
+              <td className="cell-value">{formatSetCellValue(record.weight)}</td>
+              <td className="cell-value">{formatSetCellValue(record.record)}</td>
+              {hasMemo && (
+                <td className="cell-memo">
+                  {record.memo && record.memo.trim() ? (
+                    <span className="log-set-memo-chip">{record.memo.trim()}</span>
+                  ) : (
+                    <span className="log-set-memo-empty">-</span>
+                  )}
+                </td>
+              )}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function LogCalendar({ monthDate, selectedDateKey, activityByDate, sessionsById, onSelectDate, onMonthChange }) {
   const cells = useMemo(() => buildCalendarCells(monthDate), [monthDate]);
-  const maxCount = useMemo(() => {
-    const counts = [...activityByDate.values()].map((items) => items.length);
-    return Math.max(1, ...counts);
-  }, [activityByDate]);
 
   return (
     <section className="log-panel log-calendar-panel">
@@ -214,7 +300,8 @@ function LogCalendar({ monthDate, selectedDateKey, activityByDate, onSelectDate,
         {cells.map((cell) => {
           const dayItems = activityByDate.get(cell.key) || [];
           const count = dayItems.length;
-          const intensity = count === 0 ? 0 : Math.max(0.22, count / maxCount);
+          const markerColors = getCalendarMarkerColors(dayItems, sessionsById);
+          const primaryMarkerColor = markerColors[0] || '#6B7394';
           const isSelected = selectedDateKey === cell.key;
 
           return (
@@ -230,11 +317,21 @@ function LogCalendar({ monthDate, selectedDateKey, activityByDate, onSelectDate,
               onClick={() => onSelectDate(cell.date)}
               title={`${formatDate(cell.date, { month: 'long', day: 'numeric' })} 기록 ${count}개`}
               style={{
-                '--activity-alpha': intensity,
+                '--activity-border': `${primaryMarkerColor}4D`,
               }}
             >
               <span>{cell.date.getDate()}</span>
-              {count > 0 && <i>{count}</i>}
+              {count > 0 && (
+                <span className="log-calendar-activity-marks" aria-hidden="true">
+                  {markerColors.slice(0, 3).map((color, markerIndex) => (
+                    <span
+                      key={`${color}-${markerIndex}`}
+                      className="log-calendar-check-mark"
+                      style={{ '--session-color': color }}
+                    />
+                  ))}
+                </span>
+              )}
             </button>
           );
         })}
@@ -260,18 +357,6 @@ function DailyLogCard({ log, records, exercisesById, session, routine }) {
     });
   }, [records, exercisesById]);
 
-  const notes = records
-    .filter((record) => record.memo && record.memo.trim())
-    .map((record) => {
-      const exercise = exercisesById.get(record.exercise_id);
-      return {
-        id: record.id,
-        exerciseName: exercise?.name || '운동',
-        setNumber: record.set_number,
-        memo: record.memo.trim(),
-      };
-    });
-
   return (
     <article className="log-record-card">
       <div className="log-record-card-header">
@@ -293,35 +378,14 @@ function DailyLogCard({ log, records, exercisesById, session, routine }) {
       <div className="log-exercise-stack">
         {groupedRecords.map(({ exercise, records: exerciseRecords }) => (
           <div className="log-exercise-record-row" key={exercise?.id || exerciseRecords[0]?.exercise_id}>
-            <div>
+            <div className="log-exercise-record-meta">
               <strong>{exercise?.name || '알 수 없는 운동'}</strong>
               <span>{exerciseRecords.length}세트</span>
             </div>
-            <div className="log-set-chip-row">
-              {exerciseRecords.map((record) => (
-                <span key={record.id} className="log-set-chip">
-                  {record.set_number}. {record.weight || 0} / {record.record || 0}
-                </span>
-              ))}
-            </div>
+            <SetRecordTable records={exerciseRecords} exercise={exercise} />
           </div>
         ))}
       </div>
-
-      {notes.length > 0 && (
-        <div className="log-note-list">
-          <div className="log-note-title">
-            <NotebookText size={13} />
-            메모
-          </div>
-          {notes.map((note) => (
-            <p key={note.id}>
-              <strong>{note.exerciseName} {note.setNumber}세트</strong>
-              <span>{note.memo}</span>
-            </p>
-          ))}
-        </div>
-      )}
     </article>
   );
 }
@@ -351,6 +415,7 @@ function DailyLogView({ logSummaries, logsByDate, selectedDate, setSelectedDate,
         monthDate={monthDate}
         selectedDateKey={selectedDateKey}
         activityByDate={logsByDate}
+        sessionsById={sessionsById}
         onSelectDate={handleSelectDate}
         onMonthChange={(delta) => {
           const next = new Date(monthDate);
@@ -473,7 +538,7 @@ function ExerciseProgressChart({ points, exercise }) {
   );
 }
 
-function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerciseId, exerciseMonthDate, setExerciseMonthDate }) {
+function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerciseId, exerciseMonthDate, setExerciseMonthDate, sessionsById }) {
   const selectedSummary = exerciseSummaries.find((summary) => summary.exercise.id === selectedExerciseId) || exerciseSummaries[0] || null;
   const selectedExercise = selectedSummary?.exercise || null;
   const activityByDate = useMemo(() => {
@@ -525,6 +590,7 @@ function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerci
               monthDate={exerciseMonthDate}
               selectedDateKey=""
               activityByDate={activityByDate}
+              sessionsById={sessionsById}
               onSelectDate={(date) => setExerciseMonthDate(getMonthStart(date))}
               onMonthChange={(delta) => {
                 const next = new Date(exerciseMonthDate);
@@ -567,20 +633,11 @@ function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerci
                       <span>{formatDate(log.date, { weekday: 'short' })}</span>
                     </div>
                     <div className="log-exercise-history-body">
-                      <div>
+                      <div className="log-exercise-history-summary">
                         <strong>{formatMetric(log.value, selectedExercise)}</strong>
                         <span>{log.records.length}세트 · {formatDateTime(log.startTime)}</span>
                       </div>
-                      <div className="log-set-chip-row">
-                        {log.records.map((record) => (
-                          <span key={record.id} className="log-set-chip">
-                            {record.set_number}. {record.weight || 0} / {record.record || 0}
-                          </span>
-                        ))}
-                      </div>
-                      {log.notes.length > 0 && (
-                        <p className="log-inline-note">{log.notes.join(' · ')}</p>
-                      )}
+                      <SetRecordTable records={log.records} exercise={selectedExercise} compact />
                     </div>
                   </article>
                 ))}
@@ -598,97 +655,277 @@ function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerci
 }
 
 function RoutineTimeline({ routineSummaries, freeWorkoutSummary }) {
+  const [selectedEventId, setSelectedEventId] = useState(null);
+  const [branchSourceX, setBranchSourceX] = useState(BRANCH_VIEWBOX_WIDTH / 2);
+  const timelineScrollRef = useRef(null);
+  const activeCommitRef = useRef(null);
+  const branchStageRef = useRef(null);
+
+  const timelineEvents = useMemo(() => {
+    const routineEvents = routineSummaries.map((routine) => {
+      const uniqueExercises = new Map();
+      routine.sessions.forEach((session) => {
+        session.exercises.forEach((exercise) => uniqueExercises.set(exercise.id, exercise));
+      });
+
+      return {
+        ...routine,
+        type: 'routine',
+        title: routine.name,
+        exercises: [...uniqueExercises.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
+      };
+    });
+
+    const freeEvent = freeWorkoutSummary
+      ? [{
+          ...freeWorkoutSummary,
+          id: 'free-workout',
+          type: 'free',
+          title: '자유 운동',
+          sessions: [],
+          exerciseCount: freeWorkoutSummary.exercises.length,
+        }]
+      : [];
+
+    return [...routineEvents, ...freeEvent].sort((a, b) => {
+      const dateA = a.firstDate?.getTime() || 0;
+      const dateB = b.firstDate?.getTime() || 0;
+      return dateA - dateB;
+    });
+  }, [routineSummaries, freeWorkoutSummary]);
+
+  const latestEventId = timelineEvents[timelineEvents.length - 1]?.id || null;
+  const selectedEvent = timelineEvents.find((event) => event.id === selectedEventId) || timelineEvents[timelineEvents.length - 1] || null;
+  const selectedSessions = selectedEvent?.type === 'routine' ? selectedEvent.sessions : [];
+  const selectedExercises = selectedEvent?.exercises || [];
+  const selectedBranches = selectedEvent?.type === 'free'
+    ? [{
+        id: 'free-workout-branch',
+        title: '자유 운동',
+        detail: selectedEvent.lastDate
+          ? `${formatDate(selectedEvent.lastDate, { month: 'short', day: 'numeric' })} 최근`
+          : '루틴 없이 기록',
+        meta: `${selectedEvent.logCount}회`,
+        exercises: selectedExercises,
+        color: '#9AA4BC',
+        type: 'free',
+      }]
+    : selectedSessions.length > 0
+      ? selectedSessions.map((session) => ({
+          id: session.id,
+          title: session.name,
+          detail: session.lastDate
+            ? `${formatDate(session.lastDate, { month: 'short', day: 'numeric' })} 최근`
+            : '수행 기록 없음',
+          meta: `${session.logCount}회 · ${session.exercises.length}종목`,
+          exercises: session.exercises,
+          color: session.color,
+          type: 'session',
+        }))
+      : selectedEvent
+        ? [{
+            id: `${selectedEvent.id}-empty-session`,
+            title: '세션 없음',
+            detail: '루틴 구성 필요',
+            meta: '0종목',
+            exercises: [],
+            color: '#6B7394',
+            type: 'empty',
+          }]
+        : [];
+  const branchCount = Math.max(1, selectedBranches.length);
+
+  const updateBranchSource = useCallback(() => {
+    const activeCommit = activeCommitRef.current;
+    const branchStage = branchStageRef.current;
+    if (!activeCommit || !branchStage) return;
+
+    const activeRect = activeCommit.getBoundingClientRect();
+    const stageRect = branchStage.getBoundingClientRect();
+    if (!stageRect.width) return;
+
+    const centerX = activeRect.left + activeRect.width / 2 - stageRect.left;
+    const clampedX = Math.min(Math.max(centerX, 24), stageRect.width - 24);
+    setBranchSourceX(Math.round((clampedX / stageRect.width) * BRANCH_VIEWBOX_WIDTH));
+  }, []);
+
+  useEffect(() => {
+    if (!selectedEvent) return undefined;
+
+    let secondFrame = null;
+    const firstFrame = window.requestAnimationFrame(() => {
+      activeCommitRef.current?.scrollIntoView({
+        block: 'nearest',
+        inline: selectedEvent.id === latestEventId ? 'end' : 'center',
+        behavior: 'auto',
+      });
+
+      secondFrame = window.requestAnimationFrame(updateBranchSource);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(firstFrame);
+      if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
+    };
+  }, [latestEventId, selectedEvent, updateBranchSource]);
+
+  useEffect(() => {
+    const scrollNode = timelineScrollRef.current;
+    if (!scrollNode) return undefined;
+
+    let frameId = null;
+    const scheduleBranchUpdate = () => {
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateBranchSource();
+      });
+    };
+
+    const handleWheel = (event) => {
+      if (scrollNode.scrollWidth <= scrollNode.clientWidth) return;
+
+      const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      if (delta === 0) return;
+
+      event.preventDefault();
+      scrollNode.scrollLeft += delta;
+      scheduleBranchUpdate();
+    };
+
+    scrollNode.addEventListener('wheel', handleWheel, { passive: false });
+    scrollNode.addEventListener('scroll', scheduleBranchUpdate, { passive: true });
+    window.addEventListener('resize', scheduleBranchUpdate);
+
+    return () => {
+      if (frameId !== null) window.cancelAnimationFrame(frameId);
+      scrollNode.removeEventListener('wheel', handleWheel);
+      scrollNode.removeEventListener('scroll', scheduleBranchUpdate);
+      window.removeEventListener('resize', scheduleBranchUpdate);
+    };
+  }, [updateBranchSource]);
+
   return (
     <section className="log-panel log-routine-panel">
       <div className="log-panel-header">
         <div>
-          <span className="log-kicker">Routine Timeline</span>
+          <span className="log-kicker">Routine Graph</span>
           <h2>루틴 로그</h2>
         </div>
-      </div>
-
-      <div className="log-scroll-area log-routine-scroll">
-        {routineSummaries.length === 0 && !freeWorkoutSummary ? (
-          <EmptyState title="루틴 로그가 없습니다" body="루틴을 만들고 운동을 기록하면 시작 시점과 구성 운동이 정리됩니다." />
-        ) : (
-          <>
-            {routineSummaries.map((routine) => (
-              <article key={routine.id} className="log-routine-timeline-item">
-                <div className="log-timeline-marker" />
-                <div className="log-routine-body">
-                  <div className="log-routine-heading">
-                    <div>
-                      <span>{routine.firstDate ? `${formatDate(routine.firstDate, { year: 'numeric', month: 'short', day: 'numeric' })}부터` : '기록 전'}</span>
-                      <h3>{routine.name}</h3>
-                    </div>
-                    <div className="log-routine-range">
-                      {routine.lastDate ? `${formatDate(routine.lastDate, { month: 'short', day: 'numeric' })} 최근` : '수행 기록 없음'}
-                    </div>
-                  </div>
-
-                  <div className="log-routine-metrics">
-                    <StatPill label="세션" value={`${routine.sessions.length}개`} icon={ListChecks} />
-                    <StatPill label="기록" value={`${routine.logCount}회`} icon={History} />
-                    <StatPill label="운동" value={`${routine.exerciseCount}개`} icon={Dumbbell} />
-                  </div>
-
-                  <div className="log-session-timeline-list">
-                    {routine.sessions.map((session) => (
-                      <div key={session.id} className="log-session-timeline-card">
-                        <div className="log-session-card-header">
-                          <div>
-                            <strong>{session.name}</strong>
-                            <span>
-                              {session.firstDate
-                                ? `${formatDate(session.firstDate, { month: 'short', day: 'numeric' })} 시작`
-                                : '수행 기록 없음'}
-                            </span>
-                          </div>
-                          <b>{session.logCount}회</b>
-                        </div>
-
-                        <div className="log-routine-bar">
-                          <span style={{ width: `${session.activityRatio}%` }} />
-                        </div>
-
-                        <div className="log-routine-exercise-chips">
-                          {session.exercises.length === 0 ? (
-                            <span className="log-muted-chip">운동 없음</span>
-                          ) : (
-                            session.exercises.map((exercise) => (
-                              <span key={exercise.id}>{exercise.name}</span>
-                            ))
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            ))}
-
-            {freeWorkoutSummary && (
-              <article className="log-routine-timeline-item">
-                <div className="log-timeline-marker log-timeline-marker--muted" />
-                <div className="log-routine-body">
-                  <div className="log-routine-heading">
-                    <div>
-                      <span>{formatDate(freeWorkoutSummary.firstDate, { year: 'numeric', month: 'short', day: 'numeric' })}부터</span>
-                      <h3>자유 운동</h3>
-                    </div>
-                    <div className="log-routine-range">{freeWorkoutSummary.logCount}회</div>
-                  </div>
-                  <div className="log-routine-exercise-chips">
-                    {freeWorkoutSummary.exercises.map((exercise) => (
-                      <span key={exercise.id}>{exercise.name}</span>
-                    ))}
-                  </div>
-                </div>
-              </article>
-            )}
-          </>
+        {timelineEvents.length > 0 && (
+          <span className="log-subtle-chip">{timelineEvents.length} 지점</span>
         )}
       </div>
+
+      {timelineEvents.length === 0 ? (
+        <div className="log-routine-workspace">
+          <EmptyState title="루틴 로그가 없습니다" body="루틴을 만들고 운동을 기록하면 시작 시점과 구성 운동이 정리됩니다." />
+        </div>
+      ) : (
+        <div
+          className="log-routine-graph-shell"
+          style={{
+            '--commit-count': timelineEvents.length,
+            '--branch-count': branchCount,
+            '--stage-columns': timelineEvents.length,
+          }}
+        >
+          <div className="log-routine-graph-scroll" ref={timelineScrollRef}>
+            <div className="log-routine-stage">
+              <div className="log-routine-track" role="tablist" aria-label="루틴 변경 지점">
+                <div className="log-routine-track-line" />
+                {timelineEvents.map((event) => {
+                  const isActive = event.id === selectedEvent?.id;
+                  const firstDateLabel = event.firstDate
+                    ? formatDate(event.firstDate, { month: 'short', day: 'numeric' })
+                    : '기록 전';
+
+                  return (
+                    <button
+                      key={event.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      className={`log-routine-commit ${isActive ? 'is-active' : ''} ${event.type === 'free' ? 'is-muted' : ''}`}
+                      style={{ '--event-color': event.type === 'free' ? '#9AA4BC' : '#7AA2F7' }}
+                      ref={isActive ? activeCommitRef : null}
+                      onClick={() => setSelectedEventId(event.id)}
+                    >
+                      <span className="log-routine-commit-label">
+                        <strong>{event.title}</strong>
+                        <i>{firstDateLabel}</i>
+                      </span>
+                      <span className="log-routine-commit-dot" />
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {selectedEvent && (
+            <div className="log-routine-branch-stage" ref={branchStageRef}>
+              <svg
+                className="log-routine-branch-lines"
+                viewBox={`0 0 ${BRANCH_VIEWBOX_WIDTH} ${BRANCH_VIEWBOX_HEIGHT}`}
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                {selectedBranches.map((branch, index) => {
+                  const targetX = getTimelineX(index, branchCount);
+                  return (
+                    <path
+                      key={branch.id}
+                      className="log-routine-branch-curve"
+                      d={getBranchPath(branchSourceX, targetX)}
+                      style={{ '--session-color': branch.color }}
+                    />
+                  );
+                })}
+                <circle className="log-routine-branch-origin" cx={branchSourceX} cy={BRANCH_START_Y} r="5.5" />
+                {selectedBranches.map((branch, index) => (
+                  <circle
+                    key={`${branch.id}-end`}
+                    className="log-routine-branch-end"
+                    cx={getTimelineX(index, branchCount)}
+                    cy={BRANCH_END_Y}
+                    r="4.5"
+                    style={{ '--session-color': branch.color }}
+                  />
+                ))}
+              </svg>
+
+              <div className="log-routine-branch-map">
+                {selectedBranches.map((branch) => (
+                  <article
+                    key={branch.id}
+                    className={`log-routine-branch-card ${branch.type === 'free' ? 'log-routine-branch-card--free' : ''} ${branch.type === 'empty' ? 'is-muted' : ''}`}
+                    style={{ '--session-color': branch.color }}
+                  >
+                    <span className="log-routine-branch-pin" aria-hidden="true" />
+                    <div className="log-routine-branch-head">
+                      <div>
+                        <strong>{branch.title}</strong>
+                        <span>{branch.detail}</span>
+                      </div>
+                      <b>{branch.meta}</b>
+                    </div>
+                    <ul className="log-routine-exercise-list">
+                      {branch.exercises.length === 0 ? (
+                        <li className="is-muted">운동 없음</li>
+                      ) : (
+                        branch.exercises.map((exercise) => (
+                          <li key={exercise.id}>{exercise.name}</li>
+                        ))
+                      )}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -762,19 +999,16 @@ export default function LogPage() {
         }
 
         const value = records.reduce((sum, record) => sum + getRecordMetric(record, exercise), 0);
-        const notes = records
-          .filter((record) => record.memo && record.memo.trim())
-          .map((record) => `${record.set_number}세트 ${record.memo.trim()}`);
 
         const summary = byExercise.get(exerciseId);
         summary.logs.push({
           key: `${log.id}:${exerciseId}`,
           workoutLogId: log.id,
+          session_id: log.session_id,
           date: log.startDate,
           startTime: log.start_time,
           value,
           records: records.slice().sort((a, b) => a.set_number - b.set_number),
-          notes,
         });
         summary.setCount += records.length;
         summary.totalMetric += value;
@@ -834,6 +1068,7 @@ export default function LogPage() {
           id: session.id,
           name: label,
           exercises: linkedExercises,
+          color: getSessionColor(session),
           logCount: sessionLogs.length,
           firstDate: sortedLogs[0]?.startDate || toDate(session.created_at),
           lastDate: sortedLogs[sortedLogs.length - 1]?.startDate || null,
@@ -916,6 +1151,7 @@ export default function LogPage() {
             setSelectedExerciseId={setSelectedExerciseId}
             exerciseMonthDate={exerciseMonthDate}
             setExerciseMonthDate={setExerciseMonthDate}
+            sessionsById={sessionsById}
           />
         )}
 

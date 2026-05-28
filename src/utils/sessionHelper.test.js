@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getFormattedSessionName, getSessionDayLetter } from './sessionHelper.js';
+import {
+  getFormattedSessionName,
+  getSessionColor,
+  getSessionDayLetter,
+  MAX_SESSIONS_PER_ROUTINE,
+  SESSION_COLORS,
+} from './sessionHelper.js';
 
 const sessions = [
   { id: 'push', routine_id: 'ppl', name: 'Push', session_order: 2 },
@@ -24,4 +30,10 @@ test('getFormattedSessionName prefixes the derived day label', () => {
 test('getSessionDayLetter handles missing sessions defensively', () => {
   assert.equal(getSessionDayLetter(null, sessions), '');
   assert.equal(getSessionDayLetter({ id: 'missing', routine_id: 'ppl' }, sessions), '');
+});
+
+test('getSessionColor follows session order without cycling after the palette ends', () => {
+  assert.equal(getSessionColor({ session_order: 1 }), SESSION_COLORS[0]);
+  assert.equal(getSessionColor({ session_order: MAX_SESSIONS_PER_ROUTINE }), SESSION_COLORS[6]);
+  assert.equal(getSessionColor({ session_order: MAX_SESSIONS_PER_ROUTINE + 1 }), '#6B7394');
 });

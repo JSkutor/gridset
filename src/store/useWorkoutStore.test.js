@@ -1,5 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
 
 function createMemoryStorage() {
   const entries = new Map();
@@ -53,6 +54,21 @@ test('routines, sessions, and session exercises keep template defaults', () => {
   );
   assert.equal(link.rest_between_sets, 90);
   assert.equal(link.rest_after_exercise, 120);
+});
+
+test('addSession caps each routine at seven sessions', () => {
+  const routine = useWorkoutStore.getState().addRoutine('Capped');
+  const created = Array.from({ length: MAX_SESSIONS_PER_ROUTINE }, (_, index) =>
+    useWorkoutStore.getState().addSession(routine.id, `Day ${index + 1}`),
+  );
+  const overflow = useWorkoutStore.getState().addSession(routine.id, 'Overflow');
+
+  assert.equal(created.every(Boolean), true);
+  assert.equal(overflow, null);
+  assert.equal(
+    useWorkoutStore.getState().sessions.filter((session) => session.routine_id === routine.id).length,
+    MAX_SESSIONS_PER_ROUTINE,
+  );
 });
 
 test('deleteSession cascades links and compacts sibling order', () => {
@@ -157,4 +173,39 @@ test('deleteWorkoutLog removes its set records', () => {
 
   assert.equal(useWorkoutStore.getState().workoutLogs.some((item) => item.id === log.id), false);
   assert.equal(useWorkoutStore.getState().setRecords.some((item) => item.id === setRecord.id), false);
+});
+
+test('generateDummyData creates diverse non-exercise seed data', () => {
+  const initialExerciseCount = useWorkoutStore.getState().exercises.length;
+
+  useWorkoutStore.getState().generateDummyData();
+
+  const state = useWorkoutStore.getState();
+  const sessionsByRoutine = state.routines.map((routine) =>
+    state.sessions.filter((session) => session.routine_id === routine.id),
+  );
+
+  assert.ok(state.routines.length >= 3);
+  assert.equal(sessionsByRoutine.every((sessions) => sessions.length >= 4), true);
+  assert.ok(state.sessionExercises.length > state.sessions.length);
+  assert.ok(state.workoutLogs.some((log) => log.session_id === null));
+  assert.ok(state.workoutLogs.some((log) => log.end_time === null));
+  assert.ok(state.setRecords.some((record) => record.is_completed === false));
+  assert.ok(state.setRecords.some((record) => record.memo));
+  assert.ok(state.exercises.length >= initialExerciseCount);
+});
+
+test('clearAllData clears templates and logs without removing exercise source data', () => {
+  useWorkoutStore.getState().generateDummyData();
+  const exerciseCount = useWorkoutStore.getState().exercises.length;
+
+  useWorkoutStore.getState().clearAllData();
+
+  const state = useWorkoutStore.getState();
+  assert.equal(state.routines.length, 0);
+  assert.equal(state.sessions.length, 0);
+  assert.equal(state.sessionExercises.length, 0);
+  assert.equal(state.workoutLogs.length, 0);
+  assert.equal(state.setRecords.length, 0);
+  assert.equal(state.exercises.length, exerciseCount);
 });

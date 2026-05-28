@@ -1,3 +1,20 @@
+export const SESSION_COLORS = [
+  '#8BD5CA',
+  '#A6DA95',
+  '#EED49F',
+  '#F5A97F',
+  '#F0A6CA',
+  '#C6A0F6',
+  '#E78284',
+];
+
+export const MAX_SESSIONS_PER_ROUTINE = SESSION_COLORS.length;
+
+export function getSessionColor(session) {
+  const order = Number(session?.session_order) || 1;
+  return SESSION_COLORS[Math.max(1, order) - 1] || '#6B7394';
+}
+
 /**
  * Calculates the Day letter (A, B, C...) for a session based on its order in the routine.
  * 
