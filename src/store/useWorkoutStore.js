@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary';
+import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
 
 const generateUUID = () => crypto.randomUUID();
 
@@ -568,4 +568,3 @@ export const useWorkoutStore = create(
     }
   )
 );
-

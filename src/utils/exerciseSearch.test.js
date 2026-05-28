@@ -1,0 +1,65 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { getExerciseSuggestions } from './exerciseSearch.js';
+
+const fixtures = [
+  {
+    id: 'bench',
+    name: '벤치프레스',
+    englishName: 'Bench Press',
+    primaryMuscle: '가슴',
+    equipment: '바벨',
+    synonyms: ['벤치', 'bench'],
+  },
+  {
+    id: 'pullup',
+    name: '풀업',
+    englishName: 'Pull Up',
+    primaryMuscle: '등',
+    equipment: '맨몸',
+    synonyms: ['턱걸이', 'pull-up'],
+  },
+  {
+    id: 'pushup',
+    name: '푸시업',
+    englishName: 'Push Up',
+    primaryMuscle: '가슴',
+    equipment: '맨몸',
+    synonyms: ['팔굽혀펴기'],
+  },
+  {
+    id: 'overhead-press',
+    name: '오버헤드 프레스',
+    englishName: 'Overhead Press',
+    primaryMuscle: '어깨',
+    equipment: '바벨',
+    synonyms: ['ohp'],
+  },
+];
+
+test('getExerciseSuggestions ranks exact Korean names first', () => {
+  const suggestions = getExerciseSuggestions('풀업', fixtures);
+
+  assert.equal(suggestions[0].id, 'pullup');
+});
+
+test('getExerciseSuggestions supports chosung search', () => {
+  const suggestions = getExerciseSuggestions('ㅂㅊ', fixtures);
+
+  assert.deepEqual(suggestions.map((exercise) => exercise.id), ['bench']);
+});
+
+test('getExerciseSuggestions supports synonyms and English aliases', () => {
+  assert.equal(getExerciseSuggestions('턱걸이', fixtures)[0].id, 'pullup');
+  assert.equal(getExerciseSuggestions('ohp', fixtures)[0].id, 'overhead-press');
+});
+
+test('getExerciseSuggestions respects the result limit', () => {
+  const suggestions = getExerciseSuggestions('p', fixtures, 2);
+
+  assert.equal(suggestions.length, 2);
+});
+
+test('getExerciseSuggestions returns no results for empty queries', () => {
+  assert.deepEqual(getExerciseSuggestions('   ', fixtures), []);
+});

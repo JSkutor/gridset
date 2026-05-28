@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 
 export default function PastLogs({ activeExerciseId }) {
@@ -93,7 +93,7 @@ export default function PastLogs({ activeExerciseId }) {
 
               <table className="spreadsheet spreadsheet--readonly">
                 <tbody>
-                  {log.sets.map((set, i) => (
+                  {log.sets.map((set) => (
                     <tr key={set.id}>
                       <td className="cell-set">{set.set_number}</td>
                       <td className="cell-value">{set.weight || '—'}</td>

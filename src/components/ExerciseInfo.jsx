@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef, useEffect } from 'react'
+import { useMemo, useState, useRef, useEffect } from 'react'
 import { Activity, Target, TrendingUp } from 'lucide-react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 
@@ -347,12 +347,9 @@ export default function ExerciseInfo({ activeExerciseId }) {
         const weight = Number(sr.weight) || 0;
         const reps = Number(sr.record) || 0;
         
-        let value = 0;
-        if (unit === 'kg') {
-          value = weight; // We plot weight for weighted exercises
-        } else {
-          value = reps; // We plot reps/sec for bodyweight/time exercises
-        }
+        const value = unit === 'kg'
+          ? weight
+          : reps;
         
         if (!dailyRecords[dateStr] || value > dailyRecords[dateStr].value) {
           dailyRecords[dateStr] = {

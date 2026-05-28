@@ -1,8 +1,14 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
 import { getFormattedSessionName } from '../utils/sessionHelper';
+import {
+  buildInitialBlocks,
+  computeNewGlobalIndex,
+  flattenBlocks,
+  isNumericGridValue,
+} from '../utils/setGridModel.js';
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
@@ -37,74 +43,6 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
   );
 }
 
-// ─── pure helpers ─────────────────────────────────────────────────────────────
-
-const NUMERIC_RE = /^[0-9.]*$/;
-
-/**
- * Build the initial block list from store data.
- * Pure function — no React dependencies.
- */
-function buildInitialBlocks(session, sessionExercises, exercises) {
-  if (!session) return [];
-  return sessionExercises
-    .filter((se) => se.session_id === session.id)
-    .sort((a, b) => a.order - b.order)
-    .map((se) => {
-      const exercise = exercises.find((ex) => ex.id === se.exercise_id);
-      const targetSets = se.target_sets || 3;
-      return {
-        id: se.id,
-        exercise_id: se.exercise_id,
-        exercise_name: exercise?.name ?? 'Unknown Exercise',
-        sets: Array.from({ length: targetSets }, (_, i) => ({
-          id: crypto.randomUUID(),
-          set_number: i + 1,
-          weight: '',
-          reps: '',
-        })),
-      };
-    });
-}
-
-/**
- * Flatten nested blocks → a single list of row descriptors with global indices.
- * This removes the IIFE + mutable counter pattern from the JSX.
- *
- * @param {Block[]} blocks
- * @returns {FlatRow[]}
- */
-function flattenBlocks(blocks) {
-  const rows = [];
-  blocks.forEach((block, blockIndex) => {
-    block.sets.forEach((set, rowIndex) => {
-      rows.push({
-        ...set,
-        blockIndex,
-        rowIndex,
-        globalIndex: rows.length,
-        isLastSet: rowIndex === block.sets.length - 1,
-        exerciseId: block.exercise_id,
-      });
-    });
-  });
-  return rows;
-}
-
-/**
- * Compute the global row index that the new set will occupy after addRow.
- * Uses current (pre-mutation) blocks so it can be called before setBlocks.
- *
- * @param {Block[]} blocks - Current block array (before adding the new row).
- * @param {number}  blockIndex - Which block is receiving the new row.
- * @returns {number} Global index of the new row.
- */
-function computeNewGlobalIndex(blocks, blockIndex) {
-  let idx = 0;
-  for (let i = 0; i < blockIndex; i++) idx += blocks[i].sets.length;
-  return idx + blocks[blockIndex].sets.length; // current length = 0-based index after insert
-}
-
 // ─── SetGrid ──────────────────────────────────────────────────────────────────
 
 export default function SetGrid({ session, onExerciseFocus }) {
@@ -112,15 +50,8 @@ export default function SetGrid({ session, onExerciseFocus }) {
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
 
-  const initialBlocks = useMemo(
-    () => buildInitialBlocks(session, sessionExercises, exercises),
-    [session, sessionExercises, exercises],
-  );
-
-  const [blocks, setBlocks] = useState([]);
+  const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises));
   const [note,   setNote]   = useState('');
-
-  useEffect(() => { setBlocks(initialBlocks); }, [initialBlocks]);
 
   // Flat row list — drives both the table render and totalRows for the hook.
   const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
@@ -131,7 +62,7 @@ export default function SetGrid({ session, onExerciseFocus }) {
   // ── mutations ──────────────────────────────────────────────────────────────
 
   const updateRow = (blockIndex, rowIndex, field, value) => {
-    if (!NUMERIC_RE.test(value)) return;
+    if (!isNumericGridValue(value)) return;
     setBlocks((prev) =>
       prev.map((b, bi) =>
         bi !== blockIndex ? b : {

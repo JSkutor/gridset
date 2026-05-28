@@ -1,4 +1,3 @@
-import React from "react";
 import { Dumbbell, ListChecks, History } from "lucide-react";
 
 export default function Navigation({ activeTab, setActiveTab }) {

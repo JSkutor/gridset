@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useMemo, useState } from 'react'
 import Navigation from './components/Navigation'
 import ExerciseInfo from './components/ExerciseInfo'
 import SetGrid from './components/SetGrid'
@@ -19,26 +19,29 @@ function App() {
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
 
-  // 현재 활성화 및 훈련 진행할 세션 ID 상태 관리
   const [selectedSessionId, setSelectedSessionId] = useState(null);
 
-  // 세션 목록이 로드되거나 변경될 때 기본값 설정
-  useEffect(() => {
-    if (sessions.length > 0 && !selectedSessionId) {
-      setSelectedSessionId(sessions[0].id);
-    }
-  }, [sessions, selectedSessionId]);
+  const selectedSession = useMemo(
+    () => sessions.find(s => s.id === selectedSessionId) || sessions[0] || null,
+    [sessions, selectedSessionId]
+  );
 
-  const selectedSession = sessions.find(s => s.id === selectedSessionId) || sessions[0] || null;
+  const defaultExerciseId = useMemo(() => {
+    if (!selectedSession) return null;
+    return sessionExercises.find(se => se.session_id === selectedSession.id)?.exercise_id || null;
+  }, [selectedSession, sessionExercises]);
 
-  useEffect(() => {
-    if (selectedSession && !activeExerciseId) {
-      const firstSessionExercise = sessionExercises.find(se => se.session_id === selectedSession.id);
-      if (firstSessionExercise) {
-        setActiveExerciseId(firstSessionExercise.exercise_id);
-      }
-    }
-  }, [selectedSession, sessionExercises, activeExerciseId]);
+  const effectiveActiveExerciseId = activeExerciseId || defaultExerciseId;
+
+  const setGridKey = useMemo(() => {
+    if (!selectedSession) return 'empty-session';
+    const exerciseSignature = sessionExercises
+      .filter(se => se.session_id === selectedSession.id)
+      .sort((a, b) => a.order - b.order)
+      .map(se => `${se.id}:${se.exercise_id}:${se.order}:${se.target_sets}:${se.target_record}`)
+      .join('|');
+    return `${selectedSession.id}:${exerciseSignature}`;
+  }, [selectedSession, sessionExercises]);
 
   return (
     <div className="app-container">
@@ -67,7 +70,7 @@ function App() {
         {/* 'S' 탭일 때 루틴을 즉시 바꿀 수 있는 선택 드롭다운 */}
         {activeTab === 'S' && sessions.length > 0 && (
           <select
-            value={selectedSessionId || ''}
+            value={selectedSession?.id || ''}
             onChange={(e) => {
               setSelectedSessionId(e.target.value);
               setActiveExerciseId(null); // 운동 타겟 리셋하여 첫 번째 운동 활성화 유도
@@ -107,17 +110,18 @@ function App() {
 
       {activeTab === 'S' && (
         <main className="main-grid">
-          <ExerciseInfo activeExerciseId={activeExerciseId} />
+          <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
           <SetGrid 
+            key={setGridKey}
             session={selectedSession} 
             onExerciseFocus={setActiveExerciseId} 
           />
-          <PastLogs activeExerciseId={activeExerciseId} />
+          <PastLogs activeExerciseId={effectiveActiveExerciseId} />
         </main>
       )}
 
       {activeTab === 'R' && (
-        <main style={{ flex: 1, padding: '0 32px 32px 32px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, padding: '24px 32px 32px 32px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
           <RoutineDetail />
         </main>
       )}
