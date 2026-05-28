@@ -75,7 +75,7 @@ export default function PastLogs({ activeExerciseId }) {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 100px 22px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 100px 0' }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {pastLogs.length === 0 ? (
             <div style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>기록이 없습니다.</div>
