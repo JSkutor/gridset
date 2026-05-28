@@ -139,6 +139,12 @@ function App() {
     routineDetailRef,
   });
 
+  const handleSaveSuccess = useCallback(() => {
+    setSelectedSessionId(null);
+    setActiveExerciseId(null);
+    setActiveTab('L');
+  }, [setSelectedSessionId]);
+
   const setGridKey = useMemo(() => {
     if (!selectedSession) return 'empty-session';
     const exerciseSignature = sessionExercises
@@ -201,6 +207,7 @@ function App() {
             onSessionChange={setSelectedSessionId}
             onExerciseFocus={setActiveExerciseId} 
             onRestStart={handleRestStart}
+            onSaveSuccess={handleSaveSuccess}
           />
           <PastLogs activeExerciseId={effectiveActiveExerciseId} />
         </main>

@@ -229,3 +229,43 @@ test('updateExercise modifies existing exercise properties', () => {
   const updated = useWorkoutStore.getState().exercises.find(ex => ex.id === custom.id);
   assert.equal(updated.is_unilateral, true);
 });
+
+test('saveWorkoutLog persists entered sets to workoutLogs and setRecords', () => {
+  const routine = useWorkoutStore.getState().addRoutine('루틴 A');
+  const session = useWorkoutStore.getState().addSession(routine.id, '세션 B');
+  const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+  
+  const startTime = new Date(Date.now() - 3600 * 1000).toISOString();
+  const blocks = [
+    {
+      exercise_id: bench.id,
+      sets: [
+        { set_number: 1, side: 'both', weight: '80', reps: '5', memo: '무거움' },
+        { set_number: 2, side: 'both', weight: '80', reps: '4', memo: '' },
+        { set_number: 3, side: 'both', weight: '80', reps: '', memo: '' }
+      ]
+    }
+  ];
+
+  const log = useWorkoutStore.getState().saveWorkoutLog(session.id, blocks, startTime);
+
+  const savedLog = useWorkoutStore.getState().workoutLogs.find(l => l.id === log.id);
+  assert.ok(savedLog);
+  assert.equal(savedLog.session_id, session.id);
+  assert.equal(savedLog.start_time, startTime);
+  assert.ok(savedLog.end_time);
+
+  const savedRecords = useWorkoutStore.getState().setRecords.filter(r => r.workout_log_id === log.id);
+  assert.equal(savedRecords.length, 2);
+
+  assert.equal(savedRecords[0].set_number, 1);
+  assert.equal(savedRecords[0].weight, 80);
+  assert.equal(savedRecords[0].record, '5');
+  assert.equal(savedRecords[0].memo, '무거움');
+
+  assert.equal(savedRecords[1].set_number, 2);
+  assert.equal(savedRecords[1].weight, 80);
+  assert.equal(savedRecords[1].record, '4');
+  assert.equal(savedRecords[1].memo, null);
+});
+

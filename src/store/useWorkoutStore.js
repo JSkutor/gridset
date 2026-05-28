@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
 import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
-import { DEFAULT_EXERCISES, createDummyWorkoutData, generateUUID } from '../data/dummyGenerator.js';
+import { DEFAULT_EXERCISES, createDummyWorkoutData, generateUUID, getDefaultExerciseUnit } from '../data/dummyGenerator.js';
 
 
 export const useWorkoutStore = create(
@@ -310,6 +310,52 @@ export const useWorkoutStore = create(
         workoutLogs: state.workoutLogs.filter(log => log.id !== id),
         setRecords: state.setRecords.filter(sr => sr.workout_log_id !== id) // Cascade delete
       })),
+      saveWorkoutLog: (session_id, blocks, start_time) => {
+        const { currentUser } = get();
+        const logId = generateUUID();
+        const endTime = new Date().toISOString();
+        const actualStartTime = start_time || new Date().toISOString();
+
+        const newLog = {
+          id: logId,
+          user_id: currentUser.id,
+          session_id,
+          start_time: actualStartTime,
+          end_time: endTime,
+          created_at: actualStartTime,
+          updated_at: endTime
+        };
+
+        const newSetRecords = [];
+        blocks.forEach((block) => {
+          block.sets.forEach((set) => {
+            const hasReps = String(set.reps ?? '').trim() !== '';
+            const hasWeight = String(set.weight ?? '').trim() !== '';
+            if (hasReps) {
+              newSetRecords.push({
+                id: generateUUID(),
+                workout_log_id: logId,
+                exercise_id: block.exercise_id,
+                set_number: set.set_number,
+                weight: hasWeight ? Number(set.weight) : 0,
+                record: String(set.reps || '0').trim(),
+                side: set.side || 'both',
+                memo: set.memo || null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              });
+            }
+          });
+        });
+
+        set((state) => ({
+          workoutLogs: [...state.workoutLogs, newLog],
+          setRecords: [...state.setRecords, ...newSetRecords]
+        }));
+
+        return newLog;
+      },
+
 
       // --- Actions: Set Records ---
       addSetRecord: (workout_log_id, exercise_id, set_number, weight, record, side = 'both', memo = null) => {

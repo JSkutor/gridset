@@ -124,21 +124,21 @@ Current automated tests cover:
 - Shared state and local persistence live in `src/store/useWorkoutStore.js`.
 - UI components are in `src/components`.
 - `RoutineDetail.jsx` has been refactored and modularized into subcomponents in `src/components/routine/`.
-- **Maintainability Risks**:
-  - `useWorkoutStore.js` is over 1100 lines long, largely due to dummy data generation logic. This must be extracted.
-  - `App.jsx` handles too many responsibilities including global shortcuts and complex session rotation logic.
-  - `ExerciseInfo` and `PastLogs` both derive historical record summaries individually.
-  - `SetGrid` currently holds draft set inputs in component state (`blocks`). A "Finish Workout" / "Save Session" workflow is required to persist them to `workoutLogs` and `setRecords`.
+- **Maintainability Status**:
+  - `useWorkoutStore.js` has been successfully refactored (dummy data generator extracted into `src/data/dummyGenerator.js`).
+  - `App.jsx` responsibilities have been modularized using custom hooks (`useGlobalShortcuts.js` and `useSessionRotation.js`).
+  - `SetGrid` "Finish Workout" / "Save Session" workflow has been implemented to persist inputs to `workoutLogs` and `setRecords`.
 
 ## 10. Future Requirements
 - **Refactoring & Modularization**:
-  - Extract dummy data generation from `useWorkoutStore.js`.
-  - Extract global keyboard shortcuts and session rotation logic from `App.jsx`.
+  - [x] Extract dummy data generation from `useWorkoutStore.js` (Completed)
+  - [x] Extract global keyboard shortcuts and session rotation logic from `App.jsx` (Completed)
 - **Workout Execution**:
-  - Implement actual workout start/finish flow to persist Set tab entries into `workoutLogs` and `setRecords`.
+  - [x] Implement actual workout start/finish flow to persist Set tab entries into `workoutLogs` and `setRecords` (Completed)
   - Add exercise substitution for a single workout without modifying the saved routine template.
 - **Supabase Integration**:
   - Replace/sync local Zustand persistence with Supabase Postgres database.
   - Implement Auth, real-time sync, and remote data fetching.
 - **Packaging**:
   - Package the app as a native-feeling macOS app via Tauri.
+

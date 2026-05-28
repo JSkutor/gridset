@@ -16,7 +16,7 @@ const DEFAULT_EXERCISE_UNITS = {
   '플랭크': 'sec',
 };
 
-const getDefaultExerciseUnit = (name) => DEFAULT_EXERCISE_UNITS[name] || 'kg';
+export const getDefaultExerciseUnit = (name) => DEFAULT_EXERCISE_UNITS[name] || 'kg';
 
 // Default seed exercises with muscle and equipment info
 export const DEFAULT_EXERCISES = [

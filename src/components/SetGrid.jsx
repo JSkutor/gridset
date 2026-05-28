@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { Plus, ChevronDown } from 'lucide-react';
+import React, { useState, useMemo, useRef, useCallback, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { Plus, ChevronDown, Check } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
 import { getFormattedSessionName } from '../utils/sessionHelper';
@@ -65,24 +65,57 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
 
 // ─── SetGrid ──────────────────────────────────────────────────────────────────
 
-const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart }, ref) {
+const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart, onSaveSuccess }, ref) {
   const sessions         = useWorkoutStore((state) => state.sessions);
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
+  const saveWorkoutLog   = useWorkoutStore((state) => state.saveWorkoutLog);
 
+  const [startTime]      = useState(() => new Date().toISOString());
   const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises));
 
   // 현재 포커스된 세트 위치 (blockIndex, rowIndex)
   const [focusedSet, setFocusedSet] = useState({ blockIndex: 0, rowIndex: 0 });
 
+  const scrollContainerRef = useRef(null);
+  const exerciseHeaderRefs = useRef(new Map());
+  const lastScrolledBlockIndexRef = useRef(-1);
+
   // 현재 포커스된 세트의 memo를 파생해서 읽음
   const currentMemo = blocks[focusedSet.blockIndex]?.sets[focusedSet.rowIndex]?.memo ?? '';
+
+  // 포커스된 운동 종목(blockIndex)이 변경될 때 해당 종목 헤더로 부드럽게 스크롤 보정
+  useEffect(() => {
+    const blockIndex = focusedSet.blockIndex;
+    if (blockIndex === undefined || blockIndex === null) return;
+
+    if (blockIndex !== lastScrolledBlockIndexRef.current) {
+      lastScrolledBlockIndexRef.current = blockIndex;
+
+      const container = scrollContainerRef.current;
+      const headerElement = exerciseHeaderRefs.current.get(blockIndex);
+
+      if (container && headerElement) {
+        const containerRect = container.getBoundingClientRect();
+        const headerRect = headerElement.getBoundingClientRect();
+        const relativeTop = headerRect.top - containerRect.top + container.scrollTop;
+
+        // 24px 더 내려서 이전 운동 블록의 경계선(border)을 완벽하게 감추고 헤더 텍스트를 상단에 정렬
+        const targetScrollTop = blockIndex === 0 ? 0 : Math.max(0, relativeTop + 24);
+
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth',
+        });
+      }
+    }
+  }, [focusedSet.blockIndex]);
 
   // Flat row list — drives both the table render and totalRows for the hook.
   const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
   const totalRows = flatRows.length;
 
-  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst } = useGridNavigation(totalRows);
+  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst } = useGridNavigation(totalRows + 1);
 
   // Ref for the session note textarea (for C-key toggle)
   const noteRef = useRef(null);
@@ -200,6 +233,23 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
     isNoteFocused: () => document.activeElement === noteRef.current,
   }), [focusLastOrFirst]);
 
+  const hasEnteredData = useMemo(() => {
+    return blocks.some((block) =>
+      block.sets.some((set) =>
+        String(set.reps ?? '').trim() !== ''
+      )
+    );
+  }, [blocks]);
+
+  const handleSaveWorkout = () => {
+    if (!hasEnteredData) return;
+    saveWorkoutLog(session.id, blocks, startTime);
+    if (onSaveSuccess) {
+      onSaveSuccess();
+    }
+  };
+
+
   // ── render ─────────────────────────────────────────────────────────────────
 
   if (!session) {
@@ -255,23 +305,34 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
             )}
           </div>
         </div>
+
+        {/* Unified fixed handwriting header bar */}
+        <div style={{ display: 'flex', width: '100%', height: '38px', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
+          <div style={{ width: '60px', display: 'flex', justifyContent: 'center' }}>
+            <span className="grid-header-badge">Set</span>
+          </div>
+          {COLUMNS.map(({ field, header }) => (
+            <div key={field} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+              <span className="grid-header-badge grid-header-badge--accent">
+                {header}
+              </span>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Grid */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px 22px' }}>
+      <div
+        ref={scrollContainerRef}
+        style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px 22px' }}
+      >
         <div className="spreadsheet-wrap">
           <table className={`spreadsheet ${isKeyboardActive ? 'keyboard-navigating' : ''}`}>
             <thead>
-              <tr>
-                <th className="col-set">
-                  <span className="grid-header-badge">Set</span>
-                </th>
-                {COLUMNS.map(({ field, header }) => (
-                  <th key={field}>
-                    <span className="grid-header-badge grid-header-badge--accent">
-                      {header}
-                    </span>
-                  </th>
+              <tr style={{ height: 0 }}>
+                <th className="col-set" style={{ height: 0, padding: 0, border: 'none' }}></th>
+                {COLUMNS.map(({ field }) => (
+                  <th key={field} style={{ height: 0, padding: 0, border: 'none' }}></th>
                 ))}
               </tr>
             </thead>
@@ -283,7 +344,15 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                 return (
                   <React.Fragment key={block.id}>
                     {/* Exercise Subheader Row */}
-                    <tr>
+                    <tr
+                      ref={(el) => {
+                        if (el) {
+                          exerciseHeaderRefs.current.set(blockIndex, el);
+                        } else {
+                          exerciseHeaderRefs.current.delete(blockIndex);
+                        }
+                      }}
+                    >
                       <td
                         colSpan={3}
                         style={{
@@ -342,6 +411,34 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                   </React.Fragment>
                 );
               })}
+
+              {/* 맨 마지막 행으로 운동 완료 버튼 추가 */}
+              <tr className="workout-complete-tr">
+                <td colSpan={3} className="workout-complete-td">
+                  <button
+                    ref={(el) => {
+                      getCellRef(totalRows, 0)(el);
+                      getCellRef(totalRows, 1)(el);
+                    }}
+                    onClick={handleSaveWorkout}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleSaveWorkout();
+                        return;
+                      }
+                      handleKeyDown(e, totalRows, 0);
+                    }}
+                    className="workout-complete-row-btn"
+                    disabled={!hasEnteredData}
+                    type="button"
+                    title="운동 완료 저장"
+                  >
+                    <Check size={14} />
+                    운동 완료 (Save) ⚡
+                  </button>
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
