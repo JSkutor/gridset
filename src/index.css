@@ -1209,6 +1209,10 @@ body::before {
   outline: none;
 }
 
+.setting-stepper-value:focus-visible {
+  box-shadow: 0 0 0 1px var(--border-focus), 0 0 10px rgba(122, 162, 247, 0.12);
+}
+
 /* ─── Routine Add Exercise Button Styling ─── */
 .routine-add-exercise-btn {
   transition: all 0.15s ease !important;
@@ -1256,4 +1260,3 @@ body::before {
 .add-set-row-btn-minimal:active {
   background: rgba(122, 162, 247, 0.08);
 }
-

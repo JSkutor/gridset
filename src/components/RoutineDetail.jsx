@@ -1,10 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { Plus, Trash2, Dumbbell, ListPlus, Timer, Clock, RotateCcw, Pencil, Check, X } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import ExerciseAutocomplete from './ExerciseAutocomplete';
 import { getSessionDayLetter, getFormattedSessionName } from '../utils/sessionHelper';
 
-export default function RoutineDetail() {
+const RoutineDetail = forwardRef((props, ref) => {
   const routines = useWorkoutStore(state => state.routines);
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
@@ -58,8 +58,46 @@ export default function RoutineDetail() {
   // Keyboard navigation refs
   const sessionRefs = useRef([]);
   const exerciseRefs = useRef([]);
-  const targetRecordInputRef = useRef(null);
+  const settingControlRefs = useRef([]);
   const addExerciseBtnRef = useRef(null);
+
+  const focusSettingControl = (index) => {
+    setTimeout(() => {
+      settingControlRefs.current[index]?.focus();
+      settingControlRefs.current[index]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, 0);
+  };
+
+  const focusSelectedExerciseRow = () => {
+    const idx = activeSessionExercises.findIndex(se => se.id === selectedExerciseId);
+    if (idx !== -1) {
+      setTimeout(() => {
+        exerciseRefs.current[idx]?.focus();
+        exerciseRefs.current[idx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 0);
+    }
+  };
+
+  const handleSettingValueKeyDown = (e, index, onIncrement, onDecrement) => {
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (e.metaKey || e.ctrlKey) {
+        onIncrement();
+      } else if (index > 0) {
+        focusSettingControl(index - 1);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (e.metaKey || e.ctrlKey) {
+        onDecrement();
+      } else if (index < 3) {
+        focusSettingControl(index + 1);
+      }
+    } else if (e.key === 'ArrowLeft' || e.key === 'Escape') {
+      e.preventDefault();
+      focusSelectedExerciseRow();
+    }
+  };
 
   // Keyboard navigation session handler
   const handleSessionKeyDown = (e, index) => {
@@ -216,10 +254,7 @@ export default function RoutineDetail() {
       }
       case 'ArrowRight': {
         e.preventDefault();
-        if (targetRecordInputRef.current) {
-          targetRecordInputRef.current.focus();
-          targetRecordInputRef.current.select();
-        }
+        focusSettingControl(0);
         break;
       }
       case 'Enter':
@@ -259,6 +294,41 @@ export default function RoutineDetail() {
   const selectedExercise = selectedExerciseLink
     ? exercises.find(e => e.id === selectedExerciseLink.exercise_id)
     : null;
+
+  useImperativeHandle(ref, () => ({
+    focusFirstSessionFirstExercise: () => {
+      if (effectiveRoutineSessions.length > 0) {
+        const firstSession = effectiveRoutineSessions[0];
+        
+        setSelectedSessionId(firstSession.id);
+        setSelectedExerciseId(null);
+        setIsAddingExerciseRow(false);
+
+        setTimeout(() => {
+          const exercisesOfFirstSession = sessionExercises
+            .filter(se => se.session_id === firstSession.id)
+            .sort((a, b) => a.order - b.order);
+
+          if (exercisesOfFirstSession.length > 0) {
+            const firstEx = exercisesOfFirstSession[0];
+            setSelectedExerciseId(firstEx.id);
+            setTimeout(() => {
+              if (exerciseRefs.current[0]) {
+                exerciseRefs.current[0].focus();
+                exerciseRefs.current[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+              }
+            }, 50);
+          } else {
+            // Fallback: focus first session row
+            if (sessionRefs.current[0]) {
+              sessionRefs.current[0].focus();
+              sessionRefs.current[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }
+        }, 50);
+      }
+    }
+  }));
 
 
 
@@ -1199,12 +1269,13 @@ export default function RoutineDetail() {
                   </div>
                 )}
 
-                {/* 3. 플러스 추가 버튼 */}
                 {!isAddingExerciseRow && (
                   <button
                     ref={addExerciseBtnRef}
                     className="routine-add-exercise-btn"
+                    onFocus={() => setSelectedExerciseId(null)}
                     onClick={() => {
+                      setSelectedExerciseId(null);
                       setIsAddingExerciseRow(true);
                       setTimeout(() => {
                         const scrollContainer = document.querySelector('.exercise-scroll-container');
@@ -1330,52 +1401,36 @@ export default function RoutineDetail() {
                     min={1}
                     max={20}
                     onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'target_sets', v)}
+                    valueRef={(el) => { settingControlRefs.current[0] = el; }}
+                    onValueKeyDown={(e) => handleSettingValueKeyDown(
+                      e,
+                      0,
+                      () => handleUpdateTarget(selectedExerciseLink.id, 'target_sets', Math.min(20, (selectedExerciseLink.target_sets || 3) + 1)),
+                      () => handleUpdateTarget(selectedExerciseLink.id, 'target_sets', Math.max(1, (selectedExerciseLink.target_sets || 3) - 1))
+                    )}
                     unit="세트"
                   />
                 </SettingRow>
 
                 {/* 목표 횟수 */}
                 <SettingRow label="목표 횟수" icon={<RotateCcw size={13} />}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <input
-                      ref={targetRecordInputRef}
-                      type="text"
-                      value={selectedExerciseLink.target_record || '10'}
-                      onChange={(e) => handleUpdateTarget(selectedExerciseLink.id, 'target_record', e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'ArrowLeft' || e.key === 'Escape' || e.key === 'Enter') {
-                          e.preventDefault();
-                          if (e.key === 'Enter') {
-                            e.target.blur();
-                          }
-                          const idx = activeSessionExercises.findIndex(se => se.id === selectedExerciseId);
-                          if (idx !== -1) {
-                            setTimeout(() => {
-                              exerciseRefs.current[idx]?.focus();
-                              exerciseRefs.current[idx]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-                            }, 0);
-                          }
-                        }
-                      }}
-                      style={{
-                        width: '56px',
-                        padding: '6px 8px',
-                        textAlign: 'center',
-                        background: 'rgba(255,255,255,0.04)',
-                        border: '1px solid var(--border)',
-                        borderRadius: '6px',
-                        color: 'var(--text-bright)',
-                        fontSize: '15px',
-                        fontWeight: '600',
-                        fontFamily: 'inherit',
-                        outline: 'none',
-                        transition: 'border-color 0.15s',
-                      }}
-                      onFocus={e => e.target.style.borderColor = 'var(--border-focus)'}
-                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
-                    />
-                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>회</span>
-                  </div>
+                  <NumberStepper
+                    value={Number.parseInt(selectedExerciseLink.target_record, 10) || 10}
+                    min={1}
+                    max={999}
+                    onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'target_record', String(v))}
+                    valueRef={(el) => { settingControlRefs.current[1] = el; }}
+                    onValueKeyDown={(e) => {
+                      const reps = Number.parseInt(selectedExerciseLink.target_record, 10) || 10;
+                      handleSettingValueKeyDown(
+                        e,
+                        1,
+                        () => handleUpdateTarget(selectedExerciseLink.id, 'target_record', String(Math.min(999, reps + 1))),
+                        () => handleUpdateTarget(selectedExerciseLink.id, 'target_record', String(Math.max(1, reps - 1)))
+                      );
+                    }}
+                    unit="회"
+                  />
                 </SettingRow>
 
                 {/* 세트 간 휴식시간 */}
@@ -1383,6 +1438,16 @@ export default function RoutineDetail() {
                   <RestTimeStepper
                     value={selectedExerciseLink.rest_between_sets ?? 90}
                     onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'rest_between_sets', v)}
+                    valueRef={(el) => { settingControlRefs.current[2] = el; }}
+                    onValueKeyDown={(e) => {
+                      const rest = selectedExerciseLink.rest_between_sets ?? 90;
+                      handleSettingValueKeyDown(
+                        e,
+                        2,
+                        () => handleUpdateTarget(selectedExerciseLink.id, 'rest_between_sets', Math.min(600, rest + 15)),
+                        () => handleUpdateTarget(selectedExerciseLink.id, 'rest_between_sets', Math.max(0, rest - 15))
+                      );
+                    }}
                   />
                 </SettingRow>
 
@@ -1391,34 +1456,18 @@ export default function RoutineDetail() {
                   <RestTimeStepper
                     value={selectedExerciseLink.rest_after_exercise ?? 120}
                     onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'rest_after_exercise', v)}
+                    valueRef={(el) => { settingControlRefs.current[3] = el; }}
+                    onValueKeyDown={(e) => {
+                      const rest = selectedExerciseLink.rest_after_exercise ?? 120;
+                      handleSettingValueKeyDown(
+                        e,
+                        3,
+                        () => handleUpdateTarget(selectedExerciseLink.id, 'rest_after_exercise', Math.min(600, rest + 15)),
+                        () => handleUpdateTarget(selectedExerciseLink.id, 'rest_after_exercise', Math.max(0, rest - 15))
+                      );
+                    }}
                   />
                 </SettingRow>
-
-                {/* 삭제 버튼 */}
-                <button
-                  onClick={() => handleDeleteExercise(selectedExerciseLink.id)}
-                  style={{
-                    marginTop: '8px',
-                    padding: '9px 0',
-                    background: 'transparent',
-                    border: '1px solid rgba(247,122,122,0.2)',
-                    borderRadius: '7px',
-                    color: 'rgba(247,122,122,0.7)',
-                    cursor: 'pointer',
-                    fontSize: '13px',
-                    fontFamily: 'inherit',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '6px',
-                    transition: 'all 0.15s',
-                  }}
-                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(247,122,122,0.08)'; e.currentTarget.style.borderColor = 'rgba(247,122,122,0.4)'; }}
-                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(247,122,122,0.2)'; }}
-                >
-                  <Trash2 size={13} />
-                  운동 제거
-                </button>
               </div>
             ) : (
               /* 운동 미선택 시: 안내 */
@@ -1438,7 +1487,9 @@ export default function RoutineDetail() {
       </div>
     </div>
   );
-}
+});
+
+export default RoutineDetail;
 
 /* ── 공통 설정 행 컴포넌트 ── */
 function SettingRow({ label, icon, children }) {
@@ -1463,7 +1514,7 @@ function SettingRow({ label, icon, children }) {
 }
 
 /* ── 숫자 스테퍼 ── */
-function NumberStepper({ value, min, max, onChange, unit }) {
+function NumberStepper({ value, min, max, onChange, unit, valueRef, onValueKeyDown }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <button
@@ -1485,17 +1536,32 @@ function NumberStepper({ value, min, max, onChange, unit }) {
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+        aria-label={`${unit} 줄이기`}
       >
         −
       </button>
-      <span style={{
-        fontSize: '17px',
-        fontWeight: '700',
-        color: 'var(--text-bright)',
-        minWidth: '28px',
-        textAlign: 'center',
-        fontVariantNumeric: 'tabular-nums',
-      }}>
+      <span
+        ref={valueRef}
+        className="setting-stepper-value"
+        tabIndex={0}
+        role="spinbutton"
+        aria-valuemin={min}
+        aria-valuemax={max}
+        aria-valuenow={value}
+        aria-label={`${unit} 값`}
+        onKeyDown={onValueKeyDown}
+        style={{
+          fontSize: '17px',
+          fontWeight: '700',
+          color: 'var(--text-bright)',
+          minWidth: '28px',
+          textAlign: 'center',
+          fontVariantNumeric: 'tabular-nums',
+          borderRadius: '6px',
+          outline: 'none',
+          cursor: 'default',
+        }}
+      >
         {value}
       </span>
       <button
@@ -1517,6 +1583,7 @@ function NumberStepper({ value, min, max, onChange, unit }) {
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+        aria-label={`${unit} 늘리기`}
       >
         +
       </button>
@@ -1526,7 +1593,7 @@ function NumberStepper({ value, min, max, onChange, unit }) {
 }
 
 /* ── 휴식시간 스테퍼 (15초 단위) ── */
-function RestTimeStepper({ value, onChange }) {
+function RestTimeStepper({ value, onChange, valueRef, onValueKeyDown }) {
   const STEP = 15;
   const MIN = 0;
   const MAX = 600;
@@ -1559,18 +1626,33 @@ function RestTimeStepper({ value, onChange }) {
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+        aria-label="휴식시간 줄이기"
       >
         −
       </button>
-      <span style={{
-        fontSize: '15px',
-        fontWeight: '700',
-        color: 'var(--text-bright)',
-        minWidth: '52px',
-        textAlign: 'center',
-        fontVariantNumeric: 'tabular-nums',
-        letterSpacing: '-0.02em',
-      }}>
+      <span
+        ref={valueRef}
+        className="setting-stepper-value"
+        tabIndex={0}
+        role="spinbutton"
+        aria-valuemin={MIN}
+        aria-valuemax={MAX}
+        aria-valuenow={value}
+        aria-label="휴식시간 값"
+        onKeyDown={onValueKeyDown}
+        style={{
+          fontSize: '15px',
+          fontWeight: '700',
+          color: 'var(--text-bright)',
+          minWidth: '52px',
+          textAlign: 'center',
+          fontVariantNumeric: 'tabular-nums',
+          letterSpacing: '-0.02em',
+          borderRadius: '6px',
+          outline: 'none',
+          cursor: 'default',
+        }}
+      >
         {fmt(value)}
       </span>
       <button
@@ -1592,6 +1674,7 @@ function RestTimeStepper({ value, onChange }) {
         }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
         onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+        aria-label="휴식시간 늘리기"
       >
         +
       </button>

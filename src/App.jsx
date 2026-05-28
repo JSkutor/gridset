@@ -36,6 +36,7 @@ function App() {
 
   // Ref for SetGrid imperative focus methods (C-key toggle)
   const setGridRef = useRef(null);
+  const routineDetailRef = useRef(null);
   
   const generateDummyData = useWorkoutStore(state => state.generateDummyData);
   const clearAllData = useWorkoutStore(state => state.clearAllData);
@@ -68,7 +69,7 @@ function App() {
         return;
       }
 
-      // ── ` / ₩ key: focus into grid / toggle grid ↔ memo ──
+      // ── ` / ₩ key: focus into grid / toggle grid ↔ memo / routine focus ──
       // event.code 'Backquote' captures both ` (en) and ₩ (ko) regardless of IME.
       // This key is never a normal text input so we always intercept it safely.
       const hasModifier = event.metaKey || event.ctrlKey || event.altKey;
@@ -76,6 +77,7 @@ function App() {
         event.preventDefault();
         event.stopImmediatePropagation();
         const grid = setGridRef.current;
+        const routineDetail = routineDetailRef.current;
         if (grid) {
           const activeEl = document.activeElement;
           const isInGrid = activeEl && activeEl.closest && activeEl.closest('.spreadsheet');
@@ -87,6 +89,8 @@ function App() {
           } else {
             grid.focusGrid();
           }
+        } else if (routineDetail) {
+          routineDetail.focusFirstSessionFirstExercise();
         }
         return;
       }
@@ -216,7 +220,7 @@ function App() {
 
       {activeTab === 'R' && (
         <main style={{ flex: 1, padding: '24px 32px 32px 32px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
-          <RoutineDetail />
+          <RoutineDetail ref={routineDetailRef} />
         </main>
       )}
       
