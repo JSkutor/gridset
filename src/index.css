@@ -365,15 +365,14 @@ body::before {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 226px;
   gap: 24px;
-  height: 100%;
-  min-height: 0;
+  min-height: 100%;
+  align-items: start;
 }
 
 .log-content {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 0;
   gap: 16px;
 }
 
@@ -410,6 +409,8 @@ body::before {
 }
 
 .log-sidebar {
+  position: sticky;
+  top: 0;
   align-self: start;
   display: flex;
   flex-direction: column;
@@ -475,8 +476,6 @@ body::before {
 }
 
 .log-view-grid {
-  flex: 1;
-  min-height: 0;
   display: grid;
   gap: 20px;
 }
@@ -487,23 +486,28 @@ body::before {
 
 .log-view-grid--exercise {
   grid-template-columns: 300px minmax(0, 1fr);
+  align-items: start;
 }
 
 .log-exercise-main {
-  min-height: 0;
   display: grid;
-  grid-template-columns: 320px minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-columns: minmax(320px, 0.9fr) minmax(0, 1.35fr);
+  grid-template-rows: auto auto;
   gap: 20px;
+  align-items: stretch;
+  align-content: start;
 }
 
 .log-exercise-main .log-calendar-panel {
-  grid-row: 1 / span 2;
+  grid-row: auto;
+}
+
+.log-exercise-main .log-full-record-panel {
+  grid-column: 1 / -1;
 }
 
 .log-panel {
   min-width: 0;
-  min-height: 0;
   background: rgba(10, 12, 22, 0.20);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -689,9 +693,7 @@ body::before {
 }
 
 .log-scroll-area {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
   padding: 14px;
 }
 
@@ -792,10 +794,10 @@ body::before {
 
 .log-set-grid-wrap {
   min-width: 0;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(7, 8, 14, 0.18);
-  overflow: hidden;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  overflow: visible;
 }
 
 .log-set-grid {
@@ -804,10 +806,22 @@ body::before {
   table-layout: fixed;
 }
 
+.log-set-col {
+  width: 60px;
+}
+
+.log-set-grid.has-memo .log-value-col {
+  width: 104px;
+}
+
+.log-set-grid.has-memo .log-memo-col {
+  width: auto;
+}
+
 .log-set-grid th,
 .log-set-grid td {
-  height: 34px;
-  padding: 0 8px;
+  height: 48px;
+  padding: 0 12px;
   border-bottom: 1px solid var(--border);
   text-align: center;
 }
@@ -818,8 +832,9 @@ body::before {
 }
 
 .log-set-grid thead th {
-  height: 28px;
-  background: rgba(255, 255, 255, 0.018);
+  height: 38px;
+  border-bottom: 1px solid var(--border);
+  background: transparent;
 }
 
 .log-set-grid tbody tr:last-child td {
@@ -827,18 +842,39 @@ body::before {
 }
 
 .log-set-grid .cell-set {
-  width: 54px;
+  width: 60px;
   color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 
 .log-set-grid .cell-value {
+  color: var(--text-bright);
+  font-size: 18px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.log-set-grid .cell-memo {
+  padding: 8px 14px;
   color: var(--text-main);
   font-size: 13px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.log-set-memo-chip {
+  display: block;
+  padding-left: 10px;
+  border-left: 2px solid rgba(158, 206, 106, 0.28);
+  color: var(--text-main);
+  overflow-wrap: anywhere;
+}
+
+.log-set-memo-empty {
+  color: rgba(107, 115, 148, 0.45);
 }
 
 .log-grid-header-badge {
@@ -847,7 +883,7 @@ body::before {
   justify-content: center;
   color: var(--text-muted);
   font-family: 'Caveat', 'Nanum Pen Script', cursive;
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 500;
   letter-spacing: 0;
   line-height: 1;
@@ -862,17 +898,30 @@ body::before {
   transform: rotate(2deg);
 }
 
+.log-grid-header-badge--memo {
+  color: #9ece6a;
+  transform: rotate(-1deg);
+}
+
 .log-set-grid-wrap--compact .log-set-grid th,
 .log-set-grid-wrap--compact .log-set-grid td {
-  height: 30px;
+  height: 42px;
 }
 
 .log-set-grid-wrap--compact .log-set-grid thead th {
-  height: 24px;
+  height: 34px;
 }
 
 .log-set-grid-wrap--compact .log-grid-header-badge {
+  font-size: 19px;
+}
+
+.log-set-grid-wrap--compact .log-set-grid .cell-value {
   font-size: 16px;
+}
+
+.log-set-grid-wrap--compact .log-set-grid .cell-memo {
+  font-size: 12px;
 }
 
 .log-note-list {
@@ -930,9 +979,7 @@ body::before {
 }
 
 .log-exercise-picker-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  overflow: visible;
   padding: 8px;
 }
 
@@ -1039,6 +1086,7 @@ body::before {
 }
 
 .log-chart-empty {
+  flex: 1;
   min-height: 220px;
   display: flex;
   align-items: center;
@@ -1099,15 +1147,8 @@ body::before {
   font-size: 11px;
 }
 
-.log-inline-note {
-  margin: 0;
-  color: var(--text-main);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 .log-routine-panel {
-  height: 100%;
+  height: auto;
 }
 
 .log-routine-scroll {

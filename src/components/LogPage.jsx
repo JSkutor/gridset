@@ -9,7 +9,6 @@ import {
   Dumbbell,
   History,
   ListChecks,
-  NotebookText,
   Timer,
 } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
@@ -132,13 +131,6 @@ function formatMetric(value, exercise) {
   return `${rounded.toLocaleString()} kg`;
 }
 
-function getRecordColumnLabel(exercise) {
-  const unit = getExerciseUnit(exercise);
-  if (unit === 'sec') return '초';
-  if (unit === 'reps') return '회';
-  return 'Reps';
-}
-
 function formatSetCellValue(value) {
   return value === null || value === undefined || value === '' ? '0' : value;
 }
@@ -208,9 +200,17 @@ function StatPill({ label, value, icon: Icon }) {
 }
 
 function SetRecordTable({ records, exercise, compact = false }) {
+  const hasMemo = records.some((record) => record.memo && record.memo.trim());
+
   return (
     <div className={`log-set-grid-wrap ${compact ? 'log-set-grid-wrap--compact' : ''}`}>
-      <table className="log-set-grid" aria-label={`${exercise?.name || '운동'} 세트 기록`}>
+      <table className={`log-set-grid ${hasMemo ? 'has-memo' : ''}`} aria-label={`${exercise?.name || '운동'} 세트 기록`}>
+        <colgroup>
+          <col className="log-set-col" />
+          <col className="log-value-col" />
+          <col className="log-value-col" />
+          {hasMemo && <col className="log-memo-col" />}
+        </colgroup>
         <thead>
           <tr>
             <th>
@@ -220,10 +220,13 @@ function SetRecordTable({ records, exercise, compact = false }) {
               <span className="log-grid-header-badge log-grid-header-badge--accent">kg</span>
             </th>
             <th>
-              <span className="log-grid-header-badge log-grid-header-badge--accent">
-                {getRecordColumnLabel(exercise)}
-              </span>
+              <span className="log-grid-header-badge log-grid-header-badge--accent">reps</span>
             </th>
+            {hasMemo && (
+              <th>
+                <span className="log-grid-header-badge log-grid-header-badge--memo">memo</span>
+              </th>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -232,6 +235,15 @@ function SetRecordTable({ records, exercise, compact = false }) {
               <td className="cell-set">{record.set_number}</td>
               <td className="cell-value">{formatSetCellValue(record.weight)}</td>
               <td className="cell-value">{formatSetCellValue(record.record)}</td>
+              {hasMemo && (
+                <td className="cell-memo">
+                  {record.memo && record.memo.trim() ? (
+                    <span className="log-set-memo-chip">{record.memo.trim()}</span>
+                  ) : (
+                    <span className="log-set-memo-empty">-</span>
+                  )}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -327,18 +339,6 @@ function DailyLogCard({ log, records, exercisesById, session, routine }) {
     });
   }, [records, exercisesById]);
 
-  const notes = records
-    .filter((record) => record.memo && record.memo.trim())
-    .map((record) => {
-      const exercise = exercisesById.get(record.exercise_id);
-      return {
-        id: record.id,
-        exerciseName: exercise?.name || '운동',
-        setNumber: record.set_number,
-        memo: record.memo.trim(),
-      };
-    });
-
   return (
     <article className="log-record-card">
       <div className="log-record-card-header">
@@ -368,21 +368,6 @@ function DailyLogCard({ log, records, exercisesById, session, routine }) {
           </div>
         ))}
       </div>
-
-      {notes.length > 0 && (
-        <div className="log-note-list">
-          <div className="log-note-title">
-            <NotebookText size={13} />
-            메모
-          </div>
-          {notes.map((note) => (
-            <p key={note.id}>
-              <strong>{note.exerciseName} {note.setNumber}세트</strong>
-              <span>{note.memo}</span>
-            </p>
-          ))}
-        </div>
-      )}
     </article>
   );
 }
@@ -635,9 +620,6 @@ function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerci
                         <span>{log.records.length}세트 · {formatDateTime(log.startTime)}</span>
                       </div>
                       <SetRecordTable records={log.records} exercise={selectedExercise} compact />
-                      {log.notes.length > 0 && (
-                        <p className="log-inline-note">{log.notes.join(' · ')}</p>
-                      )}
                     </div>
                   </article>
                 ))}
@@ -819,9 +801,6 @@ export default function LogPage() {
         }
 
         const value = records.reduce((sum, record) => sum + getRecordMetric(record, exercise), 0);
-        const notes = records
-          .filter((record) => record.memo && record.memo.trim())
-          .map((record) => `${record.set_number}세트 ${record.memo.trim()}`);
 
         const summary = byExercise.get(exerciseId);
         summary.logs.push({
@@ -832,7 +811,6 @@ export default function LogPage() {
           startTime: log.start_time,
           value,
           records: records.slice().sort((a, b) => a.set_number - b.set_number),
-          notes,
         });
         summary.setCount += records.length;
         summary.totalMetric += value;

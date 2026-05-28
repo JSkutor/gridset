@@ -237,7 +237,7 @@ function App() {
       )}
       
       {activeTab === 'L' && (
-        <main style={{ flex: 1, minHeight: 0, padding: '24px 32px 32px 32px', overflow: 'hidden' }}>
+        <main style={{ flex: 1, minHeight: 0, padding: '24px 32px 32px 32px', overflowX: 'hidden', overflowY: 'auto' }}>
           <LogPage />
         </main>
       )}
