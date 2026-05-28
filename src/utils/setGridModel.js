@@ -27,6 +27,7 @@ export function buildInitialBlocks(session, sessionExercises, exercises, createS
           set_number: i + 1,
           weight: '',
           reps: '',
+          memo: '',
         })),
       };
     });

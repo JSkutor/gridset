@@ -12,7 +12,7 @@ import {
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
-function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus }) {
+function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus }) {
   const { globalIndex, blockIndex, rowIndex, set_number, exerciseId } = row;
 
   return (
@@ -34,7 +34,10 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
                 onTabAtEnd: () => addRow(blockIndex),
               })
             }
-            onFocus={() => onExerciseFocus?.(exerciseId)}
+            onFocus={() => {
+              onExerciseFocus?.(exerciseId);
+              onSetFocus?.(blockIndex, rowIndex);
+            }}
             placeholder="—"
           />
         </td>
@@ -51,7 +54,12 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
   const exercises        = useWorkoutStore((state) => state.exercises);
 
   const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises));
-  const [note,   setNote]   = useState('');
+
+  // 현재 포커스된 세트 위치 (blockIndex, rowIndex)
+  const [focusedSet, setFocusedSet] = useState({ blockIndex: 0, rowIndex: 0 });
+
+  // 현재 포커스된 세트의 memo를 파생해서 읽음
+  const currentMemo = blocks[focusedSet.blockIndex]?.sets[focusedSet.rowIndex]?.memo ?? '';
 
   // Flat row list — drives both the table render and totalRows for the hook.
   const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
@@ -78,10 +86,30 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
     );
   };
 
+  // 현재 포커스된 세트의 memo 업데이트
+  const updateMemo = (value) => {
+    const { blockIndex, rowIndex } = focusedSet;
+    setBlocks((prev) =>
+      prev.map((b, bi) =>
+        bi !== blockIndex ? b : {
+          ...b,
+          sets: b.sets.map((s, si) =>
+            si !== rowIndex ? s : { ...s, memo: value },
+          ),
+        },
+      ),
+    );
+  };
+
+  const handleSetFocus = useCallback((blockIndex, rowIndex) => {
+    setFocusedSet({ blockIndex, rowIndex });
+  }, []);
+
   const addRow = (blockIndex) => {
     // Compute the new row's global index *before* updating state so we can
     // call requestFocus in the same event-handler batch.
     const newGlobalIdx = computeNewGlobalIndex(blocks, blockIndex);
+    const newRowIndex  = blocks[blockIndex].sets.length; // 추가될 행의 rowIndex
 
     setBlocks((prev) =>
       prev.map((b, i) =>
@@ -94,12 +122,14 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
               set_number: b.sets.length + 1,
               weight: '',
               reps: '',
+              memo: '',
             },
           ],
         },
       ),
     );
 
+    setFocusedSet({ blockIndex, rowIndex: newRowIndex });
     requestFocus(newGlobalIdx);
   };
 
@@ -194,6 +224,7 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
                         updateRow={updateRow}
                         addRow={addRow}
                         onExerciseFocus={onExerciseFocus}
+                        onSetFocus={handleSetFocus}
                       />
                     ))}
 
@@ -228,14 +259,14 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
         </div>
       </div>
 
-      {/* Session note */}
+      {/* Set memo — 현재 포커스된 세트의 메모 */}
       <div style={{ padding: '18px 22px', borderTop: '1px solid var(--border)' }}>
         <textarea
           ref={noteRef}
           className="note-textarea"
-          placeholder="Add a note for this session..."
-          value={note}
-          onChange={(e) => setNote(e.target.value)}
+          placeholder="이 세트에 대한 메모..."
+          value={currentMemo}
+          onChange={(e) => updateMemo(e.target.value)}
         />
       </div>
     </div>
