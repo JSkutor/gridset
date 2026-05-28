@@ -14,8 +14,7 @@ GridSet is a desktop-first workout logging web app for MacBook users who want a 
 ## 3. Implemented Navigation
 - Top-centered tab navigation with `R` Routine, `S` Set, and `L` Log.
 - Default active tab is `S`.
-- `R` and `S` are implemented.
-- `L` is reserved for a future workout log overview and is currently empty.
+- `R`, `S`, and `L` are implemented.
 
 ## 4. Implemented Routine Tab (`R`)
 The Routine tab manages reusable workout templates.
@@ -49,14 +48,14 @@ The Routine tab manages reusable workout templates.
   - Target record, such as reps or seconds.
   - Rest time between sets.
   - Rest time after exercise.
+  - Unilateral (편측성) setting configuration display.
 
 ## 5. Implemented Set Tab (`S`)
 The Set tab is the current workout-entry surface.
 
 ### 5.1 Session Selection
-- Shows a routine/session selector when sessions exist.
-- Defaults to the first available session when no explicit selection exists.
-- Displays session names using `Day X : Session Name`.
+- Compact dropdown session selector in the Set Grid header.
+- Defaults to the next session in rotation based on recent workout logs.
 
 ### 5.2 Exercise Information Panel
 - Shows selected exercise name.
@@ -66,6 +65,7 @@ The Set tab is the current workout-entry surface.
 
 ### 5.3 Set Input Grid
 - Renders one set-entry block per exercise in the selected session template.
+- Supports Unilateral exercises (L/R side designation per set).
 - Initial row count follows each exercise's target set count.
 - Supports numeric-only weight and reps input.
 - Supports Excel-like keyboard movement through cells:
@@ -75,8 +75,8 @@ The Set tab is the current workout-entry surface.
   - Tab/Shift+Tab moves through cells.
 - Tab on the final rendered cell adds a new set row.
 - The manual `세트 추가` button adds another set row for an exercise.
-- Exercise focus updates the side panels.
-- Session note text area exists, but note persistence is not implemented yet.
+- Per-set memo input at the bottom of the grid, updated as the user focuses on different sets.
+- Rest timer starts upon set completion.
 
 ### 5.4 Past Logs Panel
 - Shows completed historical set records for the selected exercise.
@@ -86,28 +86,24 @@ The Set tab is the current workout-entry surface.
 
 ## 6. Exercise Search
 - Uses a local offline exercise dictionary.
-- Supports Korean name search.
-- Supports Korean chosung search, such as `ㅂㅊ`.
-- Supports partial Hangul composition matching, useful while Korean IME input is in progress.
+- Supports Korean name search, chosung search (`ㅂㅊ`), and partial Hangul composition matching.
 - Supports English names and synonyms.
-- Ranks exact matches, prefixes, chosung matches, English matches, and synonyms.
 - Limits autocomplete suggestions to 8 results.
-- Allows custom exercise creation with selected primary muscle and equipment.
+- Allows custom exercise creation with selected primary muscle, equipment, and unilateral flag.
 
 ## 7. State And Data
 - Global app state is managed with Zustand.
 - Persisted local entities:
   - `currentUser`
-  - `exercises`
+  - `exercises` (includes `is_unilateral`)
   - `routines`
   - `sessions`
   - `sessionExercises`
   - `workoutLogs`
-  - `setRecords`
+  - `setRecords` (includes `side` field: 'L', 'R', 'both')
 - Debug utilities are available in the UI:
   - Generate dummy data.
   - Clear all data.
-- Current dummy data includes routines, sessions, session exercises, workout logs, and completed set records for chart/history views.
 
 ## 8. Testing Requirements
 Current automated tests cover:
@@ -123,26 +119,26 @@ Current automated tests cover:
   - Routine duplication.
   - Workout log deletion cascading to set records.
 
-Run tests with:
-
-```bash
-npm test
-```
-
 ## 9. Current Architecture Notes
-- Pure utility logic lives in `src/utils`, including Hangul search, session naming, exercise search, and set grid model helpers.
+- Pure utility logic lives in `src/utils`.
 - Shared state and local persistence live in `src/store/useWorkoutStore.js`.
 - UI components are in `src/components`.
-- The largest current maintainability risk is `RoutineDetail.jsx`, which combines routine/session/exercise UI, keyboard behavior, inline styling, and template update logic in one large component.
-- `ExerciseInfo` and `PastLogs` both derive historical record summaries; this aggregation should eventually move into shared selectors.
-- `SetGrid` currently holds draft set inputs in component state only. A save/complete workout workflow is still required before the app can be considered a full workout logger.
+- `RoutineDetail.jsx` has been refactored and modularized into subcomponents in `src/components/routine/`.
+- **Maintainability Risks**:
+  - `useWorkoutStore.js` is over 1100 lines long, largely due to dummy data generation logic. This must be extracted.
+  - `App.jsx` handles too many responsibilities including global shortcuts and complex session rotation logic.
+  - `ExerciseInfo` and `PastLogs` both derive historical record summaries individually.
+  - `SetGrid` currently holds draft set inputs in component state (`blocks`). A "Finish Workout" / "Save Session" workflow is required to persist them to `workoutLogs` and `setRecords`.
 
 ## 10. Future Requirements
-- Persist actual Set tab entries into `workoutLogs` and `setRecords`.
-- Implement workout start/finish flow and set completion states.
-- Implement the `L` Log tab for browsing historical workout sessions.
-- Add persistent session notes and set-level memos.
-- Add rest timer and notifications based on per-exercise rest settings.
-- Add exercise substitution for a single workout without modifying the saved routine template.
-- Replace or sync local persistence with Supabase.
-- Package the app as a native-feeling macOS app via Tauri.
+- **Refactoring & Modularization**:
+  - Extract dummy data generation from `useWorkoutStore.js`.
+  - Extract global keyboard shortcuts and session rotation logic from `App.jsx`.
+- **Workout Execution**:
+  - Implement actual workout start/finish flow to persist Set tab entries into `workoutLogs` and `setRecords`.
+  - Add exercise substitution for a single workout without modifying the saved routine template.
+- **Supabase Integration**:
+  - Replace/sync local Zustand persistence with Supabase Postgres database.
+  - Implement Auth, real-time sync, and remote data fetching.
+- **Packaging**:
+  - Package the app as a native-feeling macOS app via Tauri.
