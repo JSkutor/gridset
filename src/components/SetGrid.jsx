@@ -2,69 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Plus } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
-
-// ─── AddSetButton ─────────────────────────────────────────────────────────────
-
-const ADD_BUTTON_STYLE = {
-  position: 'absolute',
-  bottom: '-10px',
-  left: '50%',
-  transform: 'translateX(-50%)',
-  zIndex: 10,
-  width: '20px',
-  height: '20px',
-  borderRadius: '50%',
-  background: 'var(--bg-deep)',
-  border: '1px solid var(--border)',
-  color: 'var(--text-muted)',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  cursor: 'pointer',
-  padding: 0,
-  transition: 'all 0.2s',
-  opacity: 0.35,
-};
-
-function AddSetButton({ onClick }) {
-  const onEnter = (e) =>
-    Object.assign(e.currentTarget.style, {
-      color: 'var(--text-bright)',
-      borderColor: 'var(--accent)',
-      opacity: '1',
-      transform: 'translateX(-50%) scale(1.1)',
-    });
-  const onLeave = (e) =>
-    Object.assign(e.currentTarget.style, {
-      color: 'var(--text-muted)',
-      borderColor: 'var(--border)',
-      opacity: '0.35',
-      transform: 'translateX(-50%) scale(1)',
-    });
-
-  return (
-    <button
-      onClick={onClick}
-      style={ADD_BUTTON_STYLE}
-      onMouseEnter={onEnter}
-      onMouseLeave={onLeave}
-      title="세트 추가"
-    >
-      <Plus size={10} />
-    </button>
-  );
-}
+import { getFormattedSessionName } from '../utils/sessionHelper';
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
 function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus }) {
-  const { globalIndex, blockIndex, rowIndex, set_number, isLastSet, exerciseId } = row;
+  const { globalIndex, blockIndex, rowIndex, set_number, exerciseId } = row;
 
   return (
     <tr>
-      <td className="cell-set" style={{ position: 'relative' }}>
+      <td className="cell-set">
         {set_number}
-        {isLastSet && <AddSetButton onClick={() => addRow(blockIndex)} />}
       </td>
 
       {COLUMNS.map(({ colIndex, field }) => (
@@ -160,6 +108,7 @@ function computeNewGlobalIndex(blocks, blockIndex) {
 // ─── SetGrid ──────────────────────────────────────────────────────────────────
 
 export default function SetGrid({ session, onExerciseFocus }) {
+  const sessions         = useWorkoutStore((state) => state.sessions);
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
 
@@ -247,7 +196,7 @@ export default function SetGrid({ session, onExerciseFocus }) {
       {/* Header */}
       <div style={{ padding: '20px 22px 0 22px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
-          {session.name}
+          {getFormattedSessionName(session, sessions)}
         </h2>
       </div>
 
@@ -257,24 +206,82 @@ export default function SetGrid({ session, onExerciseFocus }) {
           <table className={`spreadsheet ${isKeyboardActive ? 'keyboard-navigating' : ''}`}>
             <thead>
               <tr>
-                <th className="col-set">Set</th>
+                <th className="col-set">
+                  <span className="grid-header-badge">Set</span>
+                </th>
                 {COLUMNS.map(({ field, header }) => (
-                  <th key={field}>{header}</th>
+                  <th key={field}>
+                    <span className="grid-header-badge grid-header-badge--accent">
+                      {header}
+                    </span>
+                  </th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {flatRows.map((row) => (
-                <SetRow
-                  key={row.id}
-                  row={row}
-                  getCellRef={getCellRef}
-                  handleKeyDown={handleKeyDown}
-                  updateRow={updateRow}
-                  addRow={addRow}
-                  onExerciseFocus={onExerciseFocus}
-                />
-              ))}
+              {blocks.map((block, blockIndex) => {
+                const blockRows = flatRows.filter((r) => r.blockIndex === blockIndex);
+                const isFirst = blockIndex === 0;
+
+                return (
+                  <React.Fragment key={block.id}>
+                    {/* Exercise Subheader Row */}
+                    <tr>
+                      <td
+                        colSpan={3}
+                        style={{
+                          textAlign: 'left',
+                          padding: isFirst ? '20px 14px 10px 14px' : '40px 14px 10px 14px',
+                          color: 'var(--text-bright)',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          borderBottom: 'none',
+                          letterSpacing: '-0.02em',
+                        }}
+                      >
+                        {block.exercise_name}
+                      </td>
+                    </tr>
+
+                    {/* Set Rows for this Exercise */}
+                    {blockRows.map((row) => (
+                      <SetRow
+                        key={row.id}
+                        row={row}
+                        getCellRef={getCellRef}
+                        handleKeyDown={handleKeyDown}
+                        updateRow={updateRow}
+                        addRow={addRow}
+                        onExerciseFocus={onExerciseFocus}
+                      />
+                    ))}
+
+                    {/* Centered Add Set Button Row */}
+                    <tr>
+                      <td
+                        colSpan={3}
+                        style={{
+                          textAlign: 'center',
+                          height: '36px',
+                          padding: 0,
+                          borderBottom: '1px solid var(--border)',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        <button
+                          onClick={() => addRow(blockIndex)}
+                          className="add-set-row-btn-minimal"
+                          type="button"
+                          title="세트 추가"
+                        >
+                          <Plus size={12} style={{ marginRight: '4px' }} />
+                          세트 추가
+                        </button>
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>

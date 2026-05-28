@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import { Plus, Trash2, Dumbbell, ListPlus, Timer, Clock, RotateCcw, Pencil, Check, X } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import ExerciseAutocomplete from './ExerciseAutocomplete';
+import { getSessionDayLetter, getFormattedSessionName } from '../utils/sessionHelper';
 
 export default function RoutineDetail() {
   const routines = useWorkoutStore(state => state.routines);
@@ -251,8 +252,7 @@ export default function RoutineDetail() {
     .sort((a, b) => a.order - b.order);
 
   // 현재 세션의 인덱스 및 Day 문자 (Day A, B, C...)
-  const activeSessionIndex = effectiveRoutineSessions.findIndex(s => s.id === (effectiveSession?.id || null));
-  const dayLetter = activeSessionIndex !== -1 ? String.fromCharCode(65 + (activeSessionIndex % 26)) : '';
+  const dayLetter = getSessionDayLetter(effectiveSession, sessions);
 
   // 선택된 운동 상세
   const selectedExerciseLink = activeSessionExercises.find(se => se.id === selectedExerciseId);
@@ -797,7 +797,7 @@ export default function RoutineDetail() {
               effectiveRoutineSessions.map((s, index) => {
                 const isActive = s.id === effectiveSessionId;
                 const count = sessionExercises.filter(se => se.session_id === s.id).length;
-                const dayLetter = String.fromCharCode(65 + (index % 26));
+                const dayLetter = getSessionDayLetter(s, sessions);
                 const isEditing = editingSessionId === s.id;
 
                 if (isEditing) {
@@ -913,7 +913,7 @@ export default function RoutineDetail() {
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                       }}>
-                        Day {dayLetter} : {s.name}
+                        {getFormattedSessionName(s, sessions)}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                         운동 {count}개

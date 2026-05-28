@@ -6,6 +6,7 @@ import PastLogs from './components/PastLogs'
 import RoutineDetail from './components/RoutineDetail'
 import { useWorkoutStore } from './store/useWorkoutStore'
 import { User } from 'lucide-react'
+import { getFormattedSessionName } from './utils/sessionHelper'
 import './index.css'
 
 function App() {
@@ -84,9 +85,10 @@ function App() {
           >
             {sessions.map(s => {
               const r = routines.find(rt => rt.id === s.routine_id);
+              const formattedName = getFormattedSessionName(s, sessions);
               return (
                 <option key={s.id} value={s.id}>
-                  {r ? `[${r.name}] ${s.name}` : s.name}
+                  {r ? `[${r.name}] ${formattedName}` : formattedName}
                 </option>
               );
             })}
