@@ -4,6 +4,7 @@ import ExerciseInfo from './components/ExerciseInfo'
 import SetGrid from './components/SetGrid'
 import PastLogs from './components/PastLogs'
 import RoutineDetail from './components/RoutineDetail'
+import LogPage from './components/LogPage'
 import { useWorkoutStore } from './store/useWorkoutStore'
 import { User } from 'lucide-react'
 import { getFormattedSessionName } from './utils/sessionHelper'
@@ -219,7 +220,11 @@ function App() {
         </main>
       )}
       
-      {activeTab === 'L' && <main style={{ flex: 1 }}></main>}
+      {activeTab === 'L' && (
+        <main style={{ flex: 1, minHeight: 0, padding: '24px 32px 32px 32px', overflow: 'hidden' }}>
+          <LogPage />
+        </main>
+      )}
     </div>
   )
 }
