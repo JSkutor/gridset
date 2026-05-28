@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Navigation from './components/Navigation'
 import ExerciseInfo from './components/ExerciseInfo'
 import SetGrid from './components/SetGrid'
@@ -9,9 +9,32 @@ import { User } from 'lucide-react'
 import { getFormattedSessionName } from './utils/sessionHelper'
 import './index.css'
 
+const NAV_TAB_IDS = ['R', 'S', 'L'];
+const NAV_SHORTCUTS = {
+  KeyQ: 'R',
+  KeyW: 'S',
+  KeyE: 'L',
+};
+const RETIRED_NAV_SHORTCUT_KEYS = new Set(['1', '2', '3']);
+
+function isEditableTarget(target) {
+  if (!(target instanceof HTMLElement)) return false;
+
+  const tagName = target.tagName.toLowerCase();
+  return (
+    target.isContentEditable ||
+    tagName === 'input' ||
+    tagName === 'textarea' ||
+    tagName === 'select'
+  );
+}
+
 function App() {
   const [activeTab, setActiveTab] = useState('S')
   const [activeExerciseId, setActiveExerciseId] = useState(null)
+
+  // Ref for SetGrid imperative focus methods (C-key toggle)
+  const setGridRef = useRef(null);
   
   const generateDummyData = useWorkoutStore(state => state.generateDummyData);
   const clearAllData = useWorkoutStore(state => state.clearAllData);
@@ -32,6 +55,75 @@ function App() {
   }, [selectedSession, sessionExercises]);
 
   const effectiveActiveExerciseId = activeExerciseId || defaultExerciseId;
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (event) => {
+      // ── ESC: blur any focused element so q/w/e shortcuts become available ──
+      if (event.key === 'Escape') {
+        if (document.activeElement && document.activeElement !== document.body) {
+          event.preventDefault();
+          document.activeElement.blur();
+        }
+        return;
+      }
+
+      // ── ` / ₩ key: focus into grid / toggle grid ↔ memo ──
+      // event.code 'Backquote' captures both ` (en) and ₩ (ko) regardless of IME.
+      // This key is never a normal text input so we always intercept it safely.
+      const hasModifier = event.metaKey || event.ctrlKey || event.altKey;
+      if (!hasModifier && event.code === 'Backquote') {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        const grid = setGridRef.current;
+        if (grid) {
+          const activeEl = document.activeElement;
+          const isInGrid = activeEl && activeEl.closest && activeEl.closest('.spreadsheet');
+          const isInNote = grid.isNoteFocused();
+          if (isInNote) {
+            grid.focusGrid();
+          } else if (isInGrid) {
+            grid.focusNote();
+          } else {
+            grid.focusGrid();
+          }
+        }
+        return;
+      }
+
+      if (event.defaultPrevented || isEditableTarget(event.target)) return;
+
+      if (!hasModifier && RETIRED_NAV_SHORTCUT_KEYS.has(event.key)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      const directTab = hasModifier ? null : NAV_SHORTCUTS[event.code];
+
+      if (directTab) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setActiveTab(directTab);
+        return;
+      }
+
+      if ((event.metaKey || event.ctrlKey) && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        setActiveTab((currentTab) => {
+          const currentIndex = Math.max(0, NAV_TAB_IDS.indexOf(currentTab));
+          const direction = event.key === 'ArrowRight' ? 1 : -1;
+          const nextIndex = (currentIndex + direction + NAV_TAB_IDS.length) % NAV_TAB_IDS.length;
+          return NAV_TAB_IDS[nextIndex];
+        });
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown, true);
+    };
+  }, []);
 
   const setGridKey = useMemo(() => {
     if (!selectedSession) return 'empty-session';
@@ -112,6 +204,7 @@ function App() {
         <main className="main-grid">
           <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
           <SetGrid 
+            ref={setGridRef}
             key={setGridKey}
             session={selectedSession} 
             onExerciseFocus={setActiveExerciseId} 

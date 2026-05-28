@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
 import { Plus } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
@@ -45,7 +45,7 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
 
 // ─── SetGrid ──────────────────────────────────────────────────────────────────
 
-export default function SetGrid({ session, onExerciseFocus }) {
+const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
   const sessions         = useWorkoutStore((state) => state.sessions);
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
@@ -57,7 +57,10 @@ export default function SetGrid({ session, onExerciseFocus }) {
   const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
   const totalRows = flatRows.length;
 
-  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive } = useGridNavigation(totalRows);
+  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst } = useGridNavigation(totalRows);
+
+  // Ref for the session note textarea (for C-key toggle)
+  const noteRef = useRef(null);
 
   // ── mutations ──────────────────────────────────────────────────────────────
 
@@ -99,6 +102,13 @@ export default function SetGrid({ session, onExerciseFocus }) {
 
     requestFocus(newGlobalIdx);
   };
+
+  // Expose imperative methods to parent (for ` / ₩ key focus toggle)
+  useImperativeHandle(ref, () => ({
+    focusGrid: () => focusLastOrFirst(),
+    focusNote: () => noteRef.current?.focus(),
+    isNoteFocused: () => document.activeElement === noteRef.current,
+  }), [focusLastOrFirst]);
 
   // ── render ─────────────────────────────────────────────────────────────────
 
@@ -221,6 +231,7 @@ export default function SetGrid({ session, onExerciseFocus }) {
       {/* Session note */}
       <div style={{ padding: '18px 22px', borderTop: '1px solid var(--border)' }}>
         <textarea
+          ref={noteRef}
           className="note-textarea"
           placeholder="Add a note for this session..."
           value={note}
@@ -229,4 +240,6 @@ export default function SetGrid({ session, onExerciseFocus }) {
       </div>
     </div>
   );
-}
+});
+
+export default SetGrid;

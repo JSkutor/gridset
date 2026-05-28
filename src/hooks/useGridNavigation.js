@@ -44,6 +44,9 @@ export function useGridNavigation(totalRows) {
   /** Track if user is navigating using the keyboard to temporarily suppress hover styles */
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
+  /** Track the last focused cell so we can restore focus with the C key */
+  const lastFocusedCell = useRef({ row: 0, col: 0 });
+
   // Keep the refs array sized to the current row count.
   useEffect(() => {
     gridRefs.current = gridRefs.current.slice(0, totalRows);
@@ -77,7 +80,11 @@ export function useGridNavigation(totalRows) {
   // ── internals ───────────────────────────────────────────────────────────────
 
   const focusCell = useCallback((row, col) => {
-    gridRefs.current[row]?.[col]?.focus();
+    const el = gridRefs.current[row]?.[col];
+    if (el) {
+      el.focus();
+      lastFocusedCell.current = { row, col };
+    }
   }, []);
 
   // ── public API ──────────────────────────────────────────────────────────────
@@ -170,5 +177,20 @@ export function useGridNavigation(totalRows) {
     setPendingFocusIndex(rowIndex);
   }, []);
 
-  return { getCellRef, handleKeyDown, requestFocus, isKeyboardActive };
+  /**
+   * Focus the last-interacted cell, or (0, 0) if none.
+   * Used by the "C" shortcut to jump into the grid.
+   */
+  const focusLastOrFirst = useCallback(() => {
+    const { row, col } = lastFocusedCell.current;
+    const el = gridRefs.current[row]?.[col];
+    if (el) {
+      el.focus();
+    } else {
+      // fallback: focus first available cell
+      gridRefs.current[0]?.[0]?.focus();
+    }
+  }, []);
+
+  return { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst };
 }

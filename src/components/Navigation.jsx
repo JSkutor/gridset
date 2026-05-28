@@ -2,9 +2,9 @@ import { Dumbbell, ListChecks, History } from "lucide-react";
 
 export default function Navigation({ activeTab, setActiveTab }) {
   const tabs = [
-    { id: "R", label: "Routine", icon: <ListChecks size={16} /> },
-    { id: "S", label: "Set", icon: <Dumbbell size={16} /> },
-    { id: "L", label: "Log", icon: <History size={16} /> },
+    { id: "R", label: "Routine", shortcut: "Q", icon: <ListChecks size={16} /> },
+    { id: "S", label: "Set", shortcut: "W", icon: <Dumbbell size={16} /> },
+    { id: "L", label: "Log", shortcut: "E", icon: <History size={16} /> },
   ];
 
   return (
@@ -36,6 +36,8 @@ export default function Navigation({ activeTab, setActiveTab }) {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
+              title={`${tab.label} (${tab.shortcut})`}
+              aria-keyshortcuts={tab.shortcut}
               style={{
                 display: "flex",
                 alignItems: "center",
