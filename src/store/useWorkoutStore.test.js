@@ -174,3 +174,38 @@ test('deleteWorkoutLog removes its set records', () => {
   assert.equal(useWorkoutStore.getState().workoutLogs.some((item) => item.id === log.id), false);
   assert.equal(useWorkoutStore.getState().setRecords.some((item) => item.id === setRecord.id), false);
 });
+
+test('generateDummyData creates diverse non-exercise seed data', () => {
+  const initialExerciseCount = useWorkoutStore.getState().exercises.length;
+
+  useWorkoutStore.getState().generateDummyData();
+
+  const state = useWorkoutStore.getState();
+  const sessionsByRoutine = state.routines.map((routine) =>
+    state.sessions.filter((session) => session.routine_id === routine.id),
+  );
+
+  assert.ok(state.routines.length >= 3);
+  assert.equal(sessionsByRoutine.every((sessions) => sessions.length >= 4), true);
+  assert.ok(state.sessionExercises.length > state.sessions.length);
+  assert.ok(state.workoutLogs.some((log) => log.session_id === null));
+  assert.ok(state.workoutLogs.some((log) => log.end_time === null));
+  assert.ok(state.setRecords.some((record) => record.is_completed === false));
+  assert.ok(state.setRecords.some((record) => record.memo));
+  assert.ok(state.exercises.length >= initialExerciseCount);
+});
+
+test('clearAllData clears templates and logs without removing exercise source data', () => {
+  useWorkoutStore.getState().generateDummyData();
+  const exerciseCount = useWorkoutStore.getState().exercises.length;
+
+  useWorkoutStore.getState().clearAllData();
+
+  const state = useWorkoutStore.getState();
+  assert.equal(state.routines.length, 0);
+  assert.equal(state.sessions.length, 0);
+  assert.equal(state.sessionExercises.length, 0);
+  assert.equal(state.workoutLogs.length, 0);
+  assert.equal(state.setRecords.length, 0);
+  assert.equal(state.exercises.length, exerciseCount);
+});

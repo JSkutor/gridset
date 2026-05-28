@@ -58,6 +58,18 @@ function App() {
 
   const effectiveActiveExerciseId = activeExerciseId || defaultExerciseId;
 
+  const handleGenerateDummyData = () => {
+    generateDummyData();
+    setSelectedSessionId(null);
+    setActiveExerciseId(null);
+  };
+
+  const handleClearAllData = () => {
+    clearAllData();
+    setSelectedSessionId(null);
+    setActiveExerciseId(null);
+  };
+
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
       // ── ESC: blur any focused element so q/w/e shortcuts become available ──
@@ -195,10 +207,10 @@ function App() {
           </select>
         )}
         
-        <button onClick={generateDummyData} style={{ padding: '6px 10px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-main)' }}>
+        <button onClick={handleGenerateDummyData} style={{ padding: '6px 10px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-main)' }}>
           더미 데이터 생성 🚀
         </button>
-        <button onClick={clearAllData} style={{ padding: '6px 10px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-main)' }}>
+        <button onClick={handleClearAllData} style={{ padding: '6px 10px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-main)' }}>
           초기화 🗑️
         </button>
       </div>
