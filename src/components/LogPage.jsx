@@ -13,7 +13,7 @@ import {
   Timer,
 } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
-import { getFormattedSessionName } from '../utils/sessionHelper';
+import { getFormattedSessionName, getSessionColor } from '../utils/sessionHelper';
 
 const LOG_VIEWS = [
   {
@@ -36,7 +36,7 @@ const LOG_VIEWS = [
   },
 ];
 
-const WEEKDAYS = ['월', '화', '수', '목', '금', '토', '일'];
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 function toDate(value) {
   if (!value) return null;
@@ -134,9 +134,9 @@ function formatMetric(value, exercise) {
 
 function buildCalendarCells(monthDate) {
   const firstDay = getMonthStart(monthDate);
-  const mondayOffset = (firstDay.getDay() + 6) % 7;
+  const sundayOffset = firstDay.getDay();
   const cursor = new Date(firstDay);
-  cursor.setDate(cursor.getDate() - mondayOffset);
+  cursor.setDate(cursor.getDate() - sundayOffset);
 
   return Array.from({ length: 42 }, (_, index) => {
     const date = new Date(cursor);
@@ -160,6 +160,22 @@ function groupByDate(items, getDate) {
   }, new Map());
 }
 
+function getCalendarMarkerColors(dayItems, sessionsById) {
+  const seen = new Set();
+  const colors = [];
+
+  dayItems.forEach((log) => {
+    const session = sessionsById.get(log.session_id);
+    const key = session?.id || 'free-workout';
+    if (seen.has(key)) return;
+
+    seen.add(key);
+    colors.push(session ? getSessionColor(session) : '#6B7394');
+  });
+
+  return colors;
+}
+
 function EmptyState({ title, body }) {
   return (
     <div className="log-empty-state">
@@ -180,12 +196,8 @@ function StatPill({ label, value, icon: Icon }) {
   );
 }
 
-function LogCalendar({ monthDate, selectedDateKey, activityByDate, onSelectDate, onMonthChange }) {
+function LogCalendar({ monthDate, selectedDateKey, activityByDate, sessionsById, onSelectDate, onMonthChange }) {
   const cells = useMemo(() => buildCalendarCells(monthDate), [monthDate]);
-  const maxCount = useMemo(() => {
-    const counts = [...activityByDate.values()].map((items) => items.length);
-    return Math.max(1, ...counts);
-  }, [activityByDate]);
 
   return (
     <section className="log-panel log-calendar-panel">
@@ -214,7 +226,8 @@ function LogCalendar({ monthDate, selectedDateKey, activityByDate, onSelectDate,
         {cells.map((cell) => {
           const dayItems = activityByDate.get(cell.key) || [];
           const count = dayItems.length;
-          const intensity = count === 0 ? 0 : Math.max(0.22, count / maxCount);
+          const markerColors = getCalendarMarkerColors(dayItems, sessionsById);
+          const primaryMarkerColor = markerColors[0] || '#6B7394';
           const isSelected = selectedDateKey === cell.key;
 
           return (
@@ -230,11 +243,21 @@ function LogCalendar({ monthDate, selectedDateKey, activityByDate, onSelectDate,
               onClick={() => onSelectDate(cell.date)}
               title={`${formatDate(cell.date, { month: 'long', day: 'numeric' })} 기록 ${count}개`}
               style={{
-                '--activity-alpha': intensity,
+                '--activity-border': `${primaryMarkerColor}4D`,
               }}
             >
               <span>{cell.date.getDate()}</span>
-              {count > 0 && <i>{count}</i>}
+              {count > 0 && (
+                <span className="log-calendar-activity-marks" aria-hidden="true">
+                  {markerColors.slice(0, 3).map((color, markerIndex) => (
+                    <span
+                      key={`${color}-${markerIndex}`}
+                      className="log-calendar-check-mark"
+                      style={{ '--session-color': color }}
+                    />
+                  ))}
+                </span>
+              )}
             </button>
           );
         })}
@@ -351,6 +374,7 @@ function DailyLogView({ logSummaries, logsByDate, selectedDate, setSelectedDate,
         monthDate={monthDate}
         selectedDateKey={selectedDateKey}
         activityByDate={logsByDate}
+        sessionsById={sessionsById}
         onSelectDate={handleSelectDate}
         onMonthChange={(delta) => {
           const next = new Date(monthDate);
@@ -473,7 +497,7 @@ function ExerciseProgressChart({ points, exercise }) {
   );
 }
 
-function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerciseId, exerciseMonthDate, setExerciseMonthDate }) {
+function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerciseId, exerciseMonthDate, setExerciseMonthDate, sessionsById }) {
   const selectedSummary = exerciseSummaries.find((summary) => summary.exercise.id === selectedExerciseId) || exerciseSummaries[0] || null;
   const selectedExercise = selectedSummary?.exercise || null;
   const activityByDate = useMemo(() => {
@@ -525,6 +549,7 @@ function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerci
               monthDate={exerciseMonthDate}
               selectedDateKey=""
               activityByDate={activityByDate}
+              sessionsById={sessionsById}
               onSelectDate={(date) => setExerciseMonthDate(getMonthStart(date))}
               onMonthChange={(delta) => {
                 const next = new Date(exerciseMonthDate);
@@ -770,6 +795,7 @@ export default function LogPage() {
         summary.logs.push({
           key: `${log.id}:${exerciseId}`,
           workoutLogId: log.id,
+          session_id: log.session_id,
           date: log.startDate,
           startTime: log.start_time,
           value,
@@ -916,6 +942,7 @@ export default function LogPage() {
             setSelectedExerciseId={setSelectedExerciseId}
             exerciseMonthDate={exerciseMonthDate}
             setExerciseMonthDate={setExerciseMonthDate}
+            sessionsById={sessionsById}
           />
         )}
 

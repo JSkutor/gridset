@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
+import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
 
 const generateUUID = () => crypto.randomUUID();
 
@@ -156,6 +157,8 @@ export const useWorkoutStore = create(
       addSession: (routine_id, name) => {
         const { currentUser, sessions } = get();
         const routineSessions = sessions.filter(s => s.routine_id === routine_id);
+        if (routineSessions.length >= MAX_SESSIONS_PER_ROUTINE) return null;
+
         const nextOrder = routineSessions.length + 1;
         const newSession = {
           id: generateUUID(),

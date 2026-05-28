@@ -1,5 +1,6 @@
 import test, { beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
+import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
 
 function createMemoryStorage() {
   const entries = new Map();
@@ -53,6 +54,21 @@ test('routines, sessions, and session exercises keep template defaults', () => {
   );
   assert.equal(link.rest_between_sets, 90);
   assert.equal(link.rest_after_exercise, 120);
+});
+
+test('addSession caps each routine at seven sessions', () => {
+  const routine = useWorkoutStore.getState().addRoutine('Capped');
+  const created = Array.from({ length: MAX_SESSIONS_PER_ROUTINE }, (_, index) =>
+    useWorkoutStore.getState().addSession(routine.id, `Day ${index + 1}`),
+  );
+  const overflow = useWorkoutStore.getState().addSession(routine.id, 'Overflow');
+
+  assert.equal(created.every(Boolean), true);
+  assert.equal(overflow, null);
+  assert.equal(
+    useWorkoutStore.getState().sessions.filter((session) => session.routine_id === routine.id).length,
+    MAX_SESSIONS_PER_ROUTINE,
+  );
 });
 
 test('deleteSession cascades links and compacts sibling order', () => {
