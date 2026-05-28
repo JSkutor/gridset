@@ -1,34 +1,42 @@
 import { useMemo, useState } from 'react';
 import { BarChart3, Calendar, ListChecks } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
+import { useTabNavigation } from '../hooks/useTabNavigation';
 import { getFormattedSessionName, getSessionColor } from '../utils/sessionHelper';
 import { toDate, getMonthStart, groupByDate, getRecordMetric } from '../utils/logFormatters';
 import DailyLogView from './log/DailyLogView';
 import ExerciseView from './log/ExerciseView';
 import RoutineTimeline from './log/RoutineTimeline';
 
-// ─── Tab Definitions ─────────────────────────────────────────
+// ─── Log View Definitions ───────────────────────────────────────────────────
 
 const LOG_VIEWS = [
   {
     id: 'daily',
     label: '일일',
+    shortcut: 'A',
     description: '달력과 하루 기록',
     icon: Calendar,
   },
   {
     id: 'exercise',
     label: '운동별',
+    shortcut: 'S',
     description: '종목별 추이와 전체 기록',
     icon: BarChart3,
   },
   {
     id: 'routine',
     label: '루틴 로그',
+    shortcut: 'D',
     description: '루틴 시작과 구성 변화',
     icon: ListChecks,
   },
 ];
+
+// Shortcut map: KeyA → daily, KeyS → exercise, KeyD → routine
+const LOG_VIEW_SHORTCUTS = { KeyA: 'daily', KeyS: 'exercise', KeyD: 'routine' };
+const LOG_VIEW_IDS = LOG_VIEWS.map((v) => v.id);
 
 // ─── Data Preparation ────────────────────────────────────────
 
@@ -185,7 +193,7 @@ function buildFreeWorkoutSummary(logSummaries, exercisesById) {
 
 // ─── LogPage Component ───────────────────────────────────────
 
-export default function LogPage() {
+export default function LogPage({ isActive = true }) {
   // ── Store Selectors ──
   const workoutLogs = useWorkoutStore((state) => state.workoutLogs);
   const setRecords = useWorkoutStore((state) => state.setRecords);
@@ -196,6 +204,14 @@ export default function LogPage() {
 
   // ── Tab State ──
   const [activeView, setActiveView] = useState('daily');
+
+  // ── A / S / D: switch log sub-tabs (only while Log page is visible) ──
+  useTabNavigation({
+    tabIds: LOG_VIEW_IDS,
+    shortcuts: LOG_VIEW_SHORTCUTS,
+    setActiveTab: setActiveView,
+    isActive,
+  });
 
   // ── Lookup Maps ──
   const exercisesById = useMemo(() => new Map(exercises.map((ex) => [ex.id, ex])), [exercises]);
@@ -224,20 +240,9 @@ export default function LogPage() {
   const [exerciseMonthDate, setExerciseMonthDate] = useState(getMonthStart(initialDate));
   const [selectedExerciseId, setSelectedExerciseId] = useState(exerciseSummaries[0]?.exercise.id || null);
 
-  // ── Active Tab Metadata ──
-  const activeMeta = LOG_VIEWS.find((view) => view.id === activeView) || LOG_VIEWS[0];
-
   return (
     <div className="log-page">
       <div className="log-content">
-        <header className="log-page-header">
-          <div>
-            <span className="log-kicker">Log</span>
-            <h1>{activeMeta.label}</h1>
-          </div>
-          <p>{activeMeta.description}</p>
-        </header>
-
         {activeView === 'daily' && (
           <DailyLogView
             logSummaries={logSummaries}
@@ -274,19 +279,22 @@ export default function LogPage() {
       <aside className="log-sidebar" aria-label="로그 보기">
         {LOG_VIEWS.map((view) => {
           const Icon = view.icon;
-          const isActive = activeView === view.id;
+          const isActiveView = activeView === view.id;
           return (
             <button
               key={view.id}
               type="button"
-              className={`log-sidebar-button ${isActive ? 'is-active' : ''}`}
+              className={`log-sidebar-button ${isActiveView ? 'is-active' : ''}`}
               onClick={() => setActiveView(view.id)}
+              title={`${view.label} (${view.shortcut})`}
+              aria-keyshortcuts={view.shortcut}
             >
               <Icon size={17} />
               <span>
                 <strong>{view.label}</strong>
                 <i>{view.description}</i>
               </span>
+              <kbd className="log-sidebar-shortcut">{view.shortcut}</kbd>
             </button>
           );
         })}

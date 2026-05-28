@@ -7,6 +7,7 @@ import RoutineDetail from './components/RoutineDetail'
 import LogPage from './components/LogPage'
 import RestTimer from './components/RestTimer'
 import { useWorkoutStore } from './store/useWorkoutStore'
+import { useTabNavigation } from './hooks/useTabNavigation'
 import { User } from 'lucide-react'
 import { getFormattedSessionName } from './utils/sessionHelper'
 import './index.css'
@@ -17,7 +18,10 @@ const NAV_SHORTCUTS = {
   KeyW: 'S',
   KeyE: 'L',
 };
+
+// Retired number-key shortcuts (silenced to avoid accidental browser actions)
 const RETIRED_NAV_SHORTCUT_KEYS = new Set(['1', '2', '3']);
+
 
 function isEditableTarget(target) {
   if (!(target instanceof HTMLElement)) return false;
@@ -45,13 +49,75 @@ function App() {
   const routines = useWorkoutStore(state => state.routines);
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
+  const workoutLogs = useWorkoutStore(state => state.workoutLogs);
 
   const [selectedSessionId, setSelectedSessionId] = useState(null);
 
-  const selectedSession = useMemo(
-    () => sessions.find(s => s.id === selectedSessionId) || sessions[0] || null,
-    [sessions, selectedSessionId]
-  );
+  // 1. 최신 루틴 (완료된 수행 로그의 세션 기준 -> 없으면 수정일/생성일 최신 루틴)
+  const latestRoutine = useMemo(() => {
+    if (routines.length === 0) return null;
+
+    // session_id가 매핑된 운동 로그를 수행 시작 최신순으로 정렬
+    const completedLogs = [...workoutLogs]
+      .filter(log => log.session_id)
+      .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+
+    if (completedLogs.length > 0) {
+      const latestSessionId = completedLogs[0].session_id;
+      const latestSession = sessions.find(s => s.id === latestSessionId);
+      if (latestSession) {
+        const routineOfLatestSession = routines.find(r => r.id === latestSession.routine_id);
+        if (routineOfLatestSession) return routineOfLatestSession;
+      }
+    }
+
+    // 수행 로그가 없는 경우: 생성/수정일이 가장 최신인 루틴
+    return [...routines].sort((a, b) => {
+      const timeA = new Date(a.updated_at || a.created_at).getTime();
+      const timeB = new Date(b.updated_at || b.created_at).getTime();
+      return timeB - timeA;
+    })[0];
+  }, [routines, sessions, workoutLogs]);
+
+  // 2. 최신 루틴에 포함된 세션들 (session_order 기준 순서 정렬)
+  const latestRoutineSessions = useMemo(() => {
+    if (!latestRoutine) return [];
+    return sessions
+      .filter(s => s.routine_id === latestRoutine.id)
+      .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+  }, [latestRoutine, sessions]);
+
+  // 3. 최근 수행한 세션의 다음 세션 로테이션 (기본값은 첫 세션인 Day A)
+  const nextDefaultSession = useMemo(() => {
+    if (latestRoutineSessions.length === 0) return null;
+
+    const sessionIds = new Set(latestRoutineSessions.map(s => s.id));
+    
+    // 최신 루틴 세션들 중 최근 수행한 로그 조회
+    const routineLogs = workoutLogs
+      .filter(log => log.session_id && sessionIds.has(log.session_id))
+      .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
+
+    if (routineLogs.length > 0) {
+      const lastSessionId = routineLogs[0].session_id;
+      const lastIndex = latestRoutineSessions.findIndex(s => s.id === lastSessionId);
+      if (lastIndex !== -1) {
+        const nextIndex = (lastIndex + 1) % latestRoutineSessions.length;
+        return latestRoutineSessions[nextIndex];
+      }
+    }
+
+    return latestRoutineSessions[0] || null;
+  }, [latestRoutineSessions, workoutLogs]);
+
+  // 4. 활성화할 세션 결정
+  const selectedSession = useMemo(() => {
+    if (selectedSessionId) {
+      const found = latestRoutineSessions.find(s => s.id === selectedSessionId);
+      if (found) return found;
+    }
+    return nextDefaultSession || latestRoutineSessions[0] || null;
+  }, [selectedSessionId, latestRoutineSessions, nextDefaultSession]);
 
   const defaultExerciseId = useMemo(() => {
     if (!selectedSession) return null;
@@ -138,9 +204,17 @@ function App() {
     };
   }, [restTimer]);
 
+  // ── Q / W / E: switch top-level tabs ────────────────────────────────────
+  useTabNavigation({
+    tabIds: NAV_TAB_IDS,
+    shortcuts: NAV_SHORTCUTS,
+    setActiveTab,
+  });
+
+  // ── Miscellaneous global shortcuts (Escape, Backquote, Cmd+Arrow, retired 1/2/3) ──
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
-      // ── ESC: blur any focused element so q/w/e shortcuts become available ──
+      // ESC: blur any focused element so shortcuts become available again.
       if (event.key === 'Escape') {
         if (document.activeElement && document.activeElement !== document.body) {
           event.preventDefault();
@@ -149,7 +223,7 @@ function App() {
         return;
       }
 
-      // ── ` / ₩ key: focus into grid / toggle grid ↔ memo / routine focus ──
+      // ` / ₩ key: focus into grid / toggle grid ↔ memo / routine focus.
       // event.code 'Backquote' captures both ` (en) and ₩ (ko) regardless of IME.
       // This key is never a normal text input so we always intercept it safely.
       const hasModifier = event.metaKey || event.ctrlKey || event.altKey;
@@ -177,21 +251,14 @@ function App() {
 
       if (event.defaultPrevented || isEditableTarget(event.target)) return;
 
+      // Silence retired 1 / 2 / 3 shortcuts.
       if (!hasModifier && RETIRED_NAV_SHORTCUT_KEYS.has(event.key)) {
         event.preventDefault();
         event.stopImmediatePropagation();
         return;
       }
 
-      const directTab = hasModifier ? null : NAV_SHORTCUTS[event.code];
-
-      if (directTab) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        setActiveTab(directTab);
-        return;
-      }
-
+      // Cmd/Ctrl + Arrow: cycle through top-level tabs.
       if ((event.metaKey || event.ctrlKey) && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
         event.preventDefault();
         event.stopImmediatePropagation();
@@ -244,37 +311,6 @@ function App() {
           로컬 게스트 모드
         </div>
 
-        {/* 'S' 탭일 때 루틴을 즉시 바꿀 수 있는 선택 드롭다운 */}
-        {activeTab === 'S' && sessions.length > 0 && (
-          <select
-            value={selectedSession?.id || ''}
-            onChange={(e) => {
-              setSelectedSessionId(e.target.value);
-              setActiveExerciseId(null); // 운동 타겟 리셋하여 첫 번째 운동 활성화 유도
-              setRestTimer(null);
-            }}
-            style={{
-              padding: '6px 12px',
-              background: 'rgba(12, 14, 24, 0.85)',
-              border: '1px solid var(--border-strong)',
-              borderRadius: '6px',
-              color: 'var(--accent)',
-              fontWeight: '600',
-              outline: 'none',
-              cursor: 'pointer'
-            }}
-          >
-            {sessions.map(s => {
-              const r = routines.find(rt => rt.id === s.routine_id);
-              const formattedName = getFormattedSessionName(s, sessions);
-              return (
-                <option key={s.id} value={s.id}>
-                  {r ? `[${r.name}] ${formattedName}` : formattedName}
-                </option>
-              );
-            })}
-          </select>
-        )}
         
         <button onClick={handleGenerateDummyData} style={{ padding: '6px 10px', cursor: 'pointer', background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-main)' }}>
           더미 데이터 생성 🚀
@@ -299,6 +335,8 @@ function App() {
             ref={setGridRef}
             key={setGridKey}
             session={selectedSession} 
+            latestRoutineSessions={latestRoutineSessions}
+            onSessionChange={setSelectedSessionId}
             onExerciseFocus={setActiveExerciseId} 
             onRestStart={handleRestStart}
           />

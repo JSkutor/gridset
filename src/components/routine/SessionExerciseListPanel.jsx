@@ -80,7 +80,7 @@ export default function SessionExerciseListPanel({
               return (
                 <ExerciseRow
                   key={sessionExercise.id}
-                  refCallback={element => onExerciseRef(index, element)}
+                  refCallback={element => onExerciseRef(sessionExercise.id, element)}
                   sessionExercise={sessionExercise}
                   exercise={exercise}
                   index={index}

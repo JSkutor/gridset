@@ -1,4 +1,4 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useRoutineKeyboardNavigation } from '../hooks/useRoutineKeyboardNavigation';
 import { MAX_SESSIONS_PER_ROUTINE, getSessionDayLetter } from '../utils/sessionHelper';
@@ -39,17 +39,26 @@ const RoutineDetail = forwardRef((props, ref) => {
   const [pendingNewSessionId, setPendingNewSessionId] = useState(null);
   const [pendingNewSessionReturnId, setPendingNewSessionReturnId] = useState(null);
 
-  const sessionRefs = useRef([]);
-  const exerciseRefs = useRef([]);
+  const sessionRefs = useRef({});
+  const exerciseRefs = useRef({});
   const settingControlRefs = useRef([]);
   const addExerciseBtnRef = useRef(null);
+  const pendingFocusIndexRef = useRef(null);
 
-  const setSessionRef = (index, element) => {
-    sessionRefs.current[index] = element;
+  const setSessionRef = (id, element) => {
+    if (element) {
+      sessionRefs.current[id] = element;
+    } else {
+      delete sessionRefs.current[id];
+    }
   };
 
-  const setExerciseRef = (index, element) => {
-    exerciseRefs.current[index] = element;
+  const setExerciseRef = (id, element) => {
+    if (element) {
+      exerciseRefs.current[id] = element;
+    } else {
+      delete exerciseRefs.current[id];
+    }
   };
 
   const setSettingControlRef = (index, element) => {
@@ -93,6 +102,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     handleExerciseKeyDown,
     handleAddExerciseButtonKeyDown,
     focusFirstSessionFirstExercise,
+    focusExercise,
   } = useRoutineKeyboardNavigation({
     effectiveRoutineId,
     effectiveSessionId,
@@ -227,10 +237,20 @@ const RoutineDetail = forwardRef((props, ref) => {
     const alreadyExists = activeSessionExercises.some(sessionExercise => sessionExercise.exercise_id === storeExercise.id);
     if (alreadyExists) return;
 
-    const nextOrder = activeSessionExercises.length + 1;
+    const newIndex = activeSessionExercises.length;
+    const nextOrder = newIndex + 1;
     const newSessionExercise = addSessionExercise(effectiveSession.id, storeExercise.id, nextOrder, 3, '10');
     setSelectedExerciseId(newSessionExercise.id);
+    pendingFocusIndexRef.current = newIndex;
   };
+
+  useEffect(() => {
+    if (pendingFocusIndexRef.current === null) return;
+    const index = pendingFocusIndexRef.current;
+    pendingFocusIndexRef.current = null;
+    focusExercise(index, 20);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSessionExercises.length]);
 
   const handleDeleteExercise = (id) => {
     deleteSessionExercise(id);

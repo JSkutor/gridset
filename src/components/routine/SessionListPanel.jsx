@@ -108,7 +108,7 @@ export default function SessionListPanel({
               return (
                 <SessionRow
                   key={session.id}
-                  refCallback={element => onSessionRef(index, element)}
+                  refCallback={element => onSessionRef(session.id, element)}
                   session={session}
                   index={index}
                   sessions={sessions}

@@ -32,12 +32,26 @@ export function useRoutineKeyboardNavigation({
   setSelectedExerciseId,
   setIsAddingExerciseRow,
 }) {
+  const focusSessionById = (id, delay = 0) => {
+    focusElement(sessionRefs.current[id], delay);
+  };
+
+  const focusExerciseById = (id, delay = 0) => {
+    focusElement(exerciseRefs.current[id], delay);
+  };
+
   const focusSession = (index, delay = 0) => {
-    focusElement(sessionRefs.current[index], delay);
+    const session = effectiveRoutineSessions[index];
+    if (session) {
+      focusSessionById(session.id, delay);
+    }
   };
 
   const focusExercise = (index, delay = 0) => {
-    focusElement(exerciseRefs.current[index], delay);
+    const exercise = activeSessionExercises[index];
+    if (exercise) {
+      focusExerciseById(exercise.id, delay);
+    }
   };
 
   const focusSettingControl = (index) => {
@@ -48,13 +62,15 @@ export function useRoutineKeyboardNavigation({
   };
 
   const focusSelectedExerciseRow = () => {
-    const index = activeSessionExercises.findIndex(se => se.id === selectedExerciseId);
-    if (index !== -1) focusExercise(index);
+    if (selectedExerciseId) {
+      focusExerciseById(selectedExerciseId);
+    }
   };
 
   const focusActiveSessionRow = () => {
-    const activeSessionIndex = effectiveRoutineSessions.findIndex(s => s.id === effectiveSessionId);
-    if (activeSessionIndex !== -1) focusSession(activeSessionIndex);
+    if (effectiveSessionId) {
+      focusSessionById(effectiveSessionId);
+    }
   };
 
   const handleSettingValueKeyDown = (event, index, onIncrement, onDecrement) => {
@@ -104,12 +120,15 @@ export function useRoutineKeyboardNavigation({
         const nextIndex = index + 1;
         if (nextIndex < effectiveRoutineSessions.length) {
           if (isReordering) {
+            const currentSessionId = effectiveRoutineSessions[index].id;
             const reorderedSessions = swapItems(effectiveRoutineSessions, index, nextIndex);
             reorderSessions(effectiveRoutineId, reorderedSessions.map(s => s.id));
+            // 리렌더링 완료 후 포커스 — ID를 사용하여 올바른 세션을 정확하게 포커스
+            focusSessionById(currentSessionId, 20);
           } else {
             onSelectSession(effectiveRoutineSessions[nextIndex].id);
+            focusSession(nextIndex);
           }
-          focusSession(nextIndex);
         }
         break;
       }
@@ -119,12 +138,15 @@ export function useRoutineKeyboardNavigation({
         const prevIndex = index - 1;
         if (prevIndex >= 0) {
           if (isReordering) {
+            const currentSessionId = effectiveRoutineSessions[index].id;
             const reorderedSessions = swapItems(effectiveRoutineSessions, index, prevIndex);
             reorderSessions(effectiveRoutineId, reorderedSessions.map(s => s.id));
+            // 리렌더링 완료 후 포커스
+            focusSessionById(currentSessionId, 20);
           } else {
             onSelectSession(effectiveRoutineSessions[prevIndex].id);
+            focusSession(prevIndex);
           }
-          focusSession(prevIndex);
         }
         break;
       }
@@ -155,12 +177,15 @@ export function useRoutineKeyboardNavigation({
         const nextIndex = index + 1;
         if (nextIndex < activeSessionExercises.length) {
           if (isReordering) {
+            const currentExerciseId = activeSessionExercises[index].id;
             const reorderedExercises = swapItems(activeSessionExercises, index, nextIndex);
             reorderSessionExercises(effectiveSessionId, reorderedExercises.map(se => se.id));
+            // 리렌더링 완료 후 포커스
+            focusExerciseById(currentExerciseId, 20);
           } else {
             setSelectedExerciseId(activeSessionExercises[nextIndex].id);
+            focusExercise(nextIndex);
           }
-          focusExercise(nextIndex);
         } else if (nextIndex === activeSessionExercises.length && !isAddingExerciseRow) {
           focusElement(addExerciseBtnRef.current);
         }
@@ -172,12 +197,15 @@ export function useRoutineKeyboardNavigation({
         const prevIndex = index - 1;
         if (prevIndex >= 0) {
           if (isReordering) {
+            const currentExerciseId = activeSessionExercises[index].id;
             const reorderedExercises = swapItems(activeSessionExercises, index, prevIndex);
             reorderSessionExercises(effectiveSessionId, reorderedExercises.map(se => se.id));
+            // 리렌더링 완료 후 포커스
+            focusExerciseById(currentExerciseId, 20);
           } else {
             setSelectedExerciseId(activeSessionExercises[prevIndex].id);
+            focusExercise(prevIndex);
           }
-          focusExercise(prevIndex);
         }
         break;
       }
@@ -232,9 +260,9 @@ export function useRoutineKeyboardNavigation({
 
       if (exercisesOfFirstSession.length > 0) {
         setSelectedExerciseId(exercisesOfFirstSession[0].id);
-        focusExercise(0, 50);
+        focusExerciseById(exercisesOfFirstSession[0].id, 50);
       } else {
-        focusSession(0);
+        focusSessionById(firstSession.id, 50);
       }
     }, 50);
   };
@@ -245,5 +273,6 @@ export function useRoutineKeyboardNavigation({
     handleExerciseKeyDown,
     handleAddExerciseButtonKeyDown,
     focusFirstSessionFirstExercise,
+    focusExercise,
   };
 }

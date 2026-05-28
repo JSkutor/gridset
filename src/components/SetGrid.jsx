@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useCallback, useImperativeHandle, forwardRef } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, ChevronDown } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
 import { getFormattedSessionName } from '../utils/sessionHelper';
@@ -65,7 +65,7 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
 
 // ─── SetGrid ──────────────────────────────────────────────────────────────────
 
-const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus, onRestStart }, ref) {
+const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart }, ref) {
   const sessions         = useWorkoutStore((state) => state.sessions);
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
@@ -226,9 +226,35 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus, onRestSt
     >
       {/* Header */}
       <div style={{ padding: '20px 22px 0 22px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
-          {getFormattedSessionName(session, sessions)}
-        </h2>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: 'var(--text-bright)' }}>
+              {getFormattedSessionName(session, sessions)}
+            </h2>
+            
+            {latestRoutineSessions && latestRoutineSessions.length > 0 && (
+              <div className="session-dropdown-wrapper">
+                <select
+                  value={session?.id || ''}
+                  onChange={(e) => onSessionChange?.(e.target.value)}
+                  className="session-inline-select"
+                >
+                  {latestRoutineSessions.map(s => {
+                    const dayLetter = String.fromCharCode(65 + (latestRoutineSessions.indexOf(s) % 26));
+                    return (
+                      <option key={s.id} value={s.id} className="session-inline-option">
+                        Day {dayLetter} : {s.name}
+                      </option>
+                    );
+                  })}
+                </select>
+                <div className="session-dropdown-arrow">
+                  <ChevronDown size={13} />
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Grid */}
