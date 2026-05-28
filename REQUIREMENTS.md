@@ -46,9 +46,8 @@ To build a highly polished, Mac-optimized workout logging web application that f
 - **Styling**: Vanilla CSS. No Tailwind (to maintain absolute control over native-feeling animations and blur effects).
 - **Data Source**: Local dummy JSON files to perfect the UI/UX layout and grid interactions first.
 
-### Phase 2: Backend Integration
 - **Database/Auth**: Supabase.
-- Store user profiles, custom routines, exercise master data, and set logs.
+- Store user profiles, custom session templates (routines), exercise master data, and set logs.
 
 ### Phase 3: Desktop App
 - Wrap the React app using Tauri to distribute it as a standalone macOS application.
@@ -56,5 +55,5 @@ To build a highly polished, Mac-optimized workout logging web application that f
 ## 6. Scalability & Extensibility
 - **Modular Design**: As this is a personal toy project with many future features planned, the codebase must be designed with high extensibility in mind from day one.
 - **Component Reusability**: UI components (buttons, grids, cards) must be highly decoupled and reusable.
-- **State Management**: Use scalable state management patterns (e.g., Context API or Zustand) to easily accommodate future complex data flows (e.g., routines, multi-day logs).
+- **State Management**: Use scalable state management patterns (e.g., Context API or Zustand) to easily accommodate future complex data flows (e.g., session templates, multi-day logs).
 - **Clean Architecture**: Separate business logic from UI components to make it easy to swap data sources (e.g., from local JSON to Supabase).

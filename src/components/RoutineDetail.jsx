@@ -4,41 +4,41 @@ import { useWorkoutStore } from '../store/useWorkoutStore';
 import ExerciseAutocomplete from './ExerciseAutocomplete';
 
 export default function RoutineDetail() {
-  const routines = useWorkoutStore(state => state.routines);
-  const routineExercises = useWorkoutStore(state => state.routineExercises);
+  const sessions = useWorkoutStore(state => state.sessions);
+  const sessionExercises = useWorkoutStore(state => state.sessionExercises);
   const exercises = useWorkoutStore(state => state.exercises);
   
-  const addRoutine = useWorkoutStore(state => state.addRoutine);
-  const deleteRoutine = useWorkoutStore(state => state.deleteRoutine);
-  const addRoutineExercise = useWorkoutStore(state => state.addRoutineExercise);
-  const deleteRoutineExercise = useWorkoutStore(state => state.deleteRoutineExercise);
-  const updateRoutineExercise = useWorkoutStore(state => state.updateRoutineExercise);
+  const addSession = useWorkoutStore(state => state.addSession);
+  const deleteSession = useWorkoutStore(state => state.deleteSession);
+  const addSessionExercise = useWorkoutStore(state => state.addSessionExercise);
+  const deleteSessionExercise = useWorkoutStore(state => state.deleteSessionExercise);
+  const updateSessionExercise = useWorkoutStore(state => state.updateSessionExercise);
   const addExercise = useWorkoutStore(state => state.addExercise);
 
-  const [selectedRoutineId, setSelectedRoutineId] = useState(routines[0]?.id || null);
-  const [newRoutineName, setNewRoutineName] = useState('');
+  const [selectedSessionId, setSelectedSessionId] = useState(sessions[0]?.id || null);
+  const [newSessionName, setNewSessionName] = useState('');
 
-  // 현재 선택된 루틴
-  const activeRoutine = routines.find(r => r.id === selectedRoutineId) || routines[0] || null;
-  const activeRoutineId = activeRoutine?.id || null;
+  // 현재 선택된 세션
+  const activeSession = sessions.find(s => s.id === selectedSessionId) || sessions[0] || null;
+  const activeSessionId = activeSession?.id || null;
 
-  // 현재 루틴의 운동들
-  const activeRoutineExercises = routineExercises
-    .filter(re => re.routine_id === activeRoutineId)
+  // 현재 세션의 운동들
+  const activeSessionExercises = sessionExercises
+    .filter(se => se.session_id === activeSessionId)
     .sort((a, b) => a.order - b.order);
 
-  // 새 루틴 생성
-  const handleCreateRoutine = (e) => {
+  // 새 세션 생성
+  const handleCreateSession = (e) => {
     e.preventDefault();
-    if (!newRoutineName.trim()) return;
-    const newRoutine = addRoutine(newRoutineName.trim());
-    setSelectedRoutineId(newRoutine.id);
-    setNewRoutineName('');
+    if (!newSessionName.trim()) return;
+    const newSession = addSession(newSessionName.trim());
+    setSelectedSessionId(newSession.id);
+    setNewSessionName('');
   };
 
-  // 루틴에 운동 추가
-  const handleAddExerciseToRoutine = (dictExercise) => {
-    if (!activeRoutineId) return;
+  // 세션에 운동 추가
+  const handleAddExerciseToSession = (dictExercise) => {
+    if (!activeSessionId) return;
 
     // 1. 스토어의 전체 운동 리스트에 이미 등록되었는지 확인, 없으면 스토어에 추가
     let storeExercise = exercises.find(ex => ex.name.toLowerCase() === dictExercise.name.toLowerCase());
@@ -51,45 +51,45 @@ export default function RoutineDetail() {
       );
     }
 
-    // 2. 루틴 내에 이미 이 운동이 추가되어 있는지 검사
-    const alreadyExists = activeRoutineExercises.some(re => re.exercise_id === storeExercise.id);
+    // 2. 세션 내에 이미 이 운동이 추가되어 있는지 검사
+    const alreadyExists = activeSessionExercises.some(se => se.exercise_id === storeExercise.id);
     if (alreadyExists) {
-      alert('이미 루틴에 추가된 운동입니다.');
+      alert('이미 세션에 추가된 운동입니다.');
       return;
     }
 
-    // 3. 루틴 운동으로 추가
-    const nextOrder = activeRoutineExercises.length + 1;
-    addRoutineExercise(activeRoutineId, storeExercise.id, nextOrder, 3, '10');
+    // 3. 세션 운동으로 추가
+    const nextOrder = activeSessionExercises.length + 1;
+    addSessionExercise(activeSessionId, storeExercise.id, nextOrder, 3, '10');
   };
 
-  // 루틴 운동 삭제
+  // 세션 운동 삭제
   const handleDeleteExercise = (id) => {
-    deleteRoutineExercise(id);
+    deleteSessionExercise(id);
   };
 
   // 목표 세트수나 횟수 변경
   const handleUpdateTarget = (id, field, value) => {
-    updateRoutineExercise(id, { [field]: value });
+    updateSessionExercise(id, { [field]: value });
   };
 
   return (
     <div className="main-grid" style={{ height: 'calc(100vh - 180px)', overflow: 'hidden' }}>
       
-      {/* 1. Left Sidebar: 루틴 목록 */}
+      {/* 1. Left Sidebar: 세션 목록 */}
       <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <div className="section-header">
-          <h2>내 루틴 목록</h2>
-          <span className="subtitle">My Workout Routines</span>
+          <h2>내 세션 목록</h2>
+          <span className="subtitle">My Workout Sessions</span>
         </div>
 
-        {/* 루틴 생성 폼 */}
-        <form onSubmit={handleCreateRoutine} style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '8px' }}>
+        {/* 세션 생성 폼 */}
+        <form onSubmit={handleCreateSession} style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '8px' }}>
           <input
             type="text"
-            placeholder="새 루틴 명칭 (예: 하체 폭발)"
-            value={newRoutineName}
-            onChange={(e) => setNewRoutineName(e.target.value)}
+            placeholder="새 세션 명칭 (예: 하체 폭발)"
+            value={newSessionName}
+            onChange={(e) => setNewSessionName(e.target.value)}
             style={{
               flex: 1,
               padding: '10px 14px',
@@ -119,21 +119,21 @@ export default function RoutineDetail() {
           </button>
         </form>
 
-        {/* 루틴 리스트 */}
+        {/* 세션 리스트 */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-          {routines.length === 0 ? (
+          {sessions.length === 0 ? (
             <div style={{ padding: '30px 10px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-              생성된 루틴이 없습니다.
+              생성된 세션이 없습니다.
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {routines.map(r => {
-                const isActive = r.id === activeRoutineId;
-                const rExs = routineExercises.filter(re => re.routine_id === r.id);
+              {sessions.map(s => {
+                const isActive = s.id === selectedSessionId;
+                const sExs = sessionExercises.filter(se => se.session_id === s.id);
                 return (
                   <div
-                    key={r.id}
-                    onClick={() => setSelectedRoutineId(r.id)}
+                    key={s.id}
+                    onClick={() => setSelectedSessionId(s.id)}
                     style={{
                       padding: '14px 16px',
                       borderRadius: 'var(--radius-md)',
@@ -148,10 +148,10 @@ export default function RoutineDetail() {
                   >
                     <div>
                       <div style={{ fontWeight: '600', color: isActive ? 'var(--text-bright)' : 'var(--text-main)', fontSize: '14px' }}>
-                        {r.name}
+                        {s.name}
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        운동 {rExs.length}개 설정됨
+                        운동 {sExs.length}개 설정됨
                       </div>
                     </div>
                     <ChevronRight size={14} color={isActive ? 'var(--accent)' : 'var(--text-muted)'} />
@@ -163,20 +163,20 @@ export default function RoutineDetail() {
         </div>
       </div>
 
-      {/* 2. Middle Panel: 선택한 루틴의 상세 운동 설정 */}
+      {/* 2. Middle Panel: 선택한 세션의 상세 운동 설정 */}
       <div className="glass-panel--strong" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-        {activeRoutine ? (
+        {activeSession ? (
           <>
             <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h2>{activeRoutine.name} - 운동 상세 설정</h2>
-                <span className="subtitle">루틴의 운동 구성 및 목표 세트를 관리합니다.</span>
+                <h2>{activeSession.name} - 운동 상세 설정</h2>
+                <span className="subtitle">세션의 운동 구성 및 목표 세트를 관리합니다.</span>
               </div>
               <button
                 onClick={() => {
-                  if (confirm('이 루틴을 삭제하시겠습니까?')) {
-                    deleteRoutine(activeRoutine.id);
-                    setSelectedRoutineId(routines[0]?.id || null);
+                  if (confirm('이 세션을 삭제하시겠습니까?')) {
+                    deleteSession(activeSession.id);
+                    setSelectedSessionId(sessions[0]?.id || null);
                   }
                 }}
                 style={{
@@ -195,34 +195,34 @@ export default function RoutineDetail() {
                 onMouseEnter={e => e.currentTarget.style.background = 'rgba(247, 122, 122, 0.1)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
               >
-                <Trash2 size={14} /> 루틴 삭제
+                <Trash2 size={14} /> 세션 삭제
               </button>
             </div>
 
             {/* 운동 추가 검색창 영역 */}
             <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.08)' }}>
               <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '500' }}>
-                루틴에 추가할 운동 검색 (자동완성)
+                세션에 추가할 운동 검색 (자동완성)
               </div>
-              <ExerciseAutocomplete onSelect={handleAddExerciseToRoutine} />
+              <ExerciseAutocomplete onSelect={handleAddExerciseToSession} />
             </div>
 
-            {/* 루틴 내 운동 목록 */}
+            {/* 세션 내 운동 목록 */}
             <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-              {activeRoutineExercises.length === 0 ? (
+              {activeSessionExercises.length === 0 ? (
                 <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   <ListPlus size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                  <div>루틴에 설정된 운동이 없습니다.</div>
+                  <div>세션에 설정된 운동이 없습니다.</div>
                   <div style={{ fontSize: '12px', marginTop: '6px' }}>위의 검색창에서 운동을 검색해 추가해 보세요!</div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {activeRoutineExercises.map((re, index) => {
-                    const ex = exercises.find(e => e.id === re.exercise_id);
+                  {activeSessionExercises.map((se, index) => {
+                    const ex = exercises.find(e => e.id === se.exercise_id);
                     if (!ex) return null;
                     return (
                       <div
-                        key={re.id}
+                        key={se.id}
                         style={{
                           padding: '16px',
                           borderRadius: 'var(--radius-md)',
@@ -285,8 +285,8 @@ export default function RoutineDetail() {
                               type="number"
                               min="1"
                               max="20"
-                              value={re.target_sets || 3}
-                              onChange={(e) => handleUpdateTarget(re.id, 'target_sets', parseInt(e.target.value) || 1)}
+                              value={se.target_sets || 3}
+                              onChange={(e) => handleUpdateTarget(se.id, 'target_sets', parseInt(e.target.value) || 1)}
                               style={{
                                 width: '45px',
                                 padding: '6px',
@@ -305,8 +305,8 @@ export default function RoutineDetail() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <input
                               type="text"
-                              value={re.target_record || '10'}
-                              onChange={(e) => handleUpdateTarget(re.id, 'target_record', e.target.value)}
+                              value={se.target_record || '10'}
+                              onChange={(e) => handleUpdateTarget(se.id, 'target_record', e.target.value)}
                               style={{
                                 width: '55px',
                                 padding: '6px',
@@ -323,7 +323,7 @@ export default function RoutineDetail() {
                           </div>
 
                           <button
-                            onClick={() => handleDeleteExercise(re.id)}
+                            onClick={() => handleDeleteExercise(se.id)}
                             style={{
                               background: 'transparent',
                               border: 'none',
@@ -349,7 +349,7 @@ export default function RoutineDetail() {
         ) : (
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', flexDirection: 'column', gap: '10px' }}>
             <Calendar size={40} style={{ opacity: 0.4 }} />
-            <div>선택된 루틴이 없습니다. 왼편에서 루틴을 생성해 주세요!</div>
+            <div>선택된 세션이 없습니다. 왼편에서 세션을 생성해 주세요!</div>
           </div>
         )}
       </div>

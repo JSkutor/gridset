@@ -2,19 +2,19 @@ import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { Plus } from 'lucide-react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 
-export default function SetGrid({ routine, onExerciseFocus }) {
-  const routineExercises = useWorkoutStore(state => state.routineExercises);
+export default function SetGrid({ session, onExerciseFocus }) {
+  const sessionExercises = useWorkoutStore(state => state.sessionExercises);
   const exercises = useWorkoutStore(state => state.exercises);
 
   const initialBlocks = useMemo(() => {
-    if (!routine) return [];
-    const rExercises = routineExercises
-      .filter(re => re.routine_id === routine.id)
+    if (!session) return [];
+    const sExercises = sessionExercises
+      .filter(se => se.session_id === session.id)
       .sort((a, b) => a.order - b.order);
       
-    return rExercises.map(re => {
-      const exercise = exercises.find(ex => ex.id === re.exercise_id);
-      const targetSets = re.target_sets || 3;
+    return sExercises.map(se => {
+      const exercise = exercises.find(ex => ex.id === se.exercise_id);
+      const targetSets = se.target_sets || 3;
       const sets = Array.from({ length: targetSets }).map((_, i) => ({
         id: crypto.randomUUID(),
         set_number: i + 1,
@@ -22,13 +22,13 @@ export default function SetGrid({ routine, onExerciseFocus }) {
         reps: ''
       }));
       return {
-        id: re.id,
-        exercise_id: re.exercise_id,
+        id: se.id,
+        exercise_id: se.exercise_id,
         exercise_name: exercise ? exercise.name : 'Unknown Exercise',
         sets
       };
     });
-  }, [routine, routineExercises, exercises]);
+  }, [session, sessionExercises, exercises]);
 
   const [blocks, setBlocks] = useState([]);
   const [note, setNote] = useState('');
@@ -151,10 +151,10 @@ export default function SetGrid({ routine, onExerciseFocus }) {
     setPendingFocusIndex(globalIndex);
   };
 
-  if (!routine) {
+  if (!session) {
     return (
       <div className="glass-panel--strong" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
-        루틴을 선택해주세요
+        세션을 선택해주세요
       </div>
     );
   }
@@ -164,7 +164,7 @@ export default function SetGrid({ routine, onExerciseFocus }) {
       
       {/* Header */}
       <div style={{ padding: '20px 22px 0 22px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>{routine.name}</h2>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>{session.name}</h2>
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px 22px' }}>
