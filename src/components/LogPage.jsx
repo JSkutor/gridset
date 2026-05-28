@@ -946,7 +946,6 @@ export default function LogPage() {
 
   const recordsByLogId = useMemo(() => {
     return setRecords
-      .filter((record) => record.is_completed)
       .reduce((acc, record) => {
         if (!acc.has(record.workout_log_id)) acc.set(record.workout_log_id, []);
         acc.get(record.workout_log_id).push(record);

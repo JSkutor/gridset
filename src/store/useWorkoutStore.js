@@ -23,16 +23,16 @@ const getDefaultExerciseUnit = (name) => DEFAULT_EXERCISE_UNITS[name] || 'kg';
 
 // Default seed exercises with muscle and equipment info
 const DEFAULT_EXERCISES = [
-  { id: generateUUID(), name: '벤치프레스', primary_muscle: '대흉근', equipment: '바벨', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '스쿼트', primary_muscle: '대퇴사두', equipment: '바벨', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '데드리프트', primary_muscle: '척추기립근', equipment: '바벨', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '풀업', primary_muscle: '광배근', equipment: '맨몸', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 로우', primary_muscle: '광배근', equipment: '바벨', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '오버헤드 프레스', primary_muscle: '삼각근', equipment: '바벨', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 컬', primary_muscle: '상완이두근', equipment: '바벨', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '레그 익스텐션', primary_muscle: '대퇴사두', equipment: '머신', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '푸시업', primary_muscle: '대흉근', equipment: '맨몸', unit: 'reps', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '플랭크', primary_muscle: '복근', equipment: '맨몸', unit: 'sec', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '벤치프레스', primary_muscle: '대흉근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '스쿼트', primary_muscle: '대퇴사두', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '데드리프트', primary_muscle: '척추기립근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '풀업', primary_muscle: '광배근', equipment: '맨몸', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '바벨 로우', primary_muscle: '광배근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '오버헤드 프레스', primary_muscle: '삼각근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '바벨 컬', primary_muscle: '상완이두근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '레그 익스텐션', primary_muscle: '대퇴사두', equipment: '머신', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '푸시업', primary_muscle: '대흉근', equipment: '맨몸', unit: 'reps', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '플랭크', primary_muscle: '복근', equipment: '맨몸', unit: 'sec', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
 function targetExercise(name, target_sets, target_record, rest_between_sets = 90, rest_after_exercise = 120) {
@@ -319,6 +319,7 @@ function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
     equipment: dictionaryExercise.equipment || '기타',
     category: dictionaryExercise.category || 'strength',
     unit: dictionaryExercise.unit || getDefaultExerciseUnit(dictionaryExercise.name),
+    is_unilateral: false,
     synonyms: dictionaryExercise.synonyms || [],
     user_id: dictionaryExercise.user_id ?? null,
     created_at: timestamp,
@@ -363,11 +364,7 @@ function roundTrainingWeight(value) {
   return Math.round(value * 2) / 2;
 }
 
-function buildSetRecordMemo({ exercise, setNumber, targetSets, isWarmup, isCompleted, completionMode, intensity }) {
-  if (!isCompleted) {
-    return completionMode === 'in-progress' ? '진행 중, 아직 입력 전' : '시간 부족으로 미완료';
-  }
-
+function buildSetRecordMemo({ exercise, setNumber, targetSets, isWarmup, completionMode, intensity }) {
   if (isWarmup) return '워밍업';
   if (completionMode === 'deload' && setNumber === 1) return '디로드 주간';
   if (exercise.unit === 'sec' && setNumber === 1) return '호흡 길게';
@@ -395,9 +392,6 @@ function createSetRecordsForExercise({
   return Array.from({ length: targetSets }, (_, index) => {
     const setNumber = index + 1;
     const isWarmup = !isBodyweight && targetSets >= 4 && setNumber === 1;
-    const isIncompleteTail = completionMode === 'partial' && setNumber === targetSets && exerciseIndex >= 2;
-    const isInProgressTail = completionMode === 'in-progress' && (exerciseIndex >= 2 || (exerciseIndex === 1 && setNumber > 2));
-    const isCompleted = !(isIncompleteTail || isInProgressTail);
 
     let weight = 0;
     if (!isBodyweight) {
@@ -419,7 +413,6 @@ function createSetRecordsForExercise({
       setNumber,
       targetSets,
       isWarmup,
-      isCompleted,
       completionMode,
       intensity,
     });
@@ -431,7 +424,7 @@ function createSetRecordsForExercise({
       set_number: setNumber,
       weight,
       record: String(record),
-      is_completed: isCompleted,
+      side: 'both',
       memo,
       created_at: timestamp,
       updated_at: timestamp,
@@ -592,7 +585,7 @@ function createDummyWorkoutData({ userId, existingExercises }) {
           set_number: index + 1,
           weight: set.weight ?? 0,
           record: String(set.record),
-          is_completed: set.is_completed ?? true,
+          side: 'both',
           memo: set.memo || null,
           created_at: timestamp,
           updated_at: end.toISOString(),
@@ -625,7 +618,7 @@ export const useWorkoutStore = create(
       setRecords: [],
 
       // --- Actions: Exercises ---
-      addExercise: (name, primary_muscle = null, equipment = null, unit = 'kg') => {
+      addExercise: (name, primary_muscle = null, equipment = null, unit = 'kg', is_unilateral = false) => {
         const { currentUser, exercises } = get();
         
         // 중복 방지
@@ -652,6 +645,7 @@ export const useWorkoutStore = create(
           primary_muscle: normalizeMuscleLabel(muscle) || '기타',
           equipment: equip || '기타',
           unit,
+          is_unilateral,
           user_id: currentUser.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -907,7 +901,7 @@ export const useWorkoutStore = create(
       })),
 
       // --- Actions: Set Records ---
-      addSetRecord: (workout_log_id, exercise_id, set_number, weight, record, is_completed = false, memo = null) => {
+      addSetRecord: (workout_log_id, exercise_id, set_number, weight, record, side = 'both', memo = null) => {
         const newSetRecord = {
           id: generateUUID(),
           workout_log_id,
@@ -915,7 +909,7 @@ export const useWorkoutStore = create(
           set_number,
           weight,
           record,
-          is_completed,
+          side,
           memo,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -956,7 +950,7 @@ export const useWorkoutStore = create(
     }),
     {
       name: 'workout-tracker-storage', // Key for local storage
-      version: 4,
+      version: 5,
       migrate: (persistedState, version) => {
         let newState = { ...persistedState };
 
@@ -1044,6 +1038,23 @@ export const useWorkoutStore = create(
               ...exercise,
               unit: exercise.unit || getDefaultExerciseUnit(exercise.name),
             })),
+          };
+        }
+
+        if (version < 5) {
+          newState = {
+            ...newState,
+            exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => ({
+              ...exercise,
+              is_unilateral: exercise.is_unilateral !== undefined ? exercise.is_unilateral : false,
+            })),
+            setRecords: (newState.setRecords || []).map((record) => {
+              const { is_completed, ...rest } = record;
+              return {
+                ...rest,
+                side: record.side || 'both',
+              };
+            }),
           };
         }
 

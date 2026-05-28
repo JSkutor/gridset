@@ -26,7 +26,7 @@ export default function PastLogs({ activeExerciseId }) {
   const pastLogs = useMemo(() => {
     if (!activeExerciseId) return [];
     
-    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId && sr.is_completed);
+    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
     
     const groupedByLogId = exerciseSets.reduce((acc, sr) => {
       if (!acc[sr.workout_log_id]) acc[sr.workout_log_id] = [];

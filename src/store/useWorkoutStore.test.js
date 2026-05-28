@@ -167,7 +167,7 @@ test('deleteRoutine removes child sessions and session exercises', () => {
 test('deleteWorkoutLog removes its set records', () => {
   const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
   const log = useWorkoutStore.getState().startWorkoutLog();
-  const setRecord = useWorkoutStore.getState().addSetRecord(log.id, bench.id, 1, 80, '8', true);
+  const setRecord = useWorkoutStore.getState().addSetRecord(log.id, bench.id, 1, 80, '8', 'both');
 
   useWorkoutStore.getState().deleteWorkoutLog(log.id);
 
@@ -190,7 +190,7 @@ test('generateDummyData creates diverse non-exercise seed data', () => {
   assert.ok(state.sessionExercises.length > state.sessions.length);
   assert.ok(state.workoutLogs.some((log) => log.session_id === null));
   assert.ok(state.workoutLogs.some((log) => log.end_time === null));
-  assert.ok(state.setRecords.some((record) => record.is_completed === false));
+  assert.ok(state.setRecords.every((record) => record.side === 'both'));
   assert.ok(state.setRecords.some((record) => record.memo));
   assert.ok(state.exercises.length >= initialExerciseCount);
 });
