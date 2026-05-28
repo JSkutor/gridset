@@ -1,7 +1,39 @@
 const NUMERIC_RE = /^[0-9.]*$/;
+const DEFAULT_REST_BETWEEN_SETS = 90;
+const DEFAULT_REST_AFTER_EXERCISE = 120;
 
 export function isNumericGridValue(value) {
   return NUMERIC_RE.test(value);
+}
+
+export function isCommittedNumericGridValue(value) {
+  const normalizedValue = String(value ?? '').trim();
+  return normalizedValue !== '' && isNumericGridValue(normalizedValue) && Number.isFinite(Number(normalizedValue));
+}
+
+export function isCompletedRepsValue(value) {
+  return isCommittedNumericGridValue(value);
+}
+
+export function fillExerciseWeightsFromFirstSet(blocks, blockIndex, rowIndex, weight) {
+  const normalizedWeight = String(weight ?? '').trim();
+
+  if (rowIndex !== 0 || !isCommittedNumericGridValue(normalizedWeight)) {
+    return blocks;
+  }
+
+  return blocks.map((block, currentBlockIndex) => {
+    if (currentBlockIndex !== blockIndex) return block;
+
+    return {
+      ...block,
+      sets: block.sets.map((set, setIndex) => {
+        const hasWeight = String(set.weight ?? '').trim() !== '';
+        if (setIndex !== rowIndex && hasWeight) return set;
+        return { ...set, weight: normalizedWeight };
+      }),
+    };
+  });
 }
 
 /**
@@ -19,9 +51,8 @@ export function buildInitialBlocks(session, sessionExercises, exercises, createS
       const targetSets = se.target_sets || 3;
       const isUnilateral = exercise?.is_unilateral ?? false;
 
-      let sets = [];
-      if (isUnilateral) {
-        sets = Array.from({ length: targetSets }, (_, i) => [
+      const sets = isUnilateral
+        ? Array.from({ length: targetSets }, (_, i) => [
           {
             id: createSetId(),
             set_number: i + 1,
@@ -38,9 +69,8 @@ export function buildInitialBlocks(session, sessionExercises, exercises, createS
             reps: '',
             memo: '',
           }
-        ]).flat();
-      } else {
-        sets = Array.from({ length: targetSets }, (_, i) => ({
+        ]).flat()
+        : Array.from({ length: targetSets }, (_, i) => ({
           id: createSetId(),
           set_number: i + 1,
           side: 'both',
@@ -48,7 +78,6 @@ export function buildInitialBlocks(session, sessionExercises, exercises, createS
           reps: '',
           memo: '',
         }));
-      }
 
       return {
         id: se.id,
@@ -87,4 +116,63 @@ export function computeNewGlobalIndex(blocks, blockIndex) {
   }
 
   return idx + blocks[blockIndex].sets.length;
+}
+
+export function getSetCompletionKey(block, set) {
+  if (!block || !set) return '';
+  return `${block.id}:${set.set_number}:${set.side || 'both'}`;
+}
+
+function normalizeRestDuration(value, fallbackSeconds) {
+  const seconds = Number(value ?? fallbackSeconds);
+  if (!Number.isFinite(seconds)) return fallbackSeconds;
+  return Math.max(0, Math.round(seconds));
+}
+
+export function getRestTimerPayloadForCompletedSet({ blocks, sessionExercises, blockIndex, rowIndex }) {
+  const block = blocks[blockIndex];
+  const set = block?.sets?.[rowIndex];
+
+  if (!block || !set) return null;
+
+  const setNumber = Number(set.set_number) || 0;
+  const isFinalSideForSet = !block.sets.some(
+    (candidate, index) => index > rowIndex && Number(candidate.set_number) === setNumber,
+  );
+
+  if (!isFinalSideForSet) return null;
+
+  const link = sessionExercises.find((sessionExercise) => sessionExercise.id === block.id);
+  const hasLaterSetInExercise = block.sets.some((candidate) => Number(candidate.set_number) > setNumber);
+
+  if (hasLaterSetInExercise) {
+    const durationSeconds = normalizeRestDuration(link?.rest_between_sets, DEFAULT_REST_BETWEEN_SETS);
+
+    if (durationSeconds <= 0) return null;
+
+    return {
+      mode: 'set',
+      durationSeconds,
+      exerciseId: block.exercise_id,
+      exerciseName: block.exercise_name,
+      setNumber,
+    };
+  }
+
+  const nextBlock = blocks[blockIndex + 1];
+  if (!nextBlock) return null;
+
+  const durationSeconds = normalizeRestDuration(link?.rest_after_exercise, DEFAULT_REST_AFTER_EXERCISE);
+
+  if (durationSeconds <= 0) return null;
+
+  return {
+    mode: 'exercise',
+    durationSeconds,
+    exerciseId: block.exercise_id,
+    exerciseName: block.exercise_name,
+    nextExerciseId: nextBlock.exercise_id,
+    nextExerciseName: nextBlock.exercise_name,
+    setNumber,
+  };
 }

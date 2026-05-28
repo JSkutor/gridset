@@ -4,6 +4,12 @@ import assert from 'node:assert/strict';
 import { EXERCISE_DICTIONARY } from './exerciseDictionary.js';
 import { MUSCLE_GROUPS } from './muscleGroups.js';
 
+function stripRuntimeFields(exercise) {
+  const result = { ...exercise };
+  delete result.is_unilateral;
+  return result;
+}
+
 test('exercise dictionary stays in sync with extracted exercise data', () => {
   let extractedExercises = JSON.parse(
     fs.readFileSync(new URL('../../scratch/extracted_exercises.json', import.meta.url), 'utf8'),
@@ -13,8 +19,8 @@ test('exercise dictionary stays in sync with extracted exercise data', () => {
   extractedExercises = extractedExercises.filter(item => !item.NOTE);
 
   // Strip is_unilateral for comparison since JSON is intentionally not updated
-  const cleanDict = EXERCISE_DICTIONARY.map(({ is_unilateral, ...rest }) => rest);
-  const cleanExtracted = extractedExercises.map(({ is_unilateral, ...rest }) => rest);
+  const cleanDict = EXERCISE_DICTIONARY.map(stripRuntimeFields);
+  const cleanExtracted = extractedExercises.map(stripRuntimeFields);
 
   assert.deepEqual(cleanDict, cleanExtracted);
 });
@@ -43,4 +49,3 @@ test('exercise dictionary uses normalized muscle labels', () => {
   assert.deepEqual(invalidLabels, []);
   assert.deepEqual(duplicatedPrimaryMuscles, []);
 });
-

@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Navigation from './components/Navigation'
 import ExerciseInfo from './components/ExerciseInfo'
 import SetGrid from './components/SetGrid'
 import PastLogs from './components/PastLogs'
 import RoutineDetail from './components/RoutineDetail'
 import LogPage from './components/LogPage'
+import RestTimer from './components/RestTimer'
 import { useWorkoutStore } from './store/useWorkoutStore'
 import { User } from 'lucide-react'
 import { getFormattedSessionName } from './utils/sessionHelper'
@@ -33,6 +34,7 @@ function isEditableTarget(target) {
 function App() {
   const [activeTab, setActiveTab] = useState('S')
   const [activeExerciseId, setActiveExerciseId] = useState(null)
+  const [restTimer, setRestTimer] = useState(null)
 
   // Ref for SetGrid imperative focus methods (C-key toggle)
   const setGridRef = useRef(null);
@@ -62,13 +64,79 @@ function App() {
     generateDummyData();
     setSelectedSessionId(null);
     setActiveExerciseId(null);
+    setRestTimer(null);
   };
 
   const handleClearAllData = () => {
     clearAllData();
     setSelectedSessionId(null);
     setActiveExerciseId(null);
+    setRestTimer(null);
   };
+
+  const handleRestStart = useCallback((payload) => {
+    const durationSeconds = Math.max(0, Math.round(Number(payload.durationSeconds) || 0));
+
+    if (durationSeconds <= 0) {
+      setRestTimer(null);
+      return;
+    }
+
+    setRestTimer({
+      ...payload,
+      id: `${Date.now()}-${payload.mode}-${payload.exerciseId || 'rest'}`,
+      durationSeconds,
+      remainingSeconds: durationSeconds,
+      endsAt: Date.now() + durationSeconds * 1000,
+      isPaused: false,
+    });
+  }, []);
+
+  const handleToggleRestPause = useCallback(() => {
+    setRestTimer((currentTimer) => {
+      if (!currentTimer || currentTimer.remainingSeconds <= 0) return currentTimer;
+
+      if (currentTimer.isPaused) {
+        return {
+          ...currentTimer,
+          isPaused: false,
+          endsAt: Date.now() + currentTimer.remainingSeconds * 1000,
+        };
+      }
+
+      return {
+        ...currentTimer,
+        isPaused: true,
+        remainingSeconds: Math.max(0, Math.ceil((currentTimer.endsAt - Date.now()) / 1000)),
+      };
+    });
+  }, []);
+
+  const handleDismissRestTimer = useCallback(() => {
+    setRestTimer(null);
+  }, []);
+
+  useEffect(() => {
+    if (!restTimer?.id || restTimer.isPaused || restTimer.remainingSeconds <= 0) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setRestTimer((currentTimer) => {
+        if (!currentTimer || currentTimer.isPaused) return currentTimer;
+
+        const remainingSeconds = Math.max(0, Math.ceil((currentTimer.endsAt - Date.now()) / 1000));
+        if (remainingSeconds === currentTimer.remainingSeconds) return currentTimer;
+
+        return {
+          ...currentTimer,
+          remainingSeconds,
+        };
+      });
+    }, 250);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [restTimer]);
 
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
@@ -183,6 +251,7 @@ function App() {
             onChange={(e) => {
               setSelectedSessionId(e.target.value);
               setActiveExerciseId(null); // 운동 타겟 리셋하여 첫 번째 운동 활성화 유도
+              setRestTimer(null);
             }}
             style={{
               padding: '6px 12px',
@@ -216,6 +285,12 @@ function App() {
       </div>
       
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      <RestTimer
+        timer={restTimer}
+        isVisible={activeTab === 'S'}
+        onTogglePause={handleToggleRestPause}
+        onDismiss={handleDismissRestTimer}
+      />
 
       {activeTab === 'S' && (
         <main className="main-grid">
@@ -225,6 +300,7 @@ function App() {
             key={setGridKey}
             session={selectedSession} 
             onExerciseFocus={setActiveExerciseId} 
+            onRestStart={handleRestStart}
           />
           <PastLogs activeExerciseId={effectiveActiveExerciseId} />
         </main>

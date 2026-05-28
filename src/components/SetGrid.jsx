@@ -6,13 +6,17 @@ import { getFormattedSessionName } from '../utils/sessionHelper';
 import {
   buildInitialBlocks,
   computeNewGlobalIndex,
+  fillExerciseWeightsFromFirstSet,
   flattenBlocks,
+  getRestTimerPayloadForCompletedSet,
+  getSetCompletionKey,
+  isCompletedRepsValue,
   isNumericGridValue,
 } from '../utils/setGridModel.js';
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
-function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus }) {
+function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus, onRepsTab, onFirstWeightTab }) {
   const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
 
   return (
@@ -34,11 +38,19 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
             inputMode="decimal"
             value={row[field]}
             onChange={(e) => updateRow(blockIndex, rowIndex, field, e.target.value)}
-            onKeyDown={(e) =>
+            onKeyDown={(e) => {
+              if (field === 'weight' && e.key === 'Tab' && !e.shiftKey) {
+                onFirstWeightTab?.(row, e.currentTarget.value);
+              }
+
+              if (field === 'reps' && e.key === 'Tab' && !e.shiftKey) {
+                onRepsTab?.(row, e.currentTarget.value);
+              }
+
               handleKeyDown(e, globalIndex, colIndex, {
                 onTabAtEnd: () => addRow(blockIndex),
-              })
-            }
+              });
+            }}
             onFocus={() => {
               onExerciseFocus?.(exerciseId);
               onSetFocus?.(blockIndex, rowIndex);
@@ -53,7 +65,7 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
 
 // ─── SetGrid ──────────────────────────────────────────────────────────────────
 
-const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
+const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus, onRestStart }, ref) {
   const sessions         = useWorkoutStore((state) => state.sessions);
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
@@ -74,11 +86,20 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
 
   // Ref for the session note textarea (for C-key toggle)
   const noteRef = useRef(null);
+  const completedSetSignaturesRef = useRef(new Map());
 
   // ── mutations ──────────────────────────────────────────────────────────────
 
   const updateRow = (blockIndex, rowIndex, field, value) => {
     if (!isNumericGridValue(value)) return;
+
+    if (field === 'reps' && !isCompletedRepsValue(value)) {
+      const block = blocks[blockIndex];
+      const set = block?.sets?.[rowIndex];
+      const completionKey = getSetCompletionKey(block, set);
+      if (completionKey) completedSetSignaturesRef.current.delete(completionKey);
+    }
+
     setBlocks((prev) =>
       prev.map((b, bi) =>
         bi !== blockIndex ? b : {
@@ -109,6 +130,34 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
   const handleSetFocus = useCallback((blockIndex, rowIndex) => {
     setFocusedSet({ blockIndex, rowIndex });
   }, []);
+
+  const handleFirstWeightTab = useCallback((row, value) => {
+    setBlocks((prev) => fillExerciseWeightsFromFirstSet(prev, row.blockIndex, row.rowIndex, value));
+  }, []);
+
+  const handleRepsTab = useCallback((row, value) => {
+    if (!isCompletedRepsValue(value)) return;
+
+    const block = blocks[row.blockIndex];
+    const set = block?.sets?.[row.rowIndex];
+    const completionKey = getSetCompletionKey(block, set);
+    const completionSignature = String(value).trim();
+
+    if (!completionKey || completedSetSignaturesRef.current.get(completionKey) === completionSignature) return;
+
+    completedSetSignaturesRef.current.set(completionKey, completionSignature);
+
+    const restPayload = getRestTimerPayloadForCompletedSet({
+      blocks,
+      sessionExercises,
+      blockIndex: row.blockIndex,
+      rowIndex: row.rowIndex,
+    });
+
+    if (restPayload) {
+      onRestStart?.(restPayload);
+    }
+  }, [blocks, onRestStart, sessionExercises]);
 
   const addRow = (blockIndex) => {
     // Compute the new row's global index *before* updating state so we can
@@ -236,6 +285,8 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
                         addRow={addRow}
                         onExerciseFocus={onExerciseFocus}
                         onSetFocus={handleSetFocus}
+                        onRepsTab={handleRepsTab}
+                        onFirstWeightTab={handleFirstWeightTab}
                       />
                     ))}
 
