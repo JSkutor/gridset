@@ -17,18 +17,45 @@ export function buildInitialBlocks(session, sessionExercises, exercises, createS
     .map((se) => {
       const exercise = exercises.find((ex) => ex.id === se.exercise_id);
       const targetSets = se.target_sets || 3;
+      const isUnilateral = exercise?.is_unilateral ?? false;
+
+      let sets = [];
+      if (isUnilateral) {
+        sets = Array.from({ length: targetSets }, (_, i) => [
+          {
+            id: createSetId(),
+            set_number: i + 1,
+            side: 'L',
+            weight: '',
+            reps: '',
+            memo: '',
+          },
+          {
+            id: createSetId(),
+            set_number: i + 1,
+            side: 'R',
+            weight: '',
+            reps: '',
+            memo: '',
+          }
+        ]).flat();
+      } else {
+        sets = Array.from({ length: targetSets }, (_, i) => ({
+          id: createSetId(),
+          set_number: i + 1,
+          side: 'both',
+          weight: '',
+          reps: '',
+          memo: '',
+        }));
+      }
 
       return {
         id: se.id,
         exercise_id: se.exercise_id,
         exercise_name: exercise?.name ?? 'Unknown Exercise',
-        sets: Array.from({ length: targetSets }, (_, i) => ({
-          id: createSetId(),
-          set_number: i + 1,
-          weight: '',
-          reps: '',
-          memo: '',
-        })),
+        is_unilateral: isUnilateral,
+        sets,
       };
     });
 }

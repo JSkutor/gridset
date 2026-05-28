@@ -185,3 +185,90 @@ export function RestTimeStepper({ value, onChange, valueRef, onValueKeyDown }) {
     </div>
   );
 }
+
+export function UnilateralStepper({ value, onChange, valueRef, onValueKeyDown, disabled }) {
+  const label = value ? 'L/R' : 'Both';
+
+  const handleToggle = () => {
+    if (disabled) return;
+    onChange(!value);
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button
+        onClick={handleToggle}
+        disabled={disabled}
+        style={{
+          width: '28px',
+          height: '28px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: disabled ? 'var(--text-muted)' : 'var(--text-main)',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s',
+          opacity: disabled ? 0.3 : 1,
+        }}
+        onMouseEnter={event => { if (!disabled) event.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+        onMouseLeave={event => { if (!disabled) event.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+        aria-label="편측성 변경"
+      >
+        −
+      </button>
+      <span
+        ref={disabled ? null : valueRef}
+        className="setting-stepper-value"
+        tabIndex={disabled ? -1 : 0}
+        role="button"
+        aria-label="편측성 값"
+        onKeyDown={disabled ? null : onValueKeyDown}
+        style={{
+          fontSize: '15px',
+          fontWeight: '700',
+          color: disabled ? 'var(--text-muted)' : 'var(--text-bright)',
+          minWidth: '52px',
+          textAlign: 'center',
+          fontVariantNumeric: 'tabular-nums',
+          letterSpacing: '-0.02em',
+          borderRadius: '6px',
+          outline: 'none',
+          cursor: disabled ? 'default' : 'pointer',
+        }}
+        onClick={handleToggle}
+      >
+        {label}
+      </span>
+      <button
+        onClick={handleToggle}
+        disabled={disabled}
+        style={{
+          width: '28px',
+          height: '28px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: disabled ? 'var(--text-muted)' : 'var(--text-main)',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s',
+          opacity: disabled ? 0.3 : 1,
+        }}
+        onMouseEnter={event => { if (!disabled) event.currentTarget.style.background = 'rgba(255,255,255,0.08)' }}
+        onMouseLeave={event => { if (!disabled) event.currentTarget.style.background = 'rgba(255,255,255,0.04)' }}
+        aria-label="편측성 변경"
+      >
+        +
+      </button>
+    </div>
+  );
+}

@@ -319,7 +319,7 @@ function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
     equipment: dictionaryExercise.equipment || '기타',
     category: dictionaryExercise.category || 'strength',
     unit: dictionaryExercise.unit || getDefaultExerciseUnit(dictionaryExercise.name),
-    is_unilateral: false,
+    is_unilateral: dictionaryExercise.is_unilateral ?? false,
     synonyms: dictionaryExercise.synonyms || [],
     user_id: dictionaryExercise.user_id ?? null,
     created_at: timestamp,
@@ -379,7 +379,6 @@ function createSetRecordsForExercise({
   timestamp,
   intensity,
   completionMode,
-  exerciseIndex,
 }) {
   const targetSets = Number(link.target_sets) || 3;
   const targetRecord = Number(link.target_record) || 10;
@@ -389,7 +388,10 @@ function createSetRecordsForExercise({
     ? 0
     : roundTrainingWeight(Math.max(0, (profile.base ?? 20) + intensity * (profile.step ?? 1)));
 
-  return Array.from({ length: targetSets }, (_, index) => {
+  const isUnilateral = exercise.is_unilateral ?? false;
+  const records = [];
+
+  for (let index = 0; index < targetSets; index++) {
     const setNumber = index + 1;
     const isWarmup = !isBodyweight && targetSets >= 4 && setNumber === 1;
 
@@ -417,19 +419,48 @@ function createSetRecordsForExercise({
       intensity,
     });
 
-    return {
-      id: generateUUID(),
-      workout_log_id: logId,
-      exercise_id: exercise.id,
-      set_number: setNumber,
-      weight,
-      record: String(record),
-      side: 'both',
-      memo,
-      created_at: timestamp,
-      updated_at: timestamp,
-    };
-  });
+    if (isUnilateral) {
+      records.push({
+        id: generateUUID(),
+        workout_log_id: logId,
+        exercise_id: exercise.id,
+        set_number: setNumber,
+        weight,
+        record: String(record),
+        side: 'L',
+        memo,
+        created_at: timestamp,
+        updated_at: timestamp,
+      });
+      records.push({
+        id: generateUUID(),
+        workout_log_id: logId,
+        exercise_id: exercise.id,
+        set_number: setNumber,
+        weight,
+        record: String(record),
+        side: 'R',
+        memo,
+        created_at: timestamp,
+        updated_at: timestamp,
+      });
+    } else {
+      records.push({
+        id: generateUUID(),
+        workout_log_id: logId,
+        exercise_id: exercise.id,
+        set_number: setNumber,
+        weight,
+        record: String(record),
+        side: 'both',
+        memo,
+        created_at: timestamp,
+        updated_at: timestamp,
+      });
+    }
+  }
+
+  return records;
 }
 
 function createDummyWorkoutData({ userId, existingExercises }) {
@@ -512,7 +543,7 @@ function createDummyWorkoutData({ userId, existingExercises }) {
       updated_at: (end || start).toISOString(),
     });
 
-    links.forEach((link, exerciseIndex) => {
+    links.forEach((link) => {
       const exercise = exercisesById.get(link.exercise_id);
       if (!exercise) return;
       setRecords.push(
@@ -523,7 +554,6 @@ function createDummyWorkoutData({ userId, existingExercises }) {
           timestamp,
           intensity,
           completionMode,
-          exerciseIndex,
         }),
       );
     });
@@ -628,7 +658,8 @@ export const useWorkoutStore = create(
         // 로컬 사전에 주동근/장비가 정의되어 있다면 가져옴
         let muscle = primary_muscle;
         let equip = equipment;
-        if (!muscle || !equip) {
+        let isUnilateral = is_unilateral;
+        if (!muscle || !equip || !is_unilateral) {
           const dictEntry = EXERCISE_DICTIONARY.find(ex => 
             ex.name.toLowerCase() === name.toLowerCase() || 
             (ex.synonyms && ex.synonyms.includes(name.toLowerCase()))
@@ -636,6 +667,7 @@ export const useWorkoutStore = create(
           if (dictEntry) {
             muscle = muscle || dictEntry.primaryMuscle;
             equip = equip || dictEntry.equipment;
+            isUnilateral = is_unilateral || dictEntry.is_unilateral || false;
           }
         }
 
@@ -645,7 +677,7 @@ export const useWorkoutStore = create(
           primary_muscle: normalizeMuscleLabel(muscle) || '기타',
           equipment: equip || '기타',
           unit,
-          is_unilateral,
+          is_unilateral: isUnilateral,
           user_id: currentUser.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -654,6 +686,13 @@ export const useWorkoutStore = create(
         return newExercise;
       },
       deleteExercise: (id) => set((state) => ({ exercises: state.exercises.filter(ex => ex.id !== id) })),
+      updateExercise: (id, updates) => {
+        set((state) => ({
+          exercises: state.exercises.map(ex =>
+            ex.id === id ? { ...ex, ...updates, updated_at: new Date().toISOString() } : ex
+          )
+        }));
+      },
 
       // --- Actions: Routines ---
       addRoutine: (name) => {
@@ -950,7 +989,7 @@ export const useWorkoutStore = create(
     }),
     {
       name: 'workout-tracker-storage', // Key for local storage
-      version: 5,
+      version: 6,
       migrate: (persistedState, version) => {
         let newState = { ...persistedState };
 
@@ -1049,12 +1088,29 @@ export const useWorkoutStore = create(
               is_unilateral: exercise.is_unilateral !== undefined ? exercise.is_unilateral : false,
             })),
             setRecords: (newState.setRecords || []).map((record) => {
-              const { is_completed, ...rest } = record;
+              const rest = { ...record };
+              delete rest.is_completed;
               return {
                 ...rest,
                 side: record.side || 'both',
               };
             }),
+          };
+        }
+
+        if (version < 6) {
+          newState = {
+            ...newState,
+            exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => {
+              const dictEntry = EXERCISE_DICTIONARY.find(ex => 
+                ex.name.toLowerCase() === exercise.name.toLowerCase() || 
+                (ex.synonyms && ex.synonyms.includes(exercise.name.toLowerCase()))
+              );
+              return {
+                ...exercise,
+                is_unilateral: dictEntry ? (dictEntry.is_unilateral ?? false) : (exercise.is_unilateral ?? false)
+              };
+            })
           };
         }
 

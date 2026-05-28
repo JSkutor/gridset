@@ -39,7 +39,12 @@ export default function PastLogs({ activeExerciseId }) {
     const logs = logIds.map(logId => {
       const logInfo = workoutLogs.find(wl => wl.id === logId);
       const sets = groupedByLogId[logId];
-      sets.sort((a, b) => a.set_number - b.set_number);
+      sets.sort((a, b) => {
+        if (a.set_number !== b.set_number) {
+          return a.set_number - b.set_number;
+        }
+        return (a.side || '').localeCompare(b.side || '');
+      });
       
       const totalVolume = sets.reduce((sum, s) => {
         const weight = Number(s.weight) || 0;
@@ -95,7 +100,14 @@ export default function PastLogs({ activeExerciseId }) {
                 <tbody>
                   {log.sets.map((set) => (
                     <tr key={set.id}>
-                      <td className="cell-set">{set.set_number}</td>
+                      <td className="cell-set">
+                        {set.set_number}
+                        {set.side && set.side !== 'both' && (
+                          <span className={`side-badge side-badge--${set.side.toLowerCase()}`}>
+                            {set.side}
+                          </span>
+                        )}
+                      </td>
                       <td className="cell-value">{set.weight || '—'}</td>
                       <td className="cell-value">{set.record}</td>
                     </tr>

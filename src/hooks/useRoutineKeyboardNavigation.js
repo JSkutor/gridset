@@ -41,7 +41,10 @@ export function useRoutineKeyboardNavigation({
   };
 
   const focusSettingControl = (index) => {
-    focusElement(settingControlRefs.current[index]);
+    const el = settingControlRefs.current[index];
+    if (el && document.body.contains(el)) {
+      focusElement(el);
+    }
   };
 
   const focusSelectedExerciseRow = () => {
@@ -59,15 +62,33 @@ export function useRoutineKeyboardNavigation({
       event.preventDefault();
       if (event.metaKey || event.ctrlKey) {
         onIncrement();
-      } else if (index > 0) {
-        focusSettingControl(index - 1);
+      } else {
+        // 실제 DOM에 부착된 이전 설정 컨트롤 찾기
+        let prevIndex = index - 1;
+        while (prevIndex >= 0) {
+          const el = settingControlRefs.current[prevIndex];
+          if (el && document.body.contains(el)) {
+            focusSettingControl(prevIndex);
+            break;
+          }
+          prevIndex--;
+        }
       }
     } else if (event.key === 'ArrowDown') {
       event.preventDefault();
       if (event.metaKey || event.ctrlKey) {
         onDecrement();
-      } else if (index < 3) {
-        focusSettingControl(index + 1);
+      } else {
+        // 실제 DOM에 부착된 다음 설정 컨트롤 찾기
+        let nextIndex = index + 1;
+        while (nextIndex < settingControlRefs.current.length) {
+          const el = settingControlRefs.current[nextIndex];
+          if (el && document.body.contains(el)) {
+            focusSettingControl(nextIndex);
+            break;
+          }
+          nextIndex++;
+        }
       }
     } else if (event.key === 'ArrowLeft' || event.key === 'Escape') {
       event.preventDefault();

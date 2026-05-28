@@ -190,7 +190,18 @@ test('generateDummyData creates diverse non-exercise seed data', () => {
   assert.ok(state.sessionExercises.length > state.sessions.length);
   assert.ok(state.workoutLogs.some((log) => log.session_id === null));
   assert.ok(state.workoutLogs.some((log) => log.end_time === null));
-  assert.ok(state.setRecords.every((record) => record.side === 'both'));
+
+  const unilateralExerciseIds = new Set(
+    state.exercises.filter((ex) => ex.is_unilateral).map((ex) => ex.id)
+  );
+  const allCorrectSides = state.setRecords.every((record) => {
+    if (unilateralExerciseIds.has(record.exercise_id)) {
+      return record.side === 'L' || record.side === 'R';
+    }
+    return record.side === 'both';
+  });
+  assert.ok(allCorrectSides);
+
   assert.ok(state.setRecords.some((record) => record.memo));
   assert.ok(state.exercises.length >= initialExerciseCount);
 });
@@ -208,4 +219,13 @@ test('clearAllData clears templates and logs without removing exercise source da
   assert.equal(state.workoutLogs.length, 0);
   assert.equal(state.setRecords.length, 0);
   assert.equal(state.exercises.length, exerciseCount);
+});
+
+test('updateExercise modifies existing exercise properties', () => {
+  const custom = useWorkoutStore.getState().addExercise('나만의 런지', '대퇴사두', '덤벨', 'kg', false);
+  assert.equal(custom.is_unilateral, false);
+
+  useWorkoutStore.getState().updateExercise(custom.id, { is_unilateral: true });
+  const updated = useWorkoutStore.getState().exercises.find(ex => ex.id === custom.id);
+  assert.equal(updated.is_unilateral, true);
 });

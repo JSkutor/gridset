@@ -1,5 +1,8 @@
 [
   {
+    "NOTE": "⚠️ WARNING: 이 JSON 파일의 is_unilateral 속성은 업데이트되지 않은 구버전 기준입니다. 최신 속성은 src/data/exerciseDictionary.js 파일을 참조하세요."
+  },
+  {
     "id": "3_4_Sit-Up",
     "name": "3/4 윗몸일으키기",
     "englishName": "3/4 Sit-Up",
