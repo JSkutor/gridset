@@ -109,7 +109,7 @@ function App() {
       )}
 
       {activeTab === 'R' && (
-        <main style={{ flex: 1, padding: '0 32px 32px 32px', overflow: 'hidden' }}>
+        <main style={{ flex: 1, padding: '0 32px 0 32px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <RoutineDetail />
         </main>
       )}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, Dumbbell, Tag, Calendar, ListPlus, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, Dumbbell, ListPlus, ChevronDown, ChevronUp, Timer, Clock, RotateCcw } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import ExerciseAutocomplete from './ExerciseAutocomplete';
 
@@ -7,7 +7,7 @@ export default function RoutineDetail() {
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
   const exercises = useWorkoutStore(state => state.exercises);
-  
+
   const addSession = useWorkoutStore(state => state.addSession);
   const deleteSession = useWorkoutStore(state => state.deleteSession);
   const addSessionExercise = useWorkoutStore(state => state.addSessionExercise);
@@ -17,15 +17,27 @@ export default function RoutineDetail() {
 
   const [selectedSessionId, setSelectedSessionId] = useState(sessions[0]?.id || null);
   const [newSessionName, setNewSessionName] = useState('');
+  const [isAddingSession, setIsAddingSession] = useState(false);
+  const [selectedExerciseId, setSelectedExerciseId] = useState(null);
 
   // 현재 선택된 세션
   const activeSession = sessions.find(s => s.id === selectedSessionId) || sessions[0] || null;
   const activeSessionId = activeSession?.id || null;
 
+  // 선택된 세션이 없으면 첫 번째로
+  const effectiveSessionId = selectedSessionId || sessions[0]?.id || null;
+  const effectiveSession = sessions.find(s => s.id === effectiveSessionId) || null;
+
   // 현재 세션의 운동들
   const activeSessionExercises = sessionExercises
-    .filter(se => se.session_id === activeSessionId)
+    .filter(se => se.session_id === (effectiveSession?.id || null))
     .sort((a, b) => a.order - b.order);
+
+  // 선택된 운동 상세
+  const selectedExerciseLink = activeSessionExercises.find(se => se.id === selectedExerciseId);
+  const selectedExercise = selectedExerciseLink
+    ? exercises.find(e => e.id === selectedExerciseLink.exercise_id)
+    : null;
 
   // 새 세션 생성
   const handleCreateSession = (e) => {
@@ -34,13 +46,13 @@ export default function RoutineDetail() {
     const newSession = addSession(newSessionName.trim());
     setSelectedSessionId(newSession.id);
     setNewSessionName('');
+    setIsAddingSession(false);
   };
 
   // 세션에 운동 추가
   const handleAddExerciseToSession = (dictExercise) => {
-    if (!activeSessionId) return;
+    if (!effectiveSession?.id) return;
 
-    // 1. 스토어의 전체 운동 리스트에 이미 등록되었는지 확인, 없으면 스토어에 추가
     let storeExercise = exercises.find(ex => ex.name.toLowerCase() === dictExercise.name.toLowerCase());
     if (!storeExercise) {
       storeExercise = addExercise(
@@ -51,358 +63,649 @@ export default function RoutineDetail() {
       );
     }
 
-    // 2. 세션 내에 이미 이 운동이 추가되어 있는지 검사
     const alreadyExists = activeSessionExercises.some(se => se.exercise_id === storeExercise.id);
-    if (alreadyExists) {
-      alert('이미 세션에 추가된 운동입니다.');
-      return;
-    }
+    if (alreadyExists) return;
 
-    // 3. 세션 운동으로 추가
     const nextOrder = activeSessionExercises.length + 1;
-    addSessionExercise(activeSessionId, storeExercise.id, nextOrder, 3, '10');
+    const newSe = addSessionExercise(effectiveSession.id, storeExercise.id, nextOrder, 3, '10');
+    setSelectedExerciseId(newSe.id);
   };
 
-  // 세션 운동 삭제
   const handleDeleteExercise = (id) => {
     deleteSessionExercise(id);
+    if (selectedExerciseId === id) setSelectedExerciseId(null);
   };
 
-  // 목표 세트수나 횟수 변경
   const handleUpdateTarget = (id, field, value) => {
     updateSessionExercise(id, { [field]: value });
   };
 
-  return (
-    <div className="main-grid" style={{ height: 'calc(100vh - 180px)', overflow: 'hidden' }}>
-      
-      {/* 1. Left Sidebar: 세션 목록 */}
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div className="section-header">
-          <h2>내 세션 목록</h2>
-          <span className="subtitle">My Workout Sessions</span>
-        </div>
+  const handleSelectSession = (id) => {
+    setSelectedSessionId(id);
+    setSelectedExerciseId(null);
+  };
 
-        {/* 세션 생성 폼 */}
-        <form onSubmit={handleCreateSession} style={{ padding: '16px', borderBottom: '1px solid var(--border)', display: 'flex', gap: '8px' }}>
-          <input
-            type="text"
-            placeholder="새 세션 명칭 (예: 하체 폭발)"
-            value={newSessionName}
-            onChange={(e) => setNewSessionName(e.target.value)}
-            style={{
-              flex: 1,
-              padding: '10px 14px',
-              background: 'rgba(0, 0, 0, 0.2)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--text-bright)',
-              fontSize: '13px',
-              outline: 'none',
-            }}
-          />
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 180px)', gap: 0 }}>
+
+      {/* ── 상단: 루틴(세션) 가로 탭 ── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        padding: '0 2px 28px 2px',
+        flexShrink: 0,
+        flexWrap: 'wrap',
+      }}>
+        {sessions.map(s => {
+          const isActive = s.id === (effectiveSession?.id);
+          return (
+            <button
+              key={s.id}
+              onClick={() => handleSelectSession(s.id)}
+              style={{
+                padding: isActive ? '6px 0' : '6px 0',
+                background: 'transparent',
+                border: 'none',
+                borderBottom: isActive ? '2px solid var(--text-bright)' : '2px solid transparent',
+                color: isActive ? 'var(--text-bright)' : 'var(--text-muted)',
+                fontWeight: isActive ? '700' : '400',
+                fontSize: isActive ? '22px' : '20px',
+                fontFamily: 'inherit',
+                letterSpacing: '-0.03em',
+                cursor: 'pointer',
+                transition: 'all 0.18s ease',
+                paddingRight: '20px',
+                paddingLeft: '2px',
+                lineHeight: 1.2,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {s.name}
+            </button>
+          );
+        })}
+
+        {/* 새 세션 추가 */}
+        {isAddingSession ? (
+          <form onSubmit={handleCreateSession} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <input
+              type="text"
+              autoFocus
+              placeholder="세션 명칭..."
+              value={newSessionName}
+              onChange={(e) => setNewSessionName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Escape') { setIsAddingSession(false); setNewSessionName(''); }}}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                borderBottom: '2px solid var(--border-focus)',
+                color: 'var(--text-bright)',
+                fontSize: '20px',
+                fontWeight: '600',
+                fontFamily: 'inherit',
+                letterSpacing: '-0.03em',
+                outline: 'none',
+                padding: '4px 4px 4px 2px',
+                width: '160px',
+              }}
+            />
+            <button type="submit" style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', padding: '4px' }}>
+              <Plus size={16} />
+            </button>
+          </form>
+        ) : (
           <button
-            type="submit"
+            onClick={() => setIsAddingSession(true)}
             style={{
-              padding: '10px',
-              background: 'rgba(122, 162, 247, 0.15)',
-              border: '1px solid var(--border-strong)',
-              borderRadius: 'var(--radius-md)',
-              color: 'var(--accent)',
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--text-muted)',
+              fontSize: '20px',
+              fontFamily: 'inherit',
               cursor: 'pointer',
+              padding: '6px 8px 6px 2px',
+              opacity: 0.5,
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center',
+              gap: '4px',
+              transition: 'opacity 0.15s',
             }}
+            onMouseEnter={e => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={e => e.currentTarget.style.opacity = '0.5'}
           >
-            <Plus size={16} />
+            <Plus size={17} />
           </button>
-        </form>
-
-        {/* 세션 리스트 */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-          {sessions.length === 0 ? (
-            <div style={{ padding: '30px 10px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
-              생성된 세션이 없습니다.
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {sessions.map(s => {
-                const isActive = s.id === selectedSessionId;
-                const sExs = sessionExercises.filter(se => se.session_id === s.id);
-                return (
-                  <div
-                    key={s.id}
-                    onClick={() => setSelectedSessionId(s.id)}
-                    style={{
-                      padding: '14px 16px',
-                      borderRadius: 'var(--radius-md)',
-                      background: isActive ? 'rgba(122, 162, 247, 0.08)' : 'transparent',
-                      border: isActive ? '1px solid var(--border-focus)' : '1px solid var(--border)',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: '600', color: isActive ? 'var(--text-bright)' : 'var(--text-main)', fontSize: '14px' }}>
-                        {s.name}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                        운동 {sExs.length}개 설정됨
-                      </div>
-                    </div>
-                    <ChevronRight size={14} color={isActive ? 'var(--accent)' : 'var(--text-muted)'} />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 2. Middle Panel: 선택한 세션의 상세 운동 설정 */}
-      <div className="glass-panel--strong" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-        {activeSession ? (
-          <>
-            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <div>
-                <h2>{activeSession.name} - 운동 상세 설정</h2>
-                <span className="subtitle">세션의 운동 구성 및 목표 세트를 관리합니다.</span>
-              </div>
-              <button
-                onClick={() => {
-                  if (confirm('이 세션을 삭제하시겠습니까?')) {
-                    deleteSession(activeSession.id);
-                    setSelectedSessionId(sessions[0]?.id || null);
-                  }
-                }}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  color: 'rgba(247, 122, 122, 0.7)',
-                  cursor: 'pointer',
-                  padding: '8px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '4px',
-                  fontSize: '12px',
-                  borderRadius: 'var(--radius-md)',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(247, 122, 122, 0.1)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
-                <Trash2 size={14} /> 세션 삭제
-              </button>
-            </div>
-
-            {/* 운동 추가 검색창 영역 */}
-            <div style={{ padding: '20px', borderBottom: '1px solid var(--border)', background: 'rgba(0,0,0,0.08)' }}>
-              <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: '500' }}>
-                세션에 추가할 운동 검색 (자동완성)
-              </div>
-              <ExerciseAutocomplete onSelect={handleAddExerciseToSession} />
-            </div>
-
-            {/* 세션 내 운동 목록 */}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
-              {activeSessionExercises.length === 0 ? (
-                <div style={{ padding: '60px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                  <ListPlus size={36} style={{ marginBottom: '12px', opacity: 0.5 }} />
-                  <div>세션에 설정된 운동이 없습니다.</div>
-                  <div style={{ fontSize: '12px', marginTop: '6px' }}>위의 검색창에서 운동을 검색해 추가해 보세요!</div>
-                </div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {activeSessionExercises.map((se, index) => {
-                    const ex = exercises.find(e => e.id === se.exercise_id);
-                    if (!ex) return null;
-                    return (
-                      <div
-                        key={se.id}
-                        style={{
-                          padding: '16px',
-                          borderRadius: 'var(--radius-md)',
-                          background: 'rgba(255, 255, 255, 0.02)',
-                          border: '1px solid var(--border)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          gap: '16px',
-                        }}
-                      >
-                        {/* 운동 기본 정보 */}
-                        <div style={{ flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '50%',
-                              background: 'var(--border-strong)',
-                              color: 'var(--text-muted)',
-                              fontSize: '11px',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontWeight: 'bold'
-                            }}>
-                              {index + 1}
-                            </span>
-                            <span style={{ fontWeight: '600', color: 'var(--text-bright)', fontSize: '15px' }}>{ex.name}</span>
-                          </div>
-
-                          <div style={{ display: 'flex', gap: '6px', marginTop: '6px', paddingLeft: '28px' }}>
-                            <span style={{
-                              fontSize: '10px',
-                              padding: '1px 5px',
-                              borderRadius: '3px',
-                              background: 'rgba(122, 162, 247, 0.08)',
-                              color: 'var(--accent)',
-                              border: '1px solid rgba(122, 162, 247, 0.12)'
-                            }}>
-                              {ex.primary_muscle || '기타'}
-                            </span>
-                            <span style={{
-                              fontSize: '10px',
-                              padding: '1px 5px',
-                              borderRadius: '3px',
-                              background: 'rgba(255,255,255,0.03)',
-                              color: 'var(--text-muted)',
-                              border: '1px solid var(--border)'
-                            }}>
-                              {ex.equipment || '기타'}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* 세트 목표 설정 영역 */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <input
-                              type="number"
-                              min="1"
-                              max="20"
-                              value={se.target_sets || 3}
-                              onChange={(e) => handleUpdateTarget(se.id, 'target_sets', parseInt(e.target.value) || 1)}
-                              style={{
-                                width: '45px',
-                                padding: '6px',
-                                textAlign: 'center',
-                                background: 'rgba(0,0,0,0.2)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '4px',
-                                color: 'var(--text-bright)',
-                                outline: 'none',
-                                fontSize: '13px'
-                              }}
-                            />
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>세트</span>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <input
-                              type="text"
-                              value={se.target_record || '10'}
-                              onChange={(e) => handleUpdateTarget(se.id, 'target_record', e.target.value)}
-                              style={{
-                                width: '55px',
-                                padding: '6px',
-                                textAlign: 'center',
-                                background: 'rgba(0,0,0,0.2)',
-                                border: '1px solid var(--border)',
-                                borderRadius: '4px',
-                                color: 'var(--text-bright)',
-                                outline: 'none',
-                                fontSize: '13px'
-                              }}
-                            />
-                            <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>회</span>
-                          </div>
-
-                          <button
-                            onClick={() => handleDeleteExercise(se.id)}
-                            style={{
-                              background: 'transparent',
-                              border: 'none',
-                              color: 'var(--text-muted)',
-                              cursor: 'pointer',
-                              padding: '6px',
-                              borderRadius: '4px',
-                              transition: 'all 0.2s'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.color = '#f77a7a'}
-                            onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)', flexDirection: 'column', gap: '10px' }}>
-            <Calendar size={40} style={{ opacity: 0.4 }} />
-            <div>선택된 세션이 없습니다. 왼편에서 세션을 생성해 주세요!</div>
-          </div>
         )}
       </div>
 
-      {/* 3. Right Panel: 전체 가용 운동 가이드 리스트 (참고용) */}
-      <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-        <div className="section-header">
-          <h2>가이드 사전 정보</h2>
-          <span className="subtitle">로컬 사전에 제공되는 주동근 및 장비 종류</span>
+      {/* ── 하단: 3패널 ── */}
+      <div style={{
+        flex: 1,
+        display: 'grid',
+        gridTemplateColumns: '220px 1fr 260px',
+        gap: '1px',
+        overflow: 'hidden',
+        borderTop: '1px solid var(--border)',
+      }}>
+
+        {/* 패널 1: 세션 목록 */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          borderRight: '1px solid var(--border)',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '16px 16px 10px',
+            fontSize: '10px',
+            fontWeight: '600',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--text-muted)',
+          }}>
+            세션
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 8px 16px' }}>
+            {sessions.length === 0 ? (
+              <div style={{ padding: '20px 8px', color: 'var(--text-muted)', fontSize: '13px', opacity: 0.6 }}>
+                세션이 없습니다
+              </div>
+            ) : (
+              sessions.map(s => {
+                const isActive = s.id === effectiveSession?.id;
+                const count = sessionExercises.filter(se => se.session_id === s.id).length;
+                return (
+                  <div
+                    key={s.id}
+                    onClick={() => handleSelectSession(s.id)}
+                    style={{
+                      padding: '10px 10px',
+                      borderRadius: '7px',
+                      cursor: 'pointer',
+                      background: isActive ? 'rgba(228, 232, 240, 0.06)' : 'transparent',
+                      marginBottom: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <div>
+                      <div style={{
+                        fontSize: '14px',
+                        fontWeight: isActive ? '600' : '400',
+                        color: isActive ? 'var(--text-bright)' : 'var(--text-main)',
+                        letterSpacing: '-0.01em',
+                      }}>
+                        {s.name}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        운동 {count}개
+                      </div>
+                    </div>
+                    {isActive && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('이 세션을 삭제하시겠습니까?')) {
+                            deleteSession(s.id);
+                            const remaining = sessions.filter(ss => ss.id !== s.id);
+                            setSelectedSessionId(remaining[0]?.id || null);
+                          }
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: 'var(--text-muted)',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          opacity: 0.5,
+                          borderRadius: '4px',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = '#f77a7a'; e.currentTarget.style.opacity = '1'; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.opacity = '0.5'; }}
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-bright)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Dumbbell size={14} color="var(--accent)" /> 주동근 카테고리 (15개 이상)
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {['가슴', '등 (광배근)', '등 (중부)', '등 (하부/허리)', '어깨', '이두', '삼두', '복근', '전완근', '승모근', '허벅지 앞 (대퇴사두)', '허벅지 뒤 (햄스트링)', '엉덩이 (둔근)', '종아리', '전신 (유산소)'].map(m => (
-                <span key={m} style={{ fontSize: '11px', padding: '3px 7px', background: 'rgba(122,162,247,0.06)', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text-main)' }}>
-                  {m}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--text-bright)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <Tag size={14} color="var(--accent)" /> 운동 장비 카테고리
-            </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-              {['바벨', '덤벨', '케이블', '머신', '맨몸', '케틀벨', '메디신볼', '짐볼', '밴드', 'EZ바'].map(e => (
-                <span key={e} style={{ fontSize: '11px', padding: '3px 7px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--border)', borderRadius: '4px', color: 'var(--text-muted)' }}>
-                  {e}
-                </span>
-              ))}
-            </div>
-          </div>
-
+        {/* 패널 2: 세션별 운동 목록 */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          borderRight: '1px solid var(--border)',
+          overflow: 'hidden',
+        }}>
           <div style={{
-            padding: '14px',
-            background: 'rgba(122, 162, 247, 0.04)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            fontSize: '12px',
+            padding: '16px 20px 10px',
+            fontSize: '10px',
+            fontWeight: '600',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
             color: 'var(--text-muted)',
-            lineHeight: '1.6'
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
           }}>
-            <strong>💡 자동 매칭 팁:</strong><br />
-            사전에 내장된 '풀업', '벤치', '오헤프', '사레레', '라트익', '행레레' 등의 한글 줄임말이나 단어 조각을 입력하면 정확한 주동근과 장비 정보가 연동되어 자동으로 세팅됩니다.
+            <span>{effectiveSession ? `${effectiveSession.name} — 운동` : '운동'}</span>
+          </div>
+
+          {/* 운동 검색 추가 */}
+          {effectiveSession && (
+            <div style={{ padding: '0 16px 12px', borderBottom: '1px solid var(--border)' }}>
+              <ExerciseAutocomplete onSelect={handleAddExerciseToSession} />
+            </div>
+          )}
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '8px 8px 16px' }}>
+            {!effectiveSession ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', opacity: 0.5 }}>
+                세션을 선택하세요
+              </div>
+            ) : activeSessionExercises.length === 0 ? (
+              <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', opacity: 0.5 }}>
+                <ListPlus size={28} style={{ marginBottom: '8px', display: 'block', margin: '0 auto 8px' }} />
+                운동을 추가해 보세요
+              </div>
+            ) : (
+              activeSessionExercises.map((se, idx) => {
+                const ex = exercises.find(e => e.id === se.exercise_id);
+                if (!ex) return null;
+                const isSelected = se.id === selectedExerciseId;
+                return (
+                  <div
+                    key={se.id}
+                    onClick={() => setSelectedExerciseId(isSelected ? null : se.id)}
+                    style={{
+                      padding: '12px 12px',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      background: isSelected ? 'rgba(228, 232, 240, 0.06)' : 'transparent',
+                      marginBottom: '2px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      transition: 'background 0.15s',
+                    }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
+                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <span style={{
+                      fontSize: '11px',
+                      color: 'var(--text-muted)',
+                      width: '18px',
+                      textAlign: 'right',
+                      flexShrink: 0,
+                      fontVariantNumeric: 'tabular-nums',
+                    }}>
+                      {idx + 1}
+                    </span>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: '15px',
+                        fontWeight: isSelected ? '600' : '400',
+                        color: isSelected ? 'var(--text-bright)' : 'var(--text-main)',
+                        letterSpacing: '-0.01em',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}>
+                        {ex.name}
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                        {se.target_sets}세트 · {se.target_record}회
+                        {ex.primary_muscle ? ` · ${ex.primary_muscle}` : ''}
+                      </div>
+                    </div>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeleteExercise(se.id); }}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--text-muted)',
+                        cursor: 'pointer',
+                        padding: '4px',
+                        opacity: 0,
+                        borderRadius: '4px',
+                        flexShrink: 0,
+                      }}
+                      className="exercise-delete-btn"
+                      onMouseEnter={e => { e.currentTarget.style.color = '#f77a7a'; e.currentTarget.style.opacity = '1'; }}
+                      onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.opacity = '0'; }}
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+
+        {/* 패널 3: 설정 (선택된 운동 or 세션 설정) */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            padding: '16px 16px 10px',
+            fontSize: '10px',
+            fontWeight: '600',
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: 'var(--text-muted)',
+          }}>
+            설정
+          </div>
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '0 16px 16px' }}>
+            {selectedExerciseLink && selectedExercise ? (
+              /* 운동 선택 시: 해당 운동 세부 설정 */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                <div>
+                  <div style={{
+                    fontSize: '18px',
+                    fontWeight: '700',
+                    color: 'var(--text-bright)',
+                    letterSpacing: '-0.02em',
+                    marginBottom: '4px',
+                  }}>
+                    {selectedExercise.name}
+                  </div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {selectedExercise.primary_muscle && (
+                      <span style={{
+                        fontSize: '10px',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        background: 'rgba(122,162,247,0.08)',
+                        color: 'var(--accent)',
+                        border: '1px solid rgba(122,162,247,0.12)',
+                      }}>
+                        {selectedExercise.primary_muscle}
+                      </span>
+                    )}
+                    {selectedExercise.equipment && (
+                      <span style={{
+                        fontSize: '10px',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        background: 'rgba(255,255,255,0.03)',
+                        color: 'var(--text-muted)',
+                        border: '1px solid var(--border)',
+                      }}>
+                        {selectedExercise.equipment}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 목표 세트 */}
+                <SettingRow label="목표 세트" icon={<Dumbbell size={13} />}>
+                  <NumberStepper
+                    value={selectedExerciseLink.target_sets || 3}
+                    min={1}
+                    max={20}
+                    onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'target_sets', v)}
+                    unit="세트"
+                  />
+                </SettingRow>
+
+                {/* 목표 횟수 */}
+                <SettingRow label="목표 횟수" icon={<RotateCcw size={13} />}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <input
+                      type="text"
+                      value={selectedExerciseLink.target_record || '10'}
+                      onChange={(e) => handleUpdateTarget(selectedExerciseLink.id, 'target_record', e.target.value)}
+                      style={{
+                        width: '56px',
+                        padding: '6px 8px',
+                        textAlign: 'center',
+                        background: 'rgba(255,255,255,0.04)',
+                        border: '1px solid var(--border)',
+                        borderRadius: '6px',
+                        color: 'var(--text-bright)',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                        fontFamily: 'inherit',
+                        outline: 'none',
+                        transition: 'border-color 0.15s',
+                      }}
+                      onFocus={e => e.target.style.borderColor = 'var(--border-focus)'}
+                      onBlur={e => e.target.style.borderColor = 'var(--border)'}
+                    />
+                    <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>회</span>
+                  </div>
+                </SettingRow>
+
+                {/* 세트 간 휴식시간 */}
+                <SettingRow label="세트 간 휴식" icon={<Timer size={13} />}>
+                  <RestTimeStepper
+                    value={selectedExerciseLink.rest_between_sets ?? 90}
+                    onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'rest_between_sets', v)}
+                  />
+                </SettingRow>
+
+                {/* 운동 후 휴식시간 */}
+                <SettingRow label="운동 후 휴식" icon={<Clock size={13} />}>
+                  <RestTimeStepper
+                    value={selectedExerciseLink.rest_after_exercise ?? 120}
+                    onChange={(v) => handleUpdateTarget(selectedExerciseLink.id, 'rest_after_exercise', v)}
+                  />
+                </SettingRow>
+
+                {/* 삭제 버튼 */}
+                <button
+                  onClick={() => handleDeleteExercise(selectedExerciseLink.id)}
+                  style={{
+                    marginTop: '8px',
+                    padding: '9px 0',
+                    background: 'transparent',
+                    border: '1px solid rgba(247,122,122,0.2)',
+                    borderRadius: '7px',
+                    color: 'rgba(247,122,122,0.7)',
+                    cursor: 'pointer',
+                    fontSize: '13px',
+                    fontFamily: 'inherit',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '6px',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(247,122,122,0.08)'; e.currentTarget.style.borderColor = 'rgba(247,122,122,0.4)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(247,122,122,0.2)'; }}
+                >
+                  <Trash2 size={13} />
+                  운동 제거
+                </button>
+              </div>
+            ) : (
+              /* 운동 미선택 시: 안내 */
+              <div style={{
+                paddingTop: '40px',
+                textAlign: 'center',
+                color: 'var(--text-muted)',
+                fontSize: '13px',
+                opacity: 0.5,
+                lineHeight: 1.6,
+              }}>
+                운동을 선택하면<br />세부 설정이 표시됩니다
+              </div>
+            )}
           </div>
         </div>
       </div>
+    </div>
+  );
+}
 
+/* ── 공통 설정 행 컴포넌트 ── */
+function SettingRow({ label, icon, children }) {
+  return (
+    <div>
+      <div style={{
+        fontSize: '11px',
+        color: 'var(--text-muted)',
+        fontWeight: '500',
+        letterSpacing: '0.05em',
+        marginBottom: '8px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '5px',
+      }}>
+        {icon}
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* ── 숫자 스테퍼 ── */
+function NumberStepper({ value, min, max, onChange, unit }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button
+        onClick={() => onChange(Math.max(min, value - 1))}
+        style={{
+          width: '28px',
+          height: '28px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--text-main)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+      >
+        −
+      </button>
+      <span style={{
+        fontSize: '17px',
+        fontWeight: '700',
+        color: 'var(--text-bright)',
+        minWidth: '28px',
+        textAlign: 'center',
+        fontVariantNumeric: 'tabular-nums',
+      }}>
+        {value}
+      </span>
+      <button
+        onClick={() => onChange(Math.min(max, value + 1))}
+        style={{
+          width: '28px',
+          height: '28px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--text-main)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+      >
+        +
+      </button>
+      <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{unit}</span>
+    </div>
+  );
+}
+
+/* ── 휴식시간 스테퍼 (15초 단위) ── */
+function RestTimeStepper({ value, onChange }) {
+  const STEP = 15;
+  const MIN = 0;
+  const MAX = 600;
+
+  const fmt = (s) => {
+    if (s < 60) return `${s}초`;
+    const m = Math.floor(s / 60);
+    const r = s % 60;
+    return r === 0 ? `${m}분` : `${m}분 ${r}초`;
+  };
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button
+        onClick={() => onChange(Math.max(MIN, value - STEP))}
+        style={{
+          width: '28px',
+          height: '28px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--text-main)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+      >
+        −
+      </button>
+      <span style={{
+        fontSize: '15px',
+        fontWeight: '700',
+        color: 'var(--text-bright)',
+        minWidth: '52px',
+        textAlign: 'center',
+        fontVariantNumeric: 'tabular-nums',
+        letterSpacing: '-0.02em',
+      }}>
+        {fmt(value)}
+      </span>
+      <button
+        onClick={() => onChange(Math.min(MAX, value + STEP))}
+        style={{
+          width: '28px',
+          height: '28px',
+          background: 'rgba(255,255,255,0.04)',
+          border: '1px solid var(--border)',
+          borderRadius: '6px',
+          color: 'var(--text-main)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '16px',
+          fontFamily: 'inherit',
+          transition: 'background 0.15s',
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+      >
+        +
+      </button>
     </div>
   );
 }

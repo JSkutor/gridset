@@ -1,280 +1,286 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Plus } from 'lucide-react'
-import { useWorkoutStore } from '../store/useWorkoutStore'
+import React, { useState, useEffect, useMemo } from 'react';
+import { Plus } from 'lucide-react';
+import { useWorkoutStore } from '../store/useWorkoutStore';
+import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
 
-export default function SetGrid({ session, onExerciseFocus }) {
-  const sessionExercises = useWorkoutStore(state => state.sessionExercises);
-  const exercises = useWorkoutStore(state => state.exercises);
+// ─── AddSetButton ─────────────────────────────────────────────────────────────
 
-  const initialBlocks = useMemo(() => {
-    if (!session) return [];
-    const sExercises = sessionExercises
-      .filter(se => se.session_id === session.id)
-      .sort((a, b) => a.order - b.order);
-      
-    return sExercises.map(se => {
-      const exercise = exercises.find(ex => ex.id === se.exercise_id);
+const ADD_BUTTON_STYLE = {
+  position: 'absolute',
+  bottom: '-10px',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  zIndex: 10,
+  width: '20px',
+  height: '20px',
+  borderRadius: '50%',
+  background: 'var(--bg-deep)',
+  border: '1px solid var(--border)',
+  color: 'var(--text-muted)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  cursor: 'pointer',
+  padding: 0,
+  transition: 'all 0.2s',
+  opacity: 0.35,
+};
+
+function AddSetButton({ onClick }) {
+  const onEnter = (e) =>
+    Object.assign(e.currentTarget.style, {
+      color: 'var(--text-bright)',
+      borderColor: 'var(--accent)',
+      opacity: '1',
+      transform: 'translateX(-50%) scale(1.1)',
+    });
+  const onLeave = (e) =>
+    Object.assign(e.currentTarget.style, {
+      color: 'var(--text-muted)',
+      borderColor: 'var(--border)',
+      opacity: '0.35',
+      transform: 'translateX(-50%) scale(1)',
+    });
+
+  return (
+    <button
+      onClick={onClick}
+      style={ADD_BUTTON_STYLE}
+      onMouseEnter={onEnter}
+      onMouseLeave={onLeave}
+      title="세트 추가"
+    >
+      <Plus size={10} />
+    </button>
+  );
+}
+
+// ─── SetRow ───────────────────────────────────────────────────────────────────
+
+function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus }) {
+  const { globalIndex, blockIndex, rowIndex, set_number, isLastSet, exerciseId } = row;
+
+  return (
+    <tr>
+      <td className="cell-set" style={{ position: 'relative' }}>
+        {set_number}
+        {isLastSet && <AddSetButton onClick={() => addRow(blockIndex)} />}
+      </td>
+
+      {COLUMNS.map(({ colIndex, field }) => (
+        <td key={field} className="cell-input">
+          <input
+            ref={getCellRef(globalIndex, colIndex)}
+            type="text"
+            inputMode="decimal"
+            value={row[field]}
+            onChange={(e) => updateRow(blockIndex, rowIndex, field, e.target.value)}
+            onKeyDown={(e) =>
+              handleKeyDown(e, globalIndex, colIndex, {
+                onTabAtEnd: () => addRow(blockIndex),
+              })
+            }
+            onFocus={() => onExerciseFocus?.(exerciseId)}
+            placeholder="—"
+          />
+        </td>
+      ))}
+    </tr>
+  );
+}
+
+// ─── pure helpers ─────────────────────────────────────────────────────────────
+
+const NUMERIC_RE = /^[0-9.]*$/;
+
+/**
+ * Build the initial block list from store data.
+ * Pure function — no React dependencies.
+ */
+function buildInitialBlocks(session, sessionExercises, exercises) {
+  if (!session) return [];
+  return sessionExercises
+    .filter((se) => se.session_id === session.id)
+    .sort((a, b) => a.order - b.order)
+    .map((se) => {
+      const exercise = exercises.find((ex) => ex.id === se.exercise_id);
       const targetSets = se.target_sets || 3;
-      const sets = Array.from({ length: targetSets }).map((_, i) => ({
-        id: crypto.randomUUID(),
-        set_number: i + 1,
-        weight: '',
-        reps: ''
-      }));
       return {
         id: se.id,
         exercise_id: se.exercise_id,
-        exercise_name: exercise ? exercise.name : 'Unknown Exercise',
-        sets
+        exercise_name: exercise?.name ?? 'Unknown Exercise',
+        sets: Array.from({ length: targetSets }, (_, i) => ({
+          id: crypto.randomUUID(),
+          set_number: i + 1,
+          weight: '',
+          reps: '',
+        })),
       };
     });
-  }, [session, sessionExercises, exercises]);
+}
+
+/**
+ * Flatten nested blocks → a single list of row descriptors with global indices.
+ * This removes the IIFE + mutable counter pattern from the JSX.
+ *
+ * @param {Block[]} blocks
+ * @returns {FlatRow[]}
+ */
+function flattenBlocks(blocks) {
+  const rows = [];
+  blocks.forEach((block, blockIndex) => {
+    block.sets.forEach((set, rowIndex) => {
+      rows.push({
+        ...set,
+        blockIndex,
+        rowIndex,
+        globalIndex: rows.length,
+        isLastSet: rowIndex === block.sets.length - 1,
+        exerciseId: block.exercise_id,
+      });
+    });
+  });
+  return rows;
+}
+
+/**
+ * Compute the global row index that the new set will occupy after addRow.
+ * Uses current (pre-mutation) blocks so it can be called before setBlocks.
+ *
+ * @param {Block[]} blocks - Current block array (before adding the new row).
+ * @param {number}  blockIndex - Which block is receiving the new row.
+ * @returns {number} Global index of the new row.
+ */
+function computeNewGlobalIndex(blocks, blockIndex) {
+  let idx = 0;
+  for (let i = 0; i < blockIndex; i++) idx += blocks[i].sets.length;
+  return idx + blocks[blockIndex].sets.length; // current length = 0-based index after insert
+}
+
+// ─── SetGrid ──────────────────────────────────────────────────────────────────
+
+export default function SetGrid({ session, onExerciseFocus }) {
+  const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
+  const exercises        = useWorkoutStore((state) => state.exercises);
+
+  const initialBlocks = useMemo(
+    () => buildInitialBlocks(session, sessionExercises, exercises),
+    [session, sessionExercises, exercises],
+  );
 
   const [blocks, setBlocks] = useState([]);
-  const [note, setNote] = useState('');
-  const [pendingFocusIndex, setPendingFocusIndex] = useState(null);
+  const [note,   setNote]   = useState('');
 
-  const totalSetsCount = useMemo(() => {
-    return blocks.reduce((sum, block) => sum + block.sets.length, 0);
-  }, [blocks]);
+  useEffect(() => { setBlocks(initialBlocks); }, [initialBlocks]);
 
-  const gridRefs = useRef([]);
+  // Flat row list — drives both the table render and totalRows for the hook.
+  const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
+  const totalRows = flatRows.length;
 
-  useEffect(() => {
-    gridRefs.current = gridRefs.current.slice(0, totalSetsCount);
-    for (let i = 0; i < totalSetsCount; i++) {
-      if (!gridRefs.current[i]) gridRefs.current[i] = [];
-    }
-  }, [totalSetsCount]);
+  const { getCellRef, handleKeyDown, requestFocus } = useGridNavigation(totalRows);
 
-  useEffect(() => {
-    if (pendingFocusIndex !== null && gridRefs.current[pendingFocusIndex]?.[0]) {
-      gridRefs.current[pendingFocusIndex][0].focus();
-      setPendingFocusIndex(null);
-    }
-  }, [blocks, pendingFocusIndex]);
+  // ── mutations ──────────────────────────────────────────────────────────────
 
-  const handleKeyDown = (e, globalRowIndex, colIndex, blockIndex) => {
-    const numRows = totalSetsCount;
-    const numCols = 2;
-
-    switch (e.key) {
-      case 'ArrowUp':
-        e.preventDefault();
-        if (globalRowIndex > 0) {
-          gridRefs.current[globalRowIndex - 1]?.[colIndex]?.focus();
-        }
-        break;
-      case 'ArrowDown':
-        e.preventDefault();
-        if (globalRowIndex < numRows - 1) {
-          gridRefs.current[globalRowIndex + 1]?.[colIndex]?.focus();
-        }
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (globalRowIndex < numRows - 1) {
-          gridRefs.current[globalRowIndex + 1]?.[colIndex]?.focus();
-        }
-        break;
-      case 'Tab':
-        e.preventDefault();
-        if (!e.shiftKey) {
-          if (colIndex < numCols - 1) {
-            gridRefs.current[globalRowIndex]?.[colIndex + 1]?.focus();
-          } else if (globalRowIndex < numRows - 1) {
-            gridRefs.current[globalRowIndex + 1]?.[0]?.focus();
-          } else {
-            addRow(blockIndex);
-          }
-        } else {
-          if (colIndex > 0) {
-            gridRefs.current[globalRowIndex]?.[colIndex - 1]?.focus();
-          } else if (globalRowIndex > 0) {
-            gridRefs.current[globalRowIndex - 1]?.[numCols - 1]?.focus();
-          }
-        }
-        break;
-      case 'ArrowLeft':
-        if (e.target.selectionStart === 0) {
-          e.preventDefault();
-          if (colIndex > 0) {
-            gridRefs.current[globalRowIndex]?.[colIndex - 1]?.focus();
-          } else if (globalRowIndex > 0) {
-            gridRefs.current[globalRowIndex - 1]?.[numCols - 1]?.focus();
-          }
-        }
-        break;
-      case 'ArrowRight':
-        if (e.target.selectionEnd === e.target.value.length) {
-          e.preventDefault();
-          if (colIndex < numCols - 1) {
-            gridRefs.current[globalRowIndex]?.[colIndex + 1]?.focus();
-          } else if (globalRowIndex < numRows - 1) {
-            gridRefs.current[globalRowIndex + 1]?.[0]?.focus();
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  };
-
-  useEffect(() => {
-    setBlocks(initialBlocks);
-  }, [initialBlocks]);
-
-  const updateRow = (blockIndex, setIndex, field, value) => {
-    if (/^[0-9.]*$/.test(value)) {
-      const newBlocks = [...blocks];
-      newBlocks[blockIndex].sets[setIndex][field] = value;
-      setBlocks(newBlocks);
-    }
+  const updateRow = (blockIndex, rowIndex, field, value) => {
+    if (!NUMERIC_RE.test(value)) return;
+    setBlocks((prev) =>
+      prev.map((b, bi) =>
+        bi !== blockIndex ? b : {
+          ...b,
+          sets: b.sets.map((s, si) =>
+            si !== rowIndex ? s : { ...s, [field]: value },
+          ),
+        },
+      ),
+    );
   };
 
   const addRow = (blockIndex) => {
-    const newBlocks = [...blocks];
-    const block = newBlocks[blockIndex];
-    block.sets.push({
-      id: crypto.randomUUID(),
-      set_number: block.sets.length + 1,
-      weight: '',
-      reps: ''
-    });
-    setBlocks(newBlocks);
+    // Compute the new row's global index *before* updating state so we can
+    // call requestFocus in the same event-handler batch.
+    const newGlobalIdx = computeNewGlobalIndex(blocks, blockIndex);
 
-    let globalIndex = 0;
-    for (let i = 0; i < blockIndex; i++) {
-      globalIndex += newBlocks[i].sets.length;
-    }
-    globalIndex += block.sets.length - 1;
-    setPendingFocusIndex(globalIndex);
+    setBlocks((prev) =>
+      prev.map((b, i) =>
+        i !== blockIndex ? b : {
+          ...b,
+          sets: [
+            ...b.sets,
+            {
+              id: crypto.randomUUID(),
+              set_number: b.sets.length + 1,
+              weight: '',
+              reps: '',
+            },
+          ],
+        },
+      ),
+    );
+
+    requestFocus(newGlobalIdx);
   };
+
+  // ── render ─────────────────────────────────────────────────────────────────
 
   if (!session) {
     return (
-      <div className="glass-panel--strong" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+      <div
+        className="glass-panel--strong"
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          color: 'var(--text-muted)',
+        }}
+      >
         세션을 선택해주세요
       </div>
     );
   }
 
   return (
-    <div className="glass-panel--strong" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      
+    <div
+      className="glass-panel--strong"
+      style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
+    >
       {/* Header */}
       <div style={{ padding: '20px 22px 0 22px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>{session.name}</h2>
+        <h2 style={{ fontSize: '18px', fontWeight: '600', marginBottom: '16px' }}>
+          {session.name}
+        </h2>
       </div>
 
+      {/* Grid */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px 22px' }}>
         <div className="spreadsheet-wrap">
           <table className="spreadsheet">
             <thead>
               <tr>
                 <th className="col-set">Set</th>
-                <th>kg</th>
-                <th>Reps</th>
+                {COLUMNS.map(({ field, header }) => (
+                  <th key={field}>{header}</th>
+                ))}
               </tr>
             </thead>
             <tbody>
-              {(() => {
-                let globalRowIndex = 0;
-                return blocks.map((block, blockIndex) => (
-                  <React.Fragment key={block.id}>
-                    {block.sets.map((row, rowIndex, arr) => {
-                      const isLastSet = rowIndex === arr.length - 1;
-                      const currentGlobalIndex = globalRowIndex++;
-                      return (
-                        <tr key={row.id}>
-                          <td className="cell-set" style={{ position: 'relative' }}>
-                            {row.set_number}
-                            {isLastSet && (
-                              <button 
-                                onClick={() => addRow(blockIndex)}
-                                style={{
-                                  position: 'absolute',
-                                  bottom: '-10px',
-                                  left: '50%',
-                                  transform: 'translateX(-50%)',
-                                  zIndex: 10,
-                                  width: '20px',
-                                  height: '20px',
-                                  borderRadius: '50%',
-                                  background: 'var(--bg-deep)',
-                                  border: '1px solid var(--border)',
-                                  color: 'var(--text-muted)',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  cursor: 'pointer',
-                                  padding: 0,
-                                  transition: 'all 0.2s',
-                                  opacity: 0.35
-                                }}
-                                onMouseEnter={e => { 
-                                  e.currentTarget.style.color = 'var(--text-bright)'; 
-                                  e.currentTarget.style.borderColor = 'var(--accent)'; 
-                                  e.currentTarget.style.opacity = '1';
-                                  e.currentTarget.style.transform = 'translateX(-50%) scale(1.1)';
-                                }}
-                                onMouseLeave={e => { 
-                                  e.currentTarget.style.color = 'var(--text-muted)'; 
-                                  e.currentTarget.style.borderColor = 'var(--border)'; 
-                                  e.currentTarget.style.opacity = '0.35';
-                                  e.currentTarget.style.transform = 'translateX(-50%) scale(1)';
-                                }}
-                                title="세트 추가"
-                              >
-                                <Plus size={10} />
-                              </button>
-                            )}
-                          </td>
-                          <td className="cell-input">
-                            <input
-                              ref={el => {
-                                if (!gridRefs.current[currentGlobalIndex]) {
-                                  gridRefs.current[currentGlobalIndex] = [];
-                                }
-                                gridRefs.current[currentGlobalIndex][0] = el;
-                              }}
-                              type="text"
-                              inputMode="decimal"
-                              value={row.weight}
-                              onChange={(e) => updateRow(blockIndex, rowIndex, 'weight', e.target.value)}
-                              onKeyDown={(e) => handleKeyDown(e, currentGlobalIndex, 0, blockIndex)}
-                              onFocus={() => onExerciseFocus && onExerciseFocus(block.exercise_id)}
-                              placeholder="—"
-                            />
-                          </td>
-                          <td className="cell-input">
-                            <input
-                              ref={el => {
-                                if (!gridRefs.current[currentGlobalIndex]) {
-                                  gridRefs.current[currentGlobalIndex] = [];
-                                }
-                                gridRefs.current[currentGlobalIndex][1] = el;
-                              }}
-                              type="text"
-                              inputMode="decimal"
-                              value={row.reps}
-                              onChange={(e) => updateRow(blockIndex, rowIndex, 'reps', e.target.value)}
-                              onKeyDown={(e) => handleKeyDown(e, currentGlobalIndex, 1, blockIndex)}
-                              onFocus={() => onExerciseFocus && onExerciseFocus(block.exercise_id)}
-                              placeholder="—"
-                            />
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </React.Fragment>
-                ));
-              })()}
+              {flatRows.map((row) => (
+                <SetRow
+                  key={row.id}
+                  row={row}
+                  getCellRef={getCellRef}
+                  handleKeyDown={handleKeyDown}
+                  updateRow={updateRow}
+                  addRow={addRow}
+                  onExerciseFocus={onExerciseFocus}
+                />
+              ))}
             </tbody>
           </table>
         </div>
       </div>
 
+      {/* Session note */}
       <div style={{ padding: '18px 22px', borderTop: '1px solid var(--border)' }}>
         <textarea
           className="note-textarea"
@@ -284,5 +290,5 @@ export default function SetGrid({ session, onExerciseFocus }) {
         />
       </div>
     </div>
-  )
+  );
 }
