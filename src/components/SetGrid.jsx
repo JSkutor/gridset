@@ -177,7 +177,7 @@ export default function SetGrid({ session, onExerciseFocus }) {
   const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
   const totalRows = flatRows.length;
 
-  const { getCellRef, handleKeyDown, requestFocus } = useGridNavigation(totalRows);
+  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive } = useGridNavigation(totalRows);
 
   // ── mutations ──────────────────────────────────────────────────────────────
 
@@ -254,7 +254,7 @@ export default function SetGrid({ session, onExerciseFocus }) {
       {/* Grid */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px 22px' }}>
         <div className="spreadsheet-wrap">
-          <table className="spreadsheet">
+          <table className={`spreadsheet ${isKeyboardActive ? 'keyboard-navigating' : ''}`}>
             <thead>
               <tr>
                 <th className="col-set">Set</th>

@@ -25,6 +25,7 @@ export const useWorkoutStore = create(
       // We generate a mock user ID for local usage, simulating the Supabase user
       currentUser: { id: '00000000-0000-0000-0000-000000000000', name: '게스트', isGuest: true }, 
       exercises: DEFAULT_EXERCISES,
+      routines: [],
       sessions: [],
       sessionExercises: [],
       workoutLogs: [],
@@ -67,12 +68,99 @@ export const useWorkoutStore = create(
       },
       deleteExercise: (id) => set((state) => ({ exercises: state.exercises.filter(ex => ex.id !== id) })),
 
-      // --- Actions: Sessions (Workout Templates) ---
-      addSession: (name) => {
+      // --- Actions: Routines ---
+      addRoutine: (name) => {
         const { currentUser } = get();
+        const newRoutine = {
+          id: generateUUID(),
+          name,
+          user_id: currentUser.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        set((state) => ({ routines: [...state.routines, newRoutine] }));
+        return newRoutine;
+      },
+      deleteRoutine: (id) => {
+        const { sessions } = get();
+        const sessionsToDelete = sessions.filter(s => s.routine_id === id);
+        const sessionIdsToDelete = sessionsToDelete.map(s => s.id);
+        set((state) => ({
+          routines: state.routines.filter(r => r.id !== id),
+          sessions: state.sessions.filter(s => s.routine_id !== id),
+          sessionExercises: state.sessionExercises.filter(se => !sessionIdsToDelete.includes(se.session_id))
+        }));
+      },
+      updateRoutine: (id, name) => set((state) => ({
+        routines: state.routines.map(r => r.id === id ? { ...r, name, updated_at: new Date().toISOString() } : r)
+      })),
+      duplicateRoutine: (sourceRoutineId) => {
+        const { currentUser, routines, sessions, sessionExercises } = get();
+        const sourceRoutine = routines.find(r => r.id === sourceRoutineId);
+        if (!sourceRoutine) return null;
+
+        const newRoutineId = generateUUID();
+        const newRoutine = {
+          id: newRoutineId,
+          name: `${sourceRoutine.name} 복사`,
+          user_id: currentUser.id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        const sessionsToCopy = sessions.filter(s => s.routine_id === sourceRoutineId);
+        const newSessions = [];
+        const newSessionExercises = [];
+
+        sessionsToCopy.forEach(s => {
+          const newSessionId = generateUUID();
+          newSessions.push({
+            id: newSessionId,
+            name: s.name,
+            routine_id: newRoutineId,
+            session_order: s.session_order,
+            user_id: currentUser.id,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+          const exercisesToCopy = sessionExercises.filter(se => se.session_id === s.id);
+          exercisesToCopy.forEach(se => {
+            newSessionExercises.push({
+              id: generateUUID(),
+              session_id: newSessionId,
+              exercise_id: se.exercise_id,
+              order: se.order,
+              target_sets: se.target_sets,
+              target_record: se.target_record,
+              rest_between_sets: se.rest_between_sets,
+              rest_after_exercise: se.rest_after_exercise,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            });
+          });
+        });
+
+        set((state) => ({
+          routines: [...state.routines, newRoutine],
+          sessions: [...state.sessions, ...newSessions],
+          sessionExercises: [...state.sessionExercises, ...newSessionExercises]
+        }));
+
+        return newRoutine;
+      },
+
+
+      // --- Actions: Sessions (Workout Templates) ---
+      addSession: (routine_id, name) => {
+        const { currentUser, sessions } = get();
+        const routineSessions = sessions.filter(s => s.routine_id === routine_id);
+        const nextOrder = routineSessions.length + 1;
         const newSession = {
           id: generateUUID(),
           name,
+          routine_id,
+          session_order: nextOrder,
           user_id: currentUser.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -80,11 +168,55 @@ export const useWorkoutStore = create(
         set((state) => ({ sessions: [...state.sessions, newSession] }));
         return newSession;
       },
-      deleteSession: (id) => set((state) => ({
-        sessions: state.sessions.filter(sn => sn.id !== id),
-        // Cascade delete session exercises
-        sessionExercises: state.sessionExercises.filter(se => se.session_id !== id)
+      deleteSession: (id) => {
+        const { sessions } = get();
+        const sessionToDelete = sessions.find(s => s.id === id);
+        if (!sessionToDelete) return;
+
+        const routineId = sessionToDelete.routine_id;
+
+        set((state) => {
+          const remainingSessions = state.sessions.filter(sn => sn.id !== id);
+          
+          // 삭제된 세션과 같은 루틴 내 세션들을 순서대로 정렬 후 순번 재할당
+          const routineSessions = remainingSessions
+            .filter(s => s.routine_id === routineId)
+            .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+
+          const orderMap = new Map();
+          routineSessions.forEach((s, idx) => {
+            orderMap.set(s.id, idx + 1);
+          });
+
+          const finalSessions = remainingSessions.map(s => {
+            if (s.routine_id === routineId) {
+              return { ...s, session_order: orderMap.get(s.id) || 1 };
+            }
+            return s;
+          });
+
+          return {
+            sessions: finalSessions,
+            sessionExercises: state.sessionExercises.filter(se => se.session_id !== id)
+          };
+        });
+      },
+      updateSession: (id, name) => set((state) => ({
+        sessions: state.sessions.map(s => s.id === id ? { ...s, name, updated_at: new Date().toISOString() } : s)
       })),
+      reorderSessions: (routine_id, orderedSessionIds) => {
+        set((state) => ({
+          sessions: state.sessions.map(s => {
+            if (s.routine_id === routine_id) {
+              const newOrderIndex = orderedSessionIds.indexOf(s.id);
+              if (newOrderIndex !== -1) {
+                return { ...s, session_order: newOrderIndex + 1, updated_at: new Date().toISOString() };
+              }
+            }
+            return s;
+          })
+        }));
+      },
 
       // --- Actions: Session Exercises ---
       addSessionExercise: (session_id, exercise_id, order, target_sets, target_record) => {
@@ -95,20 +227,64 @@ export const useWorkoutStore = create(
           order,
           target_sets,
           target_record,
+          rest_between_sets: 90,
+          rest_after_exercise: 120, // UI 기본 휴식시간이 120초(2분)이므로 일치시킵니다.
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
         set((state) => ({ sessionExercises: [...state.sessionExercises, newSessionExercise] }));
         return newSessionExercise;
       },
-      deleteSessionExercise: (id) => set((state) => ({
-        sessionExercises: state.sessionExercises.filter(se => se.id !== id)
-      })),
+      deleteSessionExercise: (id) => {
+        const { sessionExercises } = get();
+        const exerciseToDelete = sessionExercises.find(se => se.id === id);
+        if (!exerciseToDelete) return;
+
+        const sessionId = exerciseToDelete.session_id;
+
+        set((state) => {
+          const remainingExercises = state.sessionExercises.filter(se => se.id !== id);
+
+          // 삭제된 운동과 같은 세션 내 운동들을 순서대로 정렬 후 순번 재할당
+          const sessionExs = remainingExercises
+            .filter(se => se.session_id === sessionId)
+            .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+          const orderMap = new Map();
+          sessionExs.forEach((se, idx) => {
+            orderMap.set(se.id, idx + 1);
+          });
+
+          const finalExercises = remainingExercises.map(se => {
+            if (se.session_id === sessionId) {
+              return { ...se, order: orderMap.get(se.id) || 1, updated_at: new Date().toISOString() };
+            }
+            return se;
+          });
+
+          return {
+            sessionExercises: finalExercises
+          };
+        });
+      },
       updateSessionExercise: (id, updates) => set((state) => ({
         sessionExercises: state.sessionExercises.map(se => 
           se.id === id ? { ...se, ...updates, updated_at: new Date().toISOString() } : se
         )
       })),
+      reorderSessionExercises: (session_id, orderedExerciseLinkIds) => {
+        set((state) => ({
+          sessionExercises: state.sessionExercises.map(se => {
+            if (se.session_id === session_id) {
+              const newOrderIndex = orderedExerciseLinkIds.indexOf(se.id);
+              if (newOrderIndex !== -1) {
+                return { ...se, order: newOrderIndex + 1, updated_at: new Date().toISOString() };
+              }
+            }
+            return se;
+          })
+        }));
+      },
 
       // --- Actions: Workout Logs ---
       startWorkoutLog: (session_id = null) => {
@@ -164,6 +340,7 @@ export const useWorkoutStore = create(
       // --- Debug / Utils ---
       clearAllData: () => set({
         exercises: DEFAULT_EXERCISES,
+        routines: [],
         sessions: [],
         sessionExercises: [],
         workoutLogs: [],
@@ -185,15 +362,21 @@ export const useWorkoutStore = create(
           return d;
         };
 
-        // 1. Create Sessions (Templates)
+        // 1. Create Routines
+        const routine1Id = generateUUID();
+        const routines = [
+          { id: routine1Id, name: '2분할 상하체 루틴', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() }
+        ];
+
+        // 2. Create Sessions (Templates)
         const session1Id = generateUUID();
         const session2Id = generateUUID();
         const sessions = [
-          { id: session1Id, name: '상체 (Push & Pull)', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: session2Id, name: '하체 (Legs)', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: session1Id, name: '상체 (Push & Pull)', routine_id: routine1Id, session_order: 1, user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: session2Id, name: '하체 (Legs)', routine_id: routine1Id, session_order: 2, user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
         ];
 
-        // 2. Create Session Exercises
+        // 3. Create Session Exercises
         const sessionExercises = [
           // 상체
           { id: generateUUID(), session_id: session1Id, exercise_id: exMap['벤치프레스'], order: 1, target_sets: 4, target_record: '10', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -205,7 +388,7 @@ export const useWorkoutStore = create(
           { id: generateUUID(), session_id: session2Id, exercise_id: exMap['레그 익스텐션'], order: 3, target_sets: 3, target_record: '15', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
         ];
 
-        // 3. Create Workout Logs (Past few weeks)
+        // 4. Create Workout Logs (Past few weeks)
         const workoutLogs = [];
         const setRecords = [];
 
@@ -299,6 +482,7 @@ export const useWorkoutStore = create(
 
         set({
           currentUser,
+          routines,
           sessions,
           sessionExercises,
           workoutLogs,
@@ -308,11 +492,13 @@ export const useWorkoutStore = create(
     }),
     {
       name: 'workout-tracker-storage', // Key for local storage
-      version: 1, // Upgrade from previous default (version 0)
+      version: 2, // Upgrade to version 2
       migrate: (persistedState, version) => {
-        if (version === 0) {
+        let newState = { ...persistedState };
+
+        if (version < 1) {
           // routines -> sessions
-          const sessions = (persistedState.routines || []).map(r => ({
+          const sessions = (newState.routines || []).map(r => ({
             id: r.id,
             name: r.name,
             user_id: r.user_id,
@@ -321,7 +507,7 @@ export const useWorkoutStore = create(
           }));
 
           // routineExercises -> sessionExercises
-          const sessionExercises = (persistedState.routineExercises || []).map(re => ({
+          const sessionExercises = (newState.routineExercises || []).map(re => ({
             id: re.id,
             session_id: re.routine_id, // Map routine_id to session_id
             exercise_id: re.exercise_id,
@@ -333,25 +519,51 @@ export const useWorkoutStore = create(
           }));
 
           // workoutLogs: map routine_id to session_id inside logs
-          const workoutLogs = (persistedState.workoutLogs || []).map(log => ({
+          const workoutLogs = (newState.workoutLogs || []).map(log => ({
             ...log,
             session_id: log.routine_id // Map routine_id to session_id
           }));
 
-          const newState = { ...persistedState };
-          
           // Clean up old fields
           delete newState.routines;
           delete newState.routineExercises;
 
-          return {
+          newState = {
             ...newState,
             sessions,
             sessionExercises,
             workoutLogs
           };
         }
-        return persistedState;
+
+        if (version < 2) {
+          // Re-introducing routines! Map existing sessions to a default routine.
+          const defaultRoutineId = generateUUID();
+          const defaultRoutine = {
+            id: defaultRoutineId,
+            name: '기본 루틴',
+            user_id: newState.currentUser?.id || '00000000-0000-0000-0000-000000000000',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          };
+
+          const routines = newState.routines && newState.routines.length > 0
+            ? newState.routines
+            : [defaultRoutine];
+
+          const sessions = (newState.sessions || []).map(s => ({
+            ...s,
+            routine_id: s.routine_id || defaultRoutineId
+          }));
+
+          newState = {
+            ...newState,
+            routines,
+            sessions
+          };
+        }
+
+        return newState;
       }
     }
   )

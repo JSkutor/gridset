@@ -189,7 +189,7 @@ body::before {
   position: relative;
 }
 
-.spreadsheet td.cell-input:hover {
+.spreadsheet:not(.keyboard-navigating) td.cell-input:hover {
   background: var(--bg-cell-hover);
 }
 
@@ -322,4 +322,56 @@ body::before {
 .heatmap-cell {
   aspect-ratio: 1;
   border-radius: 2px;
+}
+
+/* ─── Routine Exercise List Hover Behaviors ─── */
+.routine-exercise-row:hover .exercise-delete-btn {
+  opacity: 0.65 !important;
+}
+.routine-exercise-row .exercise-delete-btn:hover {
+  opacity: 1 !important;
+  color: #f77a7a !important;
+}
+
+/* ─── Routine Keyboard Focus States ─── */
+.routine-session-row {
+  border: 1px solid transparent !important;
+}
+
+.routine-session-row:focus-visible {
+  border-color: var(--border-focus) !important;
+  background: rgba(228, 232, 240, 0.08) !important;
+  box-shadow: 0 0 10px rgba(122, 162, 247, 0.15) !important;
+  outline: none;
+}
+
+.routine-exercise-row {
+  border: 1px solid transparent !important;
+}
+
+.routine-exercise-row:focus-visible {
+  border-color: var(--border-focus) !important;
+  background: rgba(228, 232, 240, 0.08) !important;
+  box-shadow: 0 0 10px rgba(122, 162, 247, 0.15) !important;
+  outline: none;
+}
+
+/* ─── Routine Add Exercise Button Styling ─── */
+.routine-add-exercise-btn {
+  transition: all 0.15s ease !important;
+  outline: none !important;
+}
+
+.routine-add-exercise-btn:hover {
+  background: rgba(122, 162, 247, 0.05) !important;
+  border-color: rgba(122, 162, 247, 0.3) !important;
+  color: var(--accent) !important;
+}
+
+.routine-add-exercise-btn:focus-visible {
+  border-color: rgba(122, 162, 247, 0.25) !important;
+  background: rgba(122, 162, 247, 0.03) !important;
+  color: var(--accent) !important;
+  box-shadow: 0 0 8px rgba(122, 162, 247, 0.08) !important;
+  outline: none !important;
 }

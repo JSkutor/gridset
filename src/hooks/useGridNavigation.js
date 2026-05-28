@@ -41,6 +41,9 @@ export function useGridNavigation(totalRows) {
    */
   const [pendingFocusIndex, setPendingFocusIndex] = useState(null);
 
+  /** Track if user is navigating using the keyboard to temporarily suppress hover styles */
+  const [isKeyboardActive, setIsKeyboardActive] = useState(false);
+
   // Keep the refs array sized to the current row count.
   useEffect(() => {
     gridRefs.current = gridRefs.current.slice(0, totalRows);
@@ -56,6 +59,20 @@ export function useGridNavigation(totalRows) {
       setPendingFocusIndex(null);
     }
   }, [pendingFocusIndex, totalRows]);
+
+  // Listen for mouse movement to restore hover styles once the user moves the mouse.
+  useEffect(() => {
+    if (!isKeyboardActive) return;
+
+    const handleMouseMove = () => {
+      setIsKeyboardActive(false);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, [isKeyboardActive]);
 
   // ── internals ───────────────────────────────────────────────────────────────
 
@@ -90,16 +107,19 @@ export function useGridNavigation(totalRows) {
         case 'ArrowUp':
           e.preventDefault();
           if (rowIndex > 0) focusCell(rowIndex - 1, colIndex);
+          setIsKeyboardActive(true);
           break;
 
         case 'ArrowDown':
           e.preventDefault();
           if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, colIndex);
+          setIsKeyboardActive(true);
           break;
 
         case 'Enter':
           e.preventDefault();
           if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, colIndex);
+          setIsKeyboardActive(true);
           break;
 
         case 'Tab':
@@ -112,6 +132,7 @@ export function useGridNavigation(totalRows) {
             if      (colIndex > 0)                   focusCell(rowIndex, colIndex - 1);
             else if (rowIndex > 0)                   focusCell(rowIndex - 1, NUM_COLS - 1);
           }
+          setIsKeyboardActive(true);
           break;
 
         case 'ArrowLeft':
@@ -119,6 +140,7 @@ export function useGridNavigation(totalRows) {
             e.preventDefault();
             if      (colIndex > 0)  focusCell(rowIndex, colIndex - 1);
             else if (rowIndex > 0)  focusCell(rowIndex - 1, NUM_COLS - 1);
+            setIsKeyboardActive(true);
           }
           break;
 
@@ -127,6 +149,7 @@ export function useGridNavigation(totalRows) {
             e.preventDefault();
             if      (colIndex < NUM_COLS - 1)  focusCell(rowIndex, colIndex + 1);
             else if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, 0);
+            setIsKeyboardActive(true);
           }
           break;
 
@@ -147,5 +170,5 @@ export function useGridNavigation(totalRows) {
     setPendingFocusIndex(rowIndex);
   }, []);
 
-  return { getCellRef, handleKeyDown, requestFocus };
+  return { getCellRef, handleKeyDown, requestFocus, isKeyboardActive };
 }

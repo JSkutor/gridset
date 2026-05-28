@@ -57,7 +57,7 @@ workout_logs (실제 수행 기록, 세션 참조)
 - `target_sets` (Int): 목표 세트 수 (예: 4)
 - `target_record` (String or Int): 목표 기록 (횟수 또는 시간(초), 예: 10)
 - `rest_between_sets` (Int, DEFAULT 90): 세트 간 휴식 시간 (초). 미설정 시 90초 적용
-- `rest_after_exercise` (Int, DEFAULT 150): 운동 종료 후 다음 운동 전 휴식 시간 (초). 미설정 시 150초 적용
+- `rest_after_exercise` (Int, DEFAULT 120): 운동 종료 후 다음 운동 전 휴식 시간 (초). 미설정 시 150초 적용
 - `created_at` / `updated_at`
 
 ---

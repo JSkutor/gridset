@@ -14,6 +14,7 @@ function App() {
   
   const generateDummyData = useWorkoutStore(state => state.generateDummyData);
   const clearAllData = useWorkoutStore(state => state.clearAllData);
+  const routines = useWorkoutStore(state => state.routines);
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
 
@@ -81,9 +82,14 @@ function App() {
               cursor: 'pointer'
             }}
           >
-            {sessions.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
+            {sessions.map(s => {
+              const r = routines.find(rt => rt.id === s.routine_id);
+              return (
+                <option key={s.id} value={s.id}>
+                  {r ? `[${r.name}] ${s.name}` : s.name}
+                </option>
+              );
+            })}
           </select>
         )}
         
@@ -109,7 +115,7 @@ function App() {
       )}
 
       {activeTab === 'R' && (
-        <main style={{ flex: 1, padding: '0 32px 0 32px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <main style={{ flex: 1, padding: '0 32px 32px 32px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <RoutineDetail />
         </main>
       )}
