@@ -318,15 +318,19 @@ export default function RoutineDetail() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', flex: 1, minHeight: 0, gap: 0 }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', flex: 1, minHeight: 0, gap: 0 }}>
 
       {/* ── 상단: 루틴 가로 리스트 (floating pill 스타일) ── */}
       <div style={{
+        position: 'absolute',
+        top: '-64px',
+        left: '2px',
+        right: '2px',
+        zIndex: 10,
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
         padding: '0 2px 28px 2px',
-        flexShrink: 0,
         overflowX: 'auto',
         scrollbarWidth: 'none',
       }}>
@@ -797,7 +801,6 @@ export default function RoutineDetail() {
               effectiveRoutineSessions.map((s, index) => {
                 const isActive = s.id === effectiveSessionId;
                 const count = sessionExercises.filter(se => se.session_id === s.id).length;
-                const dayLetter = getSessionDayLetter(s, sessions);
                 const isEditing = editingSessionId === s.id;
 
                 if (isEditing) {
