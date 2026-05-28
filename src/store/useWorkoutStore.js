@@ -25,8 +25,8 @@ export const useWorkoutStore = create(
       // We generate a mock user ID for local usage, simulating the Supabase user
       currentUser: { id: '00000000-0000-0000-0000-000000000000', name: '게스트', isGuest: true }, 
       exercises: DEFAULT_EXERCISES,
-      routines: [],
-      routineExercises: [],
+      sessions: [],
+      sessionExercises: [],
       workoutLogs: [],
       setRecords: [],
 
@@ -67,30 +67,30 @@ export const useWorkoutStore = create(
       },
       deleteExercise: (id) => set((state) => ({ exercises: state.exercises.filter(ex => ex.id !== id) })),
 
-      // --- Actions: Routines ---
-      addRoutine: (name) => {
+      // --- Actions: Sessions (Workout Templates) ---
+      addSession: (name) => {
         const { currentUser } = get();
-        const newRoutine = {
+        const newSession = {
           id: generateUUID(),
           name,
           user_id: currentUser.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
-        set((state) => ({ routines: [...state.routines, newRoutine] }));
-        return newRoutine;
+        set((state) => ({ sessions: [...state.sessions, newSession] }));
+        return newSession;
       },
-      deleteRoutine: (id) => set((state) => ({
-        routines: state.routines.filter(rt => rt.id !== id),
-        // Cascade delete routine exercises
-        routineExercises: state.routineExercises.filter(re => re.routine_id !== id)
+      deleteSession: (id) => set((state) => ({
+        sessions: state.sessions.filter(sn => sn.id !== id),
+        // Cascade delete session exercises
+        sessionExercises: state.sessionExercises.filter(se => se.session_id !== id)
       })),
 
-      // --- Actions: Routine Exercises ---
-      addRoutineExercise: (routine_id, exercise_id, order, target_sets, target_record) => {
-        const newRoutineExercise = {
+      // --- Actions: Session Exercises ---
+      addSessionExercise: (session_id, exercise_id, order, target_sets, target_record) => {
+        const newSessionExercise = {
           id: generateUUID(),
-          routine_id,
+          session_id,
           exercise_id,
           order,
           target_sets,
@@ -98,25 +98,25 @@ export const useWorkoutStore = create(
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
-        set((state) => ({ routineExercises: [...state.routineExercises, newRoutineExercise] }));
-        return newRoutineExercise;
+        set((state) => ({ sessionExercises: [...state.sessionExercises, newSessionExercise] }));
+        return newSessionExercise;
       },
-      deleteRoutineExercise: (id) => set((state) => ({
-        routineExercises: state.routineExercises.filter(re => re.id !== id)
+      deleteSessionExercise: (id) => set((state) => ({
+        sessionExercises: state.sessionExercises.filter(se => se.id !== id)
       })),
-      updateRoutineExercise: (id, updates) => set((state) => ({
-        routineExercises: state.routineExercises.map(re => 
-          re.id === id ? { ...re, ...updates, updated_at: new Date().toISOString() } : re
+      updateSessionExercise: (id, updates) => set((state) => ({
+        sessionExercises: state.sessionExercises.map(se => 
+          se.id === id ? { ...se, ...updates, updated_at: new Date().toISOString() } : se
         )
       })),
 
       // --- Actions: Workout Logs ---
-      startWorkoutLog: (routine_id = null) => {
+      startWorkoutLog: (session_id = null) => {
         const { currentUser } = get();
         const newLog = {
           id: generateUUID(),
           user_id: currentUser.id,
-          routine_id,
+          session_id,
           start_time: new Date().toISOString(),
           end_time: null,
           created_at: new Date().toISOString(),
@@ -164,8 +164,8 @@ export const useWorkoutStore = create(
       // --- Debug / Utils ---
       clearAllData: () => set({
         exercises: DEFAULT_EXERCISES,
-        routines: [],
-        routineExercises: [],
+        sessions: [],
+        sessionExercises: [],
         workoutLogs: [],
         setRecords: []
       }),
@@ -185,24 +185,24 @@ export const useWorkoutStore = create(
           return d;
         };
 
-        // 1. Create Routines
-        const routine1Id = generateUUID();
-        const routine2Id = generateUUID();
-        const routines = [
-          { id: routine1Id, name: '상체 (Push & Pull)', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: routine2Id, name: '하체 (Legs)', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+        // 1. Create Sessions (Templates)
+        const session1Id = generateUUID();
+        const session2Id = generateUUID();
+        const sessions = [
+          { id: session1Id, name: '상체 (Push & Pull)', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: session2Id, name: '하체 (Legs)', user_id: currentUser.id, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
         ];
 
-        // 2. Create Routine Exercises
-        const routineExercises = [
+        // 2. Create Session Exercises
+        const sessionExercises = [
           // 상체
-          { id: generateUUID(), routine_id: routine1Id, exercise_id: exMap['벤치프레스'], order: 1, target_sets: 4, target_record: '10', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: generateUUID(), routine_id: routine1Id, exercise_id: exMap['풀업'], order: 2, target_sets: 4, target_record: '8', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: generateUUID(), routine_id: routine1Id, exercise_id: exMap['오버헤드 프레스'], order: 3, target_sets: 3, target_record: '10', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: generateUUID(), session_id: session1Id, exercise_id: exMap['벤치프레스'], order: 1, target_sets: 4, target_record: '10', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: generateUUID(), session_id: session1Id, exercise_id: exMap['풀업'], order: 2, target_sets: 4, target_record: '8', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: generateUUID(), session_id: session1Id, exercise_id: exMap['오버헤드 프레스'], order: 3, target_sets: 3, target_record: '10', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
           // 하체
-          { id: generateUUID(), routine_id: routine2Id, exercise_id: exMap['스쿼트'], order: 1, target_sets: 5, target_record: '5', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: generateUUID(), routine_id: routine2Id, exercise_id: exMap['데드리프트'], order: 2, target_sets: 3, target_record: '5', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-          { id: generateUUID(), routine_id: routine2Id, exercise_id: exMap['레그 익스텐션'], order: 3, target_sets: 3, target_record: '15', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: generateUUID(), session_id: session2Id, exercise_id: exMap['스쿼트'], order: 1, target_sets: 5, target_record: '5', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: generateUUID(), session_id: session2Id, exercise_id: exMap['데드리프트'], order: 2, target_sets: 3, target_record: '5', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+          { id: generateUUID(), session_id: session2Id, exercise_id: exMap['레그 익스텐션'], order: 3, target_sets: 3, target_record: '15', created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
         ];
 
         // 3. Create Workout Logs (Past few weeks)
@@ -215,7 +215,7 @@ export const useWorkoutStore = create(
           const start = getPastDate(daysAgo);
           const end = new Date(start.getTime() + 60 * 60 * 1000);
           workoutLogs.push({
-            id: logId, user_id: currentUser.id, routine_id: routine1Id,
+            id: logId, user_id: currentUser.id, session_id: session1Id,
             start_time: start.toISOString(), end_time: end.toISOString(),
             created_at: start.toISOString(), updated_at: end.toISOString()
           });
@@ -244,7 +244,7 @@ export const useWorkoutStore = create(
           const start = getPastDate(daysAgo);
           const end = new Date(start.getTime() + 75 * 60 * 1000);
           workoutLogs.push({
-            id: logId, user_id: currentUser.id, routine_id: routine2Id,
+            id: logId, user_id: currentUser.id, session_id: session2Id,
             start_time: start.toISOString(), end_time: end.toISOString(),
             created_at: start.toISOString(), updated_at: end.toISOString()
           });
@@ -273,7 +273,7 @@ export const useWorkoutStore = create(
           const start = getPastDate(daysAgo);
           const end = new Date(start.getTime() + 20 * 60 * 1000);
           workoutLogs.push({
-            id: logId, user_id: currentUser.id, routine_id: null, // routine_id: null for free workouts
+            id: logId, user_id: currentUser.id, session_id: null, // session_id: null for free workouts
             start_time: start.toISOString(), end_time: end.toISOString(),
             created_at: start.toISOString(), updated_at: end.toISOString()
           });
@@ -299,8 +299,8 @@ export const useWorkoutStore = create(
 
         set({
           currentUser,
-          routines,
-          routineExercises,
+          sessions,
+          sessionExercises,
           workoutLogs,
           setRecords
         });
@@ -308,6 +308,52 @@ export const useWorkoutStore = create(
     }),
     {
       name: 'workout-tracker-storage', // Key for local storage
+      version: 1, // Upgrade from previous default (version 0)
+      migrate: (persistedState, version) => {
+        if (version === 0) {
+          // routines -> sessions
+          const sessions = (persistedState.routines || []).map(r => ({
+            id: r.id,
+            name: r.name,
+            user_id: r.user_id,
+            created_at: r.created_at,
+            updated_at: r.updated_at
+          }));
+
+          // routineExercises -> sessionExercises
+          const sessionExercises = (persistedState.routineExercises || []).map(re => ({
+            id: re.id,
+            session_id: re.routine_id, // Map routine_id to session_id
+            exercise_id: re.exercise_id,
+            order: re.order,
+            target_sets: re.target_sets,
+            target_record: re.target_record,
+            created_at: re.created_at,
+            updated_at: re.updated_at
+          }));
+
+          // workoutLogs: map routine_id to session_id inside logs
+          const workoutLogs = (persistedState.workoutLogs || []).map(log => ({
+            ...log,
+            session_id: log.routine_id // Map routine_id to session_id
+          }));
+
+          const newState = { ...persistedState };
+          
+          // Clean up old fields
+          delete newState.routines;
+          delete newState.routineExercises;
+
+          return {
+            ...newState,
+            sessions,
+            sessionExercises,
+            workoutLogs
+          };
+        }
+        return persistedState;
+      }
     }
   )
 );
+

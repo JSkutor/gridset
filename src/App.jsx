@@ -14,29 +14,29 @@ function App() {
   
   const generateDummyData = useWorkoutStore(state => state.generateDummyData);
   const clearAllData = useWorkoutStore(state => state.clearAllData);
-  const routines = useWorkoutStore(state => state.routines);
-  const routineExercises = useWorkoutStore(state => state.routineExercises);
+  const sessions = useWorkoutStore(state => state.sessions);
+  const sessionExercises = useWorkoutStore(state => state.sessionExercises);
 
-  // 현재 활성화 및 훈련 진행할 루틴 ID 상태 관리
-  const [selectedRoutineId, setSelectedRoutineId] = useState(null);
+  // 현재 활성화 및 훈련 진행할 세션 ID 상태 관리
+  const [selectedSessionId, setSelectedSessionId] = useState(null);
 
-  // 루틴 목록이 로드되거나 변경될 때 기본값 설정
+  // 세션 목록이 로드되거나 변경될 때 기본값 설정
   useEffect(() => {
-    if (routines.length > 0 && !selectedRoutineId) {
-      setSelectedRoutineId(routines[0].id);
+    if (sessions.length > 0 && !selectedSessionId) {
+      setSelectedSessionId(sessions[0].id);
     }
-  }, [routines, selectedRoutineId]);
+  }, [sessions, selectedSessionId]);
 
-  const selectedRoutine = routines.find(r => r.id === selectedRoutineId) || routines[0] || null;
+  const selectedSession = sessions.find(s => s.id === selectedSessionId) || sessions[0] || null;
 
   useEffect(() => {
-    if (selectedRoutine && !activeExerciseId) {
-      const firstRoutineExercise = routineExercises.find(re => re.routine_id === selectedRoutine.id);
-      if (firstRoutineExercise) {
-        setActiveExerciseId(firstRoutineExercise.exercise_id);
+    if (selectedSession && !activeExerciseId) {
+      const firstSessionExercise = sessionExercises.find(se => se.session_id === selectedSession.id);
+      if (firstSessionExercise) {
+        setActiveExerciseId(firstSessionExercise.exercise_id);
       }
     }
-  }, [selectedRoutine, routineExercises, activeExerciseId]);
+  }, [selectedSession, sessionExercises, activeExerciseId]);
 
   return (
     <div className="app-container">
@@ -63,11 +63,11 @@ function App() {
         </div>
 
         {/* 'S' 탭일 때 루틴을 즉시 바꿀 수 있는 선택 드롭다운 */}
-        {activeTab === 'S' && routines.length > 0 && (
+        {activeTab === 'S' && sessions.length > 0 && (
           <select
-            value={selectedRoutineId || ''}
+            value={selectedSessionId || ''}
             onChange={(e) => {
-              setSelectedRoutineId(e.target.value);
+              setSelectedSessionId(e.target.value);
               setActiveExerciseId(null); // 운동 타겟 리셋하여 첫 번째 운동 활성화 유도
             }}
             style={{
@@ -81,8 +81,8 @@ function App() {
               cursor: 'pointer'
             }}
           >
-            {routines.map(r => (
-              <option key={r.id} value={r.id}>{r.name}</option>
+            {sessions.map(s => (
+              <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
         )}
@@ -101,7 +101,7 @@ function App() {
         <main className="main-grid">
           <ExerciseInfo activeExerciseId={activeExerciseId} />
           <SetGrid 
-            routine={selectedRoutine} 
+            session={selectedSession} 
             onExerciseFocus={setActiveExerciseId} 
           />
           <PastLogs activeExerciseId={activeExerciseId} />
