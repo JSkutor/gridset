@@ -250,7 +250,14 @@ function SetRecordTable({ records, exercise, compact = false }) {
         <tbody>
           {records.map((record) => (
             <tr key={record.id}>
-              <td className="cell-set">{record.set_number}</td>
+              <td className="cell-set">
+                {record.set_number}
+                {record.side && record.side !== 'both' && (
+                  <span className={`side-badge side-badge--${record.side.toLowerCase()}`}>
+                    {record.side}
+                  </span>
+                )}
+              </td>
               <td className="cell-value">{formatSetCellValue(record.weight)}</td>
               <td className="cell-value">{formatSetCellValue(record.record)}</td>
               {hasMemo && (
@@ -352,7 +359,12 @@ function DailyLogCard({ log, records, exercisesById, session, routine }) {
       const exercise = exercisesById.get(exerciseId);
       return {
         exercise,
-        records: [...exerciseRecords].sort((a, b) => a.set_number - b.set_number),
+        records: [...exerciseRecords].sort((a, b) => {
+          if (a.set_number !== b.set_number) {
+            return a.set_number - b.set_number;
+          }
+          return (a.side || '').localeCompare(b.side || '');
+        }),
       };
     });
   }, [records, exercisesById]);
@@ -946,7 +958,6 @@ export default function LogPage() {
 
   const recordsByLogId = useMemo(() => {
     return setRecords
-      .filter((record) => record.is_completed)
       .reduce((acc, record) => {
         if (!acc.has(record.workout_log_id)) acc.set(record.workout_log_id, []);
         acc.get(record.workout_log_id).push(record);
@@ -960,7 +971,12 @@ export default function LogPage() {
         ...log,
         startDate: toDate(log.start_time),
         records: (recordsByLogId.get(log.id) || []).slice().sort((a, b) => {
-          if (a.exercise_id === b.exercise_id) return a.set_number - b.set_number;
+          if (a.exercise_id === b.exercise_id) {
+            if (a.set_number !== b.set_number) {
+              return a.set_number - b.set_number;
+            }
+            return (a.side || '').localeCompare(b.side || '');
+          }
           return a.exercise_id.localeCompare(b.exercise_id);
         }),
       }))
@@ -1008,7 +1024,12 @@ export default function LogPage() {
           date: log.startDate,
           startTime: log.start_time,
           value,
-          records: records.slice().sort((a, b) => a.set_number - b.set_number),
+          records: records.slice().sort((a, b) => {
+            if (a.set_number !== b.set_number) {
+              return a.set_number - b.set_number;
+            }
+            return (a.side || '').localeCompare(b.side || '');
+          }),
         });
         summary.setCount += records.length;
         summary.totalMetric += value;

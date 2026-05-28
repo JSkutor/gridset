@@ -74,6 +74,7 @@ workout_logs (실제 수행 기록, 세션 참조)
 - `equipment` (String): 사용 장비 (예: "바벨", "덤벨", "맨몸", "케틀벨", "밴드", "기타")
 - `category` (String): 운동 유형. `strength` / `stretching` / `cardio` / `plyometrics` / `powerlifting` 중 하나
 - `unit` (String): 기록 단위. `kg` / `reps` / `sec` 중 하나
+- `is_unilateral` (Boolean): 편측성 운동 여부 (기본값 `false`)
 - `synonyms` (String[]): 자동완성 검색용 동의어 목록 (한글 줄임말, 영문명 등). 없으면 빈 배열
 - `user_id` (String, Nullable): 유저가 커스텀으로 추가한 경우 유저 ID. 기본 제공 운동은 Null
 - `created_at` / `updated_at`
@@ -122,6 +123,6 @@ workout_logs (실제 수행 기록, 세션 참조)
 - `set_number` (Int): 세트 번호 (1, 2, 3...)
 - `weight` (Float, Nullable): 수행 무게 (기본 단위: kg, 맨몸 운동 시 Null 또는 0)
 - `record` (String or Int): 수행 기록 (횟수 또는 시간(초), 단순 숫자로 저장)
-- `is_completed` (Boolean): UI 상에서 세트 완료 체크 여부
+- `side` (String): 수행 방향 ('L', 'R', 'both' 중 하나, 기본값 'both')
 - `memo` (String, Nullable): 세트별 메모 (예: "너무 무거움")
 - `created_at` / `updated_at`

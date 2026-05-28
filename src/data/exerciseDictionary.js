@@ -16,6 +16,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -34,6 +35,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -52,6 +54,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -68,6 +71,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -84,6 +88,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -100,6 +105,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -116,6 +122,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -136,6 +143,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -157,6 +165,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -173,6 +182,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -193,6 +203,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -211,6 +222,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -229,6 +241,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -250,6 +263,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -266,6 +280,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -284,6 +299,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -303,6 +319,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -319,6 +336,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -339,6 +357,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -358,6 +377,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "powerlifting",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -377,6 +397,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "powerlifting",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -393,6 +414,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -411,6 +433,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -429,6 +452,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -448,6 +472,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -466,6 +491,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -487,6 +513,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -507,6 +534,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -533,6 +561,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -552,6 +581,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -568,6 +598,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -587,6 +618,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -609,6 +641,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -630,6 +663,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -653,6 +687,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -673,6 +708,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "cardio",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -692,6 +728,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -708,6 +745,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -728,6 +766,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -746,6 +785,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -769,6 +809,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -791,6 +832,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -810,6 +852,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -826,6 +869,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -848,6 +892,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -864,6 +909,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -882,6 +928,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -900,6 +947,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -918,6 +966,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -934,6 +983,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -950,6 +1000,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -966,6 +1017,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -985,6 +1037,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1003,6 +1056,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1021,6 +1075,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1040,6 +1095,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1058,6 +1114,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1077,6 +1134,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1098,6 +1156,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1117,6 +1176,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1141,6 +1201,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1159,6 +1220,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1177,6 +1239,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1197,6 +1260,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1216,6 +1280,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1240,6 +1305,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1258,6 +1324,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1276,6 +1343,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1293,6 +1361,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1309,6 +1378,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1327,6 +1397,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1357,6 +1428,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1373,6 +1445,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1389,6 +1462,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1407,6 +1481,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1430,6 +1505,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1448,6 +1524,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1468,6 +1545,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1488,6 +1566,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1506,6 +1585,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1526,6 +1606,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1546,6 +1627,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1565,6 +1647,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1595,6 +1678,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1625,6 +1709,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1644,6 +1729,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1668,6 +1754,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1687,6 +1774,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "powerlifting",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1703,6 +1791,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1724,6 +1813,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1742,6 +1832,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1764,6 +1855,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1786,6 +1878,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1806,6 +1899,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1824,6 +1918,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1840,6 +1935,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1859,6 +1955,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1877,6 +1974,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1899,6 +1997,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1917,6 +2016,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1938,6 +2038,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1954,6 +2055,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -1979,6 +2081,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -1999,6 +2102,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -2015,6 +2119,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2031,6 +2136,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2049,6 +2155,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2066,6 +2173,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2087,6 +2195,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2103,6 +2212,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2121,6 +2231,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2136,6 +2247,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2152,6 +2264,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2168,6 +2281,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2183,6 +2297,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2202,6 +2317,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2220,6 +2336,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2244,6 +2361,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2266,6 +2384,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2282,6 +2401,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2298,6 +2418,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2314,6 +2435,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2330,6 +2452,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2348,6 +2471,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -2373,6 +2497,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2391,6 +2516,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2417,6 +2543,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2433,6 +2560,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2449,6 +2577,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2468,6 +2597,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2486,6 +2616,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -2504,6 +2635,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2520,6 +2652,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2539,6 +2672,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "powerlifting",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2558,6 +2692,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2576,6 +2711,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2598,6 +2734,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2614,6 +2751,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2630,6 +2768,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2646,6 +2785,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2667,6 +2807,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2686,6 +2827,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2704,6 +2846,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2727,6 +2870,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2745,6 +2889,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2768,6 +2913,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2791,6 +2937,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2815,6 +2962,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2839,6 +2987,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2855,6 +3004,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2871,6 +3021,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2887,6 +3038,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2903,6 +3055,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2921,6 +3074,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2940,6 +3094,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2956,6 +3111,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2974,6 +3130,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -2996,6 +3153,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3020,6 +3178,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3045,6 +3204,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3063,6 +3223,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3084,6 +3245,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3103,6 +3265,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3122,6 +3285,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3138,6 +3302,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3160,6 +3325,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3176,6 +3342,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3192,6 +3359,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3214,6 +3382,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3234,6 +3403,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3250,6 +3420,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3266,6 +3437,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3284,6 +3456,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3299,6 +3472,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3315,6 +3489,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3331,6 +3506,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3350,6 +3526,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3368,6 +3545,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3386,6 +3564,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3406,6 +3585,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3422,6 +3602,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3441,6 +3622,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3460,6 +3642,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3479,6 +3662,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3498,6 +3682,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3516,6 +3701,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3536,6 +3722,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3552,6 +3739,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3573,6 +3761,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3596,6 +3785,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3612,6 +3802,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3630,6 +3821,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3648,6 +3840,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3670,6 +3863,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3686,6 +3880,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3706,6 +3901,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3727,6 +3923,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3745,6 +3942,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3765,6 +3963,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3783,6 +3982,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3806,6 +4006,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3827,6 +4028,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3846,6 +4048,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3876,6 +4079,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3894,6 +4098,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3913,6 +4118,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -3931,6 +4137,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3952,6 +4159,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3970,6 +4178,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -3986,6 +4195,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4002,6 +4212,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4021,6 +4232,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4037,6 +4249,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4062,6 +4275,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4085,6 +4299,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4106,6 +4321,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4124,6 +4340,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4148,6 +4365,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4171,6 +4389,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4194,6 +4413,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4217,6 +4437,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4240,6 +4461,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4263,6 +4485,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4281,6 +4504,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4297,6 +4521,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4313,6 +4538,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4331,6 +4557,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4347,6 +4574,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4366,6 +4594,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "cardio",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4384,6 +4613,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4402,6 +4632,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4421,6 +4652,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4438,6 +4670,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4454,6 +4687,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4474,6 +4708,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4490,6 +4725,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4509,6 +4745,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4528,6 +4765,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4547,6 +4785,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4563,6 +4802,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4579,6 +4819,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4597,6 +4838,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4612,6 +4854,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4630,6 +4873,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4648,6 +4892,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4666,6 +4911,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4684,6 +4930,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4702,6 +4949,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4718,6 +4966,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4734,6 +4983,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4750,6 +5000,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4766,6 +5017,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4786,6 +5038,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4802,6 +5055,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4821,6 +5075,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4839,6 +5094,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4858,6 +5114,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4874,6 +5131,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4890,6 +5148,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4908,6 +5167,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4924,6 +5184,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -4944,6 +5205,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4962,6 +5224,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -4980,6 +5243,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5000,6 +5264,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5021,6 +5286,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5039,6 +5305,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5060,6 +5327,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5083,6 +5351,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5101,6 +5370,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5120,6 +5390,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5136,6 +5407,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5156,6 +5428,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5172,6 +5445,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5192,6 +5466,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5212,6 +5487,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5241,6 +5517,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5272,6 +5549,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5297,6 +5575,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5315,6 +5594,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5333,6 +5613,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5349,6 +5630,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5368,6 +5650,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5386,6 +5669,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5404,6 +5688,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5422,6 +5707,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5440,6 +5726,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5456,6 +5743,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5472,6 +5760,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5491,6 +5780,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5507,6 +5797,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5525,6 +5816,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5541,6 +5833,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5559,6 +5852,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5575,6 +5869,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5592,6 +5887,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5608,6 +5904,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5628,6 +5925,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "plyometrics",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5647,6 +5945,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5666,6 +5965,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5682,6 +5982,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5700,6 +6001,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5724,6 +6026,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5743,6 +6046,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5762,6 +6066,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5786,6 +6091,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5802,6 +6108,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5820,6 +6127,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": true,
     "user_id": null
   },
   {
@@ -5838,6 +6146,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5856,6 +6165,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5878,6 +6188,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5897,6 +6208,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5915,6 +6227,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5933,6 +6246,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5951,6 +6265,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5970,6 +6285,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -5990,6 +6306,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -6009,6 +6326,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -6028,6 +6346,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -6052,6 +6371,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -6072,6 +6392,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "reps",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -6092,6 +6413,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "stretching",
     "unit": "sec",
+    "is_unilateral": false,
     "user_id": null
   },
   {
@@ -6110,6 +6432,7 @@ export const EXERCISE_DICTIONARY = [
     ],
     "category": "strength",
     "unit": "kg",
+    "is_unilateral": false,
     "user_id": null
   }
 ];

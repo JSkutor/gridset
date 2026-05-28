@@ -13,12 +13,17 @@ import {
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
 function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus }) {
-  const { globalIndex, blockIndex, rowIndex, set_number, exerciseId } = row;
+  const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
 
   return (
     <tr>
       <td className="cell-set">
         {set_number}
+        {side && side !== 'both' && (
+          <span className={`side-badge side-badge--${side.toLowerCase()}`}>
+            {side}
+          </span>
+        )}
       </td>
 
       {COLUMNS.map(({ colIndex, field }) => (
@@ -110,23 +115,29 @@ const SetGrid = forwardRef(function SetGrid({ session, onExerciseFocus }, ref) {
     // call requestFocus in the same event-handler batch.
     const newGlobalIdx = computeNewGlobalIndex(blocks, blockIndex);
     const newRowIndex  = blocks[blockIndex].sets.length; // 추가될 행의 rowIndex
+    const isUnilateral = blocks[blockIndex].is_unilateral;
 
     setBlocks((prev) =>
-      prev.map((b, i) =>
-        i !== blockIndex ? b : {
+      prev.map((b, i) => {
+        if (i !== blockIndex) return b;
+
+        const maxSetNumber = b.sets.length > 0 ? Math.max(...b.sets.map((s) => s.set_number)) : 0;
+        const nextSetNumber = maxSetNumber + 1;
+
+        const newSets = isUnilateral
+          ? [
+              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'L', weight: '', reps: '', memo: '' },
+              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'R', weight: '', reps: '', memo: '' },
+            ]
+          : [
+              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'both', weight: '', reps: '', memo: '' },
+            ];
+
+        return {
           ...b,
-          sets: [
-            ...b.sets,
-            {
-              id: crypto.randomUUID(),
-              set_number: b.sets.length + 1,
-              weight: '',
-              reps: '',
-              memo: '',
-            },
-          ],
-        },
-      ),
+          sets: [...b.sets, ...newSets],
+        };
+      })
     );
 
     setFocusedSet({ blockIndex, rowIndex: newRowIndex });

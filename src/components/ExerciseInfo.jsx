@@ -321,7 +321,7 @@ export default function ExerciseInfo({ activeExerciseId }) {
 
   const totalVolume = useMemo(() => {
     if (!activeExerciseId) return 0;
-    const records = setRecords.filter(sr => sr.exercise_id === activeExerciseId && sr.is_completed);
+    const records = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
     return records.reduce((acc, sr) => {
       const weight = Number(sr.weight) || 0;
       const reps = Number(sr.record) || 0;
@@ -334,7 +334,7 @@ export default function ExerciseInfo({ activeExerciseId }) {
   const chartData = useMemo(() => {
     if (!activeExerciseId) return [];
 
-    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId && sr.is_completed);
+    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
     
     // Group peak record by date (daily maximum weight or reps/time)
     const dailyRecords = {};
@@ -371,7 +371,7 @@ export default function ExerciseInfo({ activeExerciseId }) {
   const heatmapData = useMemo(() => {
     if (!activeExerciseId) return Array.from({ length: 70 }).map(() => 0);
 
-    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId && sr.is_completed);
+    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
     
     // Group volume/count by date
     const volumeByDate = {};

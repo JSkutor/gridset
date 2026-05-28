@@ -3,7 +3,6 @@ import { Search, Dumbbell, Tag, Sparkles, Plus } from 'lucide-react';
 import { MUSCLE_GROUPS } from '../data/muscleGroups.js';
 import { getExerciseSuggestions } from '../utils/exerciseSearch.js';
 
-const MUSCLES = MUSCLE_GROUPS;
 const EQUIPMENTS = ['바벨', '덤벨', '머신', '맨몸', '케이블', '기타'];
 
 export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 검색 (예: 풀업, 벤치, ㅍㅇ, OHP)', autoFocus = false, onCancel }) {
@@ -14,6 +13,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
   // 커스텀 운동 추가용 주동근 및 장비 선택 상태
   const [selectedMuscle, setSelectedMuscle] = useState('기타');
   const [selectedEquipment, setSelectedEquipment] = useState('기타');
+  const [isUnilateral, setIsUnilateral] = useState(false);
 
   const containerRef = useRef(null);
   const inputRef = useRef(null);
@@ -26,7 +26,8 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
       primaryMuscle: selectedMuscle,
       equipment: selectedEquipment,
       category: 'strength',
-      unit: 'kg'
+      unit: 'kg',
+      is_unilateral: isUnilateral
     };
     onSelect(customExercise);
     setQuery('');
@@ -34,6 +35,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
     setSelectedIndex(-1);
     setSelectedMuscle('기타');
     setSelectedEquipment('기타');
+    setIsUnilateral(false);
   };
 
   // 바깥 영역 클릭 시 닫기
@@ -298,7 +300,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
               주동근 선택
             </div>
             <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
-              {MUSCLES.map(muscle => {
+              {MUSCLE_GROUPS.map(muscle => {
                 const isSelected = selectedMuscle === muscle;
                 return (
                   <button
@@ -356,6 +358,52 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                   </button>
                 );
               })}
+            </div>
+
+            {/* 3. Unilateral Option */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius-md)',
+              padding: '12px 14px',
+              marginBottom: '20px',
+              cursor: 'pointer',
+              userSelect: 'none',
+              transition: 'background 0.2s, border-color 0.2s'
+            }} onClick={() => setIsUnilateral(!isUnilateral)}>
+              <div>
+                <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-bright)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Sparkles size={12} color="var(--accent)" />
+                  좌우 따로 수행 (편측 운동)
+                </div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  런지, 원암 덤벨 로우처럼 편측성 운동인 경우 활성화
+                </div>
+              </div>
+              <div style={{
+                width: '38px',
+                height: '20px',
+                borderRadius: '10px',
+                background: isUnilateral ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)',
+                position: 'relative',
+                transition: 'background 0.2s',
+                display: 'flex',
+                alignItems: 'center'
+              }}>
+                <div style={{
+                  width: '14px',
+                  height: '14px',
+                  borderRadius: '50%',
+                  background: '#ffffff',
+                  position: 'absolute',
+                  left: isUnilateral ? '21px' : '3px',
+                  transition: 'left 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.4)'
+                }} />
+              </div>
             </div>
 
             {/* Submit Button */}
