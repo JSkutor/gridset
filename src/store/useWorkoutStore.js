@@ -23,7 +23,7 @@ export const useWorkoutStore = create(
     (set, get) => ({
       // --- State ---
       // We generate a mock user ID for local usage, simulating the Supabase user
-      currentUser: { id: generateUUID() }, 
+      currentUser: { id: '00000000-0000-0000-0000-000000000000', name: '게스트', isGuest: true }, 
       exercises: DEFAULT_EXERCISES,
       routines: [],
       routineExercises: [],

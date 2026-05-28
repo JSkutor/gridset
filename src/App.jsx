@@ -1,11 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Navigation from './components/Navigation'
 import ExerciseInfo from './components/ExerciseInfo'
 import SetGrid from './components/SetGrid'
 import PastLogs from './components/PastLogs'
 import RoutineDetail from './components/RoutineDetail'
 import { useWorkoutStore } from './store/useWorkoutStore'
-import { useEffect } from 'react'
+import { User } from 'lucide-react'
 import './index.css'
 
 function App() {
@@ -41,6 +41,27 @@ function App() {
   return (
     <div className="app-container">
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 9999, display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Guest Mode Indicator Badge */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+          padding: '6px 12px',
+          background: 'rgba(122, 162, 247, 0.08)',
+          border: '1px solid rgba(122, 162, 247, 0.2)',
+          borderRadius: '6px',
+          color: 'var(--accent)',
+          fontSize: '12px',
+          fontWeight: '600',
+          letterSpacing: '-0.02em',
+          boxShadow: '0 2px 8px rgba(122, 162, 247, 0.05)',
+          cursor: 'default',
+          userSelect: 'none'
+        }}>
+          <User size={12} />
+          로컬 게스트 모드
+        </div>
+
         {/* 'S' 탭일 때 루틴을 즉시 바꿀 수 있는 선택 드롭다운 */}
         {activeTab === 'S' && routines.length > 0 && (
           <select
