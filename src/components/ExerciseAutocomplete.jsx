@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Dumbbell, Tag, Sparkles, Plus } from 'lucide-react';
+import { MUSCLE_GROUPS } from '../data/muscleGroups.js';
 import { getExerciseSuggestions } from '../utils/exerciseSearch.js';
 
-const MUSCLES = ['가슴', '등 (광배근)', '등 (중부)', '어깨', '이두', '삼두', '복근', '허벅지 앞 (대퇴사두)', '허벅지 뒤 (햄스트링)', '엉덩이 (둔근)', '기타'];
+const MUSCLES = MUSCLE_GROUPS;
 const EQUIPMENTS = ['바벨', '덤벨', '머신', '맨몸', '케이블', '기타'];
 
 export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 검색 (예: 풀업, 벤치, ㅍㅇ, OHP)', autoFocus = false, onCancel }) {

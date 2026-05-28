@@ -24,7 +24,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "90/90 Hamstring",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -42,7 +42,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Ab Roller",
     "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -107,9 +107,7 @@ export const EXERCISE_DICTIONARY = [
     "name": "엎드려 대퇴사두 스트레칭",
     "englishName": "All Fours Quad Stretch",
     "primaryMuscle": "대퇴사두",
-    "secondaryMuscles": [
-      "대퇴사두"
-    ],
+    "secondaryMuscles": [],
     "equipment": "맨몸",
     "synonyms": [
       "엎드려 대퇴사두 스트레칭",
@@ -124,7 +122,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternate_Hammer_Curl",
     "name": "얼터네이트 해머 컬",
     "englishName": "Alternate Hammer Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -144,7 +142,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternate_Incline_Dumbbell_Curl",
     "name": "인클라인 얼터네이트 덤벨 컬",
     "englishName": "Alternate Incline Dumbbell Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -165,7 +163,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternating_Deltoid_Raise",
     "name": "얼터네이팅 프론트 레이즈",
     "englishName": "Alternating Deltoid Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -181,11 +179,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternating_Floor_Press",
     "name": "얼터네이팅 플로어 프레스",
     "englishName": "Alternating Floor Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "복근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -201,9 +199,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternating_Kettlebell_Press",
     "name": "얼터네이팅 케틀벨 프레스",
     "englishName": "Alternating Kettlebell Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -219,10 +217,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternating_Kettlebell_Row",
     "name": "얼터네이팅 케틀벨 로우",
     "englishName": "Alternating Kettlebell Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근"
+      "상완이두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -238,13 +235,12 @@ export const EXERCISE_DICTIONARY = [
     "id": "Alternating_Renegade_Row",
     "name": "레니게이드 로우",
     "englishName": "Alternating Renegade Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
       "복근",
-      "이두",
-      "가슴",
-      "광배근",
-      "삼두"
+      "상완이두근",
+      "대흉근",
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -276,9 +272,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Arnold_Dumbbell_Press",
     "name": "아놀드 덤벨 프레스",
     "englishName": "Arnold Dumbbell Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -294,10 +290,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Back_Flyes_-_With_Bands",
     "name": "백 플라이 밴드",
     "englishName": "Back Flyes - With Bands",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "등",
-      "삼두"
+      "광배근",
+      "상완삼두근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -313,7 +309,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Backward_Medicine_Ball_Throw",
     "name": "백워드 메디신볼 던지기",
     "englishName": "Backward Medicine Ball Throw",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "메디신볼",
     "synonyms": [
@@ -332,8 +328,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
       "복근",
-      "전완근",
-      "등"
+      "전완근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -353,7 +348,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
       "둔근",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -372,7 +367,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
       "둔근",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -404,10 +399,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Band_Pull_Apart",
     "name": "밴드 풀어파트",
     "englishName": "Band Pull Apart",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "등",
-      "traps"
+      "광배근",
+      "승모근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -422,7 +417,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Band_Skull_Crusher",
     "name": "밴드 스컬크러셔",
     "englishName": "Band Skull Crusher",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "밴드",
     "synonyms": [
@@ -440,9 +435,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Battling_Ropes",
     "name": "배틀 로프",
     "englishName": "Battling Ropes",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "가슴",
+      "대흉근",
       "전완근"
     ],
     "equipment": "기타",
@@ -459,9 +454,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Behind_Head_Chest_Stretch",
     "name": "비하인드 넥 체스트 스트레칭",
     "englishName": "Behind Head Chest Stretch",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -477,10 +472,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bench_Dips",
     "name": "벤치 딥스",
     "englishName": "Bench Dips",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -500,7 +495,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Bench Jump",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -518,10 +513,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bench_Press_-_With_Bands",
     "name": "밴드 벤치프레스",
     "englishName": "Bench Press - With Bands",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -544,11 +539,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bent-Arm_Dumbbell_Pullover",
     "name": "벤트암 덤벨 풀오버",
     "englishName": "Bent-Arm Dumbbell Pullover",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "광배근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -579,7 +574,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bent_Over_Dumbbell_Rear_Delt_Raise_With_Head_On_Bench",
     "name": "벤트 오버 덤벨 리어 델트 레이즈 헤드 벤치",
     "englishName": "Bent Over Dumbbell Rear Delt Raise With Head On Bench",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -598,11 +593,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bent_Over_Two-Dumbbell_Row",
     "name": "투암 덤벨 로우",
     "englishName": "Bent Over Two-Dumbbell Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -621,10 +615,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bent_Over_Two-Dumbbell_Row_With_Palms_In",
     "name": "벤트 오버 투 덤벨 로우 팜",
     "englishName": "Bent Over Two-Dumbbell Row With Palms In",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근"
+      "상완이두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -647,10 +640,10 @@ export const EXERCISE_DICTIONARY = [
     "secondaryMuscles": [
       "둔근",
       "햄스트링",
-      "허리",
+      "척추기립근",
       "대퇴사두",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -668,7 +661,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Bicycling",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -686,7 +679,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Body-Up",
     "name": "바디업",
     "englishName": "Body-Up",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
       "복근",
       "전완근"
@@ -705,7 +698,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Body_Tricep_Press",
     "name": "맨몸 트라이셉스 프레스",
     "englishName": "Body Tricep Press",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "맨몸",
     "synonyms": [
@@ -721,11 +714,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bodyweight_Flyes",
     "name": "맨몸 플라이",
     "englishName": "Bodyweight Flyes",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "복근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "e-z curl bar",
     "synonyms": [
@@ -741,10 +734,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Bodyweight_Mid_Row",
     "name": "인버티드 로우",
     "englishName": "Bodyweight Mid Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근"
+      "상완이두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -785,7 +777,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Bodyweight Walking Lunge",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -807,8 +799,8 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Bottoms-Up Clean From The Hang Position",
     "primaryMuscle": "전완근",
     "secondaryMuscles": [
-      "이두",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -844,7 +836,7 @@ export const EXERCISE_DICTIONARY = [
     "secondaryMuscles": [
       "외전근",
       "내전근",
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "대퇴사두"
     ],
@@ -896,7 +888,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Calf_Raise_On_A_Dumbbell",
     "name": "카프 레이즈 덤벨",
     "englishName": "Calf Raise On A Dumbbell",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -914,7 +906,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Calf_Raises_-_With_Bands",
     "name": "카프 레이즈 밴드",
     "englishName": "Calf Raises - With Bands",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "밴드",
     "synonyms": [
@@ -932,7 +924,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Calf_Stretch_Elbows_Against_Wall",
     "name": "벽 짚고 종아리 스트레칭",
     "englishName": "Calf Stretch Elbows Against Wall",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -948,7 +940,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Calf_Stretch_Hands_Against_Wall",
     "name": "벽 짚고 종아리 스트레칭",
     "englishName": "Calf Stretch Hands Against Wall",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -964,7 +956,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Calves-SMR",
     "name": "카프 에스엠알",
     "englishName": "Calves-SMR",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "폼롤러",
     "synonyms": [
@@ -980,10 +972,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Cat_Stretch",
     "name": "고양이 자세 스트레칭",
     "englishName": "Cat Stretch",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
-      "등",
-      "traps"
+      "광배근",
+      "승모근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1017,9 +1009,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Chair_Lower_Back_Stretch",
     "name": "의자 허리 스트레칭",
     "englishName": "Chair Lower Back Stretch",
-    "primaryMuscle": "광배근",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
-      "허리"
+      "광배근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1035,10 +1027,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Chair_Upper_Body_Stretch",
     "name": "의자 상체 스트레칭",
     "englishName": "Chair Upper Body Stretch",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "이두",
-      "가슴"
+      "상완이두근",
+      "대흉근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1054,9 +1046,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Chest_And_Front_Of_Shoulder_Stretch",
     "name": "가슴/전면어깨 스트레칭",
     "englishName": "Chest And Front Of Shoulder Stretch",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1072,10 +1064,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Childs_Pose",
     "name": "차일드 포즈",
     "englishName": "Child's Pose",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
       "둔근",
-      "등"
+      "광배근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1093,9 +1085,8 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Chin-Up",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "전완근",
-      "등"
+      "상완이두근",
+      "전완근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -1113,10 +1104,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Close-Grip_Dumbbell_Press",
     "name": "클로즈그립 덤벨 프레스",
     "englishName": "Close-Grip Dumbbell Press",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1132,11 +1123,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Close-Grip_Push-Up_off_of_a_Dumbbell",
     "name": "덤벨 클로즈그립 푸시업",
     "englishName": "Close-Grip Push-Up off of a Dumbbell",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
       "복근",
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -1156,7 +1147,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Concentration_Curls",
     "name": "컨센트레이션 컬",
     "englishName": "Concentration Curls",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -1192,7 +1183,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Cross_Body_Hammer_Curl",
     "name": "크로스바디 해머 컬",
     "englishName": "Cross Body Hammer Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -1212,10 +1203,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Cross_Over_-_With_Bands",
     "name": "밴드 크로스오버",
     "englishName": "Cross Over - With Bands",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "이두",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -1231,13 +1222,13 @@ export const EXERCISE_DICTIONARY = [
     "id": "Crossover_Reverse_Lunge",
     "name": "크로스오버 리버스 런지",
     "englishName": "Crossover Reverse Lunge",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "둔근",
     "secondaryMuscles": [
       "복근",
       "외전근",
-      "둔근",
       "햄스트링",
-      "대퇴사두"
+      "대퇴사두",
+      "척추기립근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1342,10 +1333,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Decline_Dumbbell_Bench_Press",
     "name": "디클라인 덤벨 벤치프레스",
     "englishName": "Decline Dumbbell Bench Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1372,7 +1363,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Decline_Dumbbell_Flyes",
     "name": "디클라인 덤벨 플라이",
     "englishName": "Decline Dumbbell Flyes",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -1388,7 +1379,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Decline_Dumbbell_Triceps_Extension",
     "name": "디클라인 덤벨 트라이셉스 익스텐션",
     "englishName": "Decline Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -1422,10 +1413,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Decline_Push-Up",
     "name": "디클라인 푸시업",
     "englishName": "Decline Push-Up",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1463,10 +1454,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dips_-_Chest_Version",
     "name": "딥스",
     "englishName": "Dips - Chest Version",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -1483,10 +1474,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dips_-_Triceps_Version",
     "name": "딥스",
     "englishName": "Dips - Triceps Version",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -1503,7 +1494,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Donkey_Calf_Raises",
     "name": "동키 카프 레이즈",
     "englishName": "Donkey Calf Raises",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -1521,11 +1512,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Double_Kettlebell_Push_Press",
     "name": "더블 케틀벨 푸시 프레스",
     "englishName": "Double Kettlebell Push Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "대퇴사두",
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -1541,7 +1532,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Double_Kettlebell_Snatch",
     "name": "더블 케틀벨 스내치",
     "englishName": "Double Kettlebell Snatch",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
       "둔근",
       "햄스트링",
@@ -1561,7 +1552,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Alternate_Bicep_Curl",
     "name": "얼터네이트 덤벨 컬",
     "englishName": "Dumbbell Alternate Bicep Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -1580,10 +1571,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Bench_Press",
     "name": "덤벨 벤치프레스",
     "englishName": "Dumbbell Bench Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1610,10 +1601,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Bench_Press_with_Neutral_Grip",
     "name": "덤벨 벤치 프레스 뉴트럴 그립",
     "englishName": "Dumbbell Bench Press with Neutral Grip",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1640,7 +1631,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Bicep_Curl",
     "name": "덤벨 컬",
     "englishName": "Dumbbell Bicep Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -1661,13 +1652,13 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Dumbbell Clean",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "전완근",
       "둔근",
-      "허리",
+      "척추기립근",
       "대퇴사두",
-      "어깨",
-      "traps"
+      "삼각근",
+      "승모근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1683,10 +1674,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Floor_Press",
     "name": "덤벨 플로어 프레스",
     "englishName": "Dumbbell Floor Press",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1702,7 +1693,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Flyes",
     "name": "덤벨 플라이",
     "englishName": "Dumbbell Flyes",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -1718,12 +1709,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Incline_Row",
     "name": "인클라인 덤벨 로우",
     "englishName": "Dumbbell Incline Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
+      "상완이두근",
       "전완근",
-      "광배근",
-      "어깨"
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1740,9 +1730,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Incline_Shoulder_Raise",
     "name": "인클라인 덤벨 프론트 레이즈",
     "englishName": "Dumbbell Incline Shoulder Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1760,7 +1750,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Dumbbell Lunges",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -1780,9 +1770,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Lying_One-Arm_Rear_Lateral_Raise",
     "name": "덤벨 라잉 원 암 리어 레터럴 레이즈",
     "englishName": "Dumbbell Lying One-Arm Rear Lateral Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "등"
+      "광배근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1802,7 +1792,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Lying_Rear_Lateral_Raise",
     "name": "덤벨 라잉 리어 레터럴 레이즈",
     "englishName": "Dumbbell Lying Rear Lateral Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -1822,9 +1812,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_One-Arm_Shoulder_Press",
     "name": "원암 덤벨 숄더 프레스",
     "englishName": "Dumbbell One-Arm Shoulder Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1840,7 +1830,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_One-Arm_Triceps_Extension",
     "name": "원암 덤벨 트라이셉스 익스텐션",
     "englishName": "Dumbbell One-Arm Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -1856,10 +1846,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_One-Arm_Upright_Row",
     "name": "원암 덤벨 업라이트 로우",
     "englishName": "Dumbbell One-Arm Upright Row",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "이두",
-      "traps"
+      "상완이두근",
+      "승모근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1875,9 +1865,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Raise",
     "name": "덤벨 레이즈",
     "englishName": "Dumbbell Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "이두"
+      "상완이두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1895,7 +1885,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Dumbbell Rear Lunge",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -1915,7 +1905,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Seated_One-Leg_Calf_Raise",
     "name": "덤벨 원레그 카프 레이즈",
     "englishName": "Dumbbell Seated One-Leg Calf Raise",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -1933,9 +1923,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Shoulder_Press",
     "name": "덤벨 숄더 프레스",
     "englishName": "Dumbbell Shoulder Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1972,10 +1962,10 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Dumbbell Squat",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -1997,7 +1987,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Dumbbell Step Ups",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -2015,7 +2005,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dumbbell_Tricep_Extension_-Pronated_Grip",
     "name": "덤벨 트라이셉스 익스텐션",
     "englishName": "Dumbbell Tricep Extension -Pronated Grip",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2047,9 +2037,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Dynamic_Chest_Stretch",
     "name": "다이내믹 가슴 스트레칭",
     "englishName": "Dynamic Chest Stretch",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "등"
+      "광배근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -2065,7 +2055,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "EZ-Bar_Curl",
     "name": "EZ바 컬",
     "englishName": "EZ-Bar Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "e-z curl bar",
     "synonyms": [
@@ -2082,7 +2072,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "EZ-Bar_Skullcrusher",
     "name": "EZ바 스컬크러셔",
     "englishName": "EZ-Bar Skullcrusher",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -2152,7 +2142,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "External_Rotation",
     "name": "익스터널 로테이션",
     "englishName": "External Rotation",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2168,7 +2158,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "External_Rotation_with_Band",
     "name": "밴드 익스터널 로테이션",
     "englishName": "External Rotation with Band",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "밴드",
     "synonyms": [
@@ -2201,7 +2191,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Floor Glute-Ham Raise",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근"
     ],
     "equipment": "기타",
@@ -2238,7 +2228,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Freehand Jump Squat",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -2264,7 +2254,7 @@ export const EXERCISE_DICTIONARY = [
     "secondaryMuscles": [
       "외전근",
       "내전근",
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "대퇴사두"
     ],
@@ -2282,7 +2272,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Front_Dumbbell_Raise",
     "name": "프론트 덤벨 레이즈",
     "englishName": "Front Dumbbell Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2298,7 +2288,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Front_Incline_Dumbbell_Raise",
     "name": "인클라인 프론트 덤벨 레이즈",
     "englishName": "Front Incline Dumbbell Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2314,7 +2304,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Front_Plate_Raise",
     "name": "원판 프론트 레이즈",
     "englishName": "Front Plate Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -2330,7 +2320,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Front_Two-Dumbbell_Raise",
     "name": "투암 덤벨 프론트 레이즈",
     "englishName": "Front Two-Dumbbell Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2366,10 +2356,10 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Goblet Squat",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "어깨"
+      "삼각근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -2389,7 +2379,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Hammer_Curls",
     "name": "해머 컬",
     "englishName": "Hammer Curls",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2407,10 +2397,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Hammer_Grip_Incline_DB_Bench_Press",
     "name": "해머그립 인클라인 덤벨 벤치프레스",
     "englishName": "Hammer Grip Incline DB Bench Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -2538,7 +2528,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Hip Lift with Band",
     "primaryMuscle": "둔근",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "햄스트링"
     ],
     "equipment": "밴드",
@@ -2555,9 +2545,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Hug_A_Ball",
     "name": "짐볼 안기 스트레칭",
     "englishName": "Hug A Ball",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근"
     ],
     "equipment": "짐볼",
@@ -2574,7 +2564,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Hug_Knees_To_Chest",
     "name": "무릎 가슴 안기",
     "englishName": "Hug Knees To Chest",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
       "둔근"
     ],
@@ -2592,7 +2582,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Hyperextensions_Back_Extensions",
     "name": "백 익스텐션",
     "englishName": "Hyperextensions (Back Extensions)",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
       "둔근",
       "햄스트링"
@@ -2662,10 +2652,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Dumbbell_Bench_With_Palms_Facing_In",
     "name": "해머그립 인클라인 덤벨 벤치프레스",
     "englishName": "Incline Dumbbell Bench With Palms Facing In",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -2683,7 +2673,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Dumbbell_Curl",
     "name": "인클라인 덤벨 컬",
     "englishName": "Incline Dumbbell Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2702,9 +2692,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Dumbbell_Flyes",
     "name": "인클라인 덤벨 플라이",
     "englishName": "Incline Dumbbell Flyes",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -2720,10 +2710,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Dumbbell_Press",
     "name": "인클라인 덤벨 벤치프레스",
     "englishName": "Incline Dumbbell Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -2743,7 +2733,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Hammer_Curls",
     "name": "인클라인 해머 컬",
     "englishName": "Incline Hammer Curls",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -2761,10 +2751,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Push-Up",
     "name": "인클라인 푸시업",
     "englishName": "Incline Push-Up",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -2784,10 +2774,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Push-Up_Close-Grip",
     "name": "클로즈그립 인클라인 푸시업",
     "englishName": "Incline Push-Up Close-Grip",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -2807,11 +2797,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Push-Up_Medium",
     "name": "미디엄그립 인클라인 푸시업",
     "englishName": "Incline Push-Up Medium",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "복근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -2831,11 +2821,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Incline_Push-Up_Wide",
     "name": "와이드그립 인클라인 푸시업",
     "englishName": "Incline Push-Up Wide",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "복근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -2887,7 +2877,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Internal_Rotation_with_Band",
     "name": "밴드 인터널 로테이션",
     "englishName": "Internal Rotation with Band",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "밴드",
     "synonyms": [
@@ -2903,10 +2893,8 @@ export const EXERCISE_DICTIONARY = [
     "id": "Inverted_Row",
     "name": "인버티드 로우",
     "englishName": "Inverted Row",
-    "primaryMuscle": "등",
-    "secondaryMuscles": [
-      "광배근"
-    ],
+    "primaryMuscle": "광배근",
+    "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
       "인버티드 로우",
@@ -2921,10 +2909,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Inverted_Row_with_Straps",
     "name": "스트랩 인버티드 로우",
     "englishName": "Inverted Row with Straps",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근"
+      "상완이두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -2940,10 +2927,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Isometric_Chest_Squeezes",
     "name": "등척성 가슴 스퀴즈",
     "englishName": "Isometric Chest Squeezes",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -2975,9 +2962,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Kettlebell_Arnold_Press",
     "name": "케틀벨 아놀드 프레스",
     "englishName": "Kettlebell Arnold Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -2995,11 +2982,11 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Kettlebell Dead Clean",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
-      "허리",
+      "척추기립근",
       "대퇴사두",
-      "traps"
+      "승모근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3018,7 +3005,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
       "둔근",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3041,10 +3028,10 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Kettlebell Pistol Squat",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "어깨"
+      "삼각근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3064,9 +3051,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Kettlebell_Seated_Press",
     "name": "케틀벨 시티드 프레스",
     "englishName": "Kettlebell Seated Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3082,13 +3069,13 @@ export const EXERCISE_DICTIONARY = [
     "id": "Kettlebell_Sumo_High_Pull",
     "name": "케틀벨 스모 하이풀",
     "englishName": "Kettlebell Sumo High Pull",
-    "primaryMuscle": "traps",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
       "내전근",
       "둔근",
       "햄스트링",
       "대퇴사두",
-      "어깨"
+      "삼각근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3103,10 +3090,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Kettlebell_Thruster",
     "name": "케틀벨 쓰러스터",
     "englishName": "Kettlebell Thruster",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
       "대퇴사두",
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3125,7 +3112,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "둔근",
     "secondaryMuscles": [
       "외전근",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3161,7 +3148,7 @@ export const EXERCISE_DICTIONARY = [
     "secondaryMuscles": [
       "외전근",
       "내전근",
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "대퇴사두"
     ],
@@ -3196,9 +3183,7 @@ export const EXERCISE_DICTIONARY = [
     "name": "닐링 장요근 스트레칭",
     "englishName": "Kneeling Hip Flexor",
     "primaryMuscle": "대퇴사두",
-    "secondaryMuscles": [
-      "대퇴사두"
-    ],
+    "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
       "닐링 장요근 스트레칭",
@@ -3213,13 +3198,13 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lateral_Box_Jump",
     "name": "레터럴 박스 점프",
     "englishName": "Lateral Box Jump",
-    "primaryMuscle": "내전근",
+    "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
       "외전근",
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "대퇴사두"
+      "내전근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3235,7 +3220,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lateral_Raise_-_With_Bands",
     "name": "레터럴 레이즈 밴드",
     "englishName": "Lateral Raise - With Bands",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "밴드",
     "synonyms": [
@@ -3336,7 +3321,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lower_Back-SMR",
     "name": "로어 백 에스엠알",
     "englishName": "Lower Back-SMR",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [],
     "equipment": "폼롤러",
     "synonyms": [
@@ -3352,10 +3337,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lying_Dumbbell_Tricep_Extension",
     "name": "라잉 덤벨 트라이셉스 익스텐션",
     "englishName": "Lying Dumbbell Tricep Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -3391,7 +3376,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Lying Hamstring",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3407,7 +3392,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lying_One-Arm_Lateral_Raise",
     "name": "라잉 원암 사이드 레터럴 레이즈",
     "englishName": "Lying One-Arm Lateral Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3443,7 +3428,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lying_Rear_Delt_Raise",
     "name": "라잉 리어 델트 레이즈",
     "englishName": "Lying Rear Delt Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3462,7 +3447,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lying_Supine_Dumbbell_Curl",
     "name": "라잉 슈파인 덤벨 컬",
     "englishName": "Lying Supine Dumbbell Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3481,7 +3466,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Lying_Triceps_Press",
     "name": "라잉 트라이셉스 익스텐션",
     "englishName": "Lying Triceps Press",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "e-z curl bar",
     "synonyms": [
@@ -3500,10 +3485,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Medicine_Ball_Chest_Pass",
     "name": "메디신볼 체스트 패스",
     "englishName": "Medicine Ball Chest Pass",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "메디신볼",
     "synonyms": [
@@ -3521,7 +3506,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Medicine Ball Full Twist",
     "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "메디신볼",
     "synonyms": [
@@ -3537,11 +3522,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Middle_Back_Stretch",
     "name": "등 중부 스트레칭",
     "englishName": "Middle Back Stretch",
-    "primaryMuscle": "등",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
       "복근",
       "광배근",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3573,11 +3558,12 @@ export const EXERCISE_DICTIONARY = [
     "id": "Mountain_Climbers",
     "name": "마운틴 클라이머",
     "englishName": "Mountain Climbers",
-    "primaryMuscle": "대퇴사두",
+    "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "가슴",
+      "대흉근",
       "햄스트링",
-      "어깨"
+      "삼각근",
+      "대퇴사두"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3596,12 +3582,11 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
       "복근",
-      "이두",
+      "상완이두근",
       "전완근",
-      "등",
-      "어깨",
-      "traps",
-      "삼두"
+      "삼각근",
+      "승모근",
+      "상완삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3617,7 +3602,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Neck-SMR",
     "name": "넥 에스엠알",
     "englishName": "Neck-SMR",
-    "primaryMuscle": "목",
+    "primaryMuscle": "경부근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -3669,11 +3654,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Dumbbell_Row",
     "name": "원암 덤벨 로우",
     "englishName": "One-Arm Dumbbell Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -3692,7 +3676,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Flat_Bench_Dumbbell_Flye",
     "name": "원암 덤벨 플라이",
     "englishName": "One-Arm Flat Bench Dumbbell Flye",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3708,7 +3692,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Incline_Lateral_Raise",
     "name": "원암 인클라인 사이드 레터럴 레이즈",
     "englishName": "One-Arm Incline Lateral Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3731,9 +3715,9 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
       "둔근",
-      "허리",
-      "어깨",
-      "traps"
+      "척추기립근",
+      "삼각근",
+      "승모근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3749,9 +3733,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Kettlebell_Floor_Press",
     "name": "원암 케틀벨 플로어 프레스",
     "englishName": "One-Arm Kettlebell Floor Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3767,11 +3751,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Kettlebell_Push_Press",
     "name": "원암 케틀벨 푸시 프레스",
     "englishName": "One-Arm Kettlebell Push Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "대퇴사두",
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3787,10 +3771,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Kettlebell_Row",
     "name": "원암 케틀벨 로우",
     "englishName": "One-Arm Kettlebell Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근"
+      "상완이두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3806,14 +3789,14 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Kettlebell_Snatch",
     "name": "원암 케틀벨 스내치",
     "englishName": "One-Arm Kettlebell Snatch",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "허리",
-      "traps",
-      "삼두"
+      "척추기립근",
+      "승모근",
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3831,10 +3814,10 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "One-Arm Kettlebell Swings",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
-      "허리",
-      "어깨"
+      "척추기립근",
+      "삼각근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -3850,7 +3833,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "One-Arm_Side_Laterals",
     "name": "원암 사이드 레터럴 레이즈",
     "englishName": "One-Arm Side Laterals",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3869,10 +3852,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "One_Arm_Dumbbell_Bench_Press",
     "name": "원암 덤벨 벤치프레스",
     "englishName": "One Arm Dumbbell Bench Press",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -3899,7 +3882,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "One_Arm_Dumbbell_Preacher_Curl",
     "name": "원암 덤벨 프리처 컬",
     "englishName": "One Arm Dumbbell Preacher Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -3920,7 +3903,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "둔근",
     "secondaryMuscles": [
       "햄스트링",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3938,7 +3921,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Overhead Lat",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3956,10 +3939,10 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Overhead Stretch",
     "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "가슴",
+      "대흉근",
       "전완근",
       "광배근",
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -3975,7 +3958,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Overhead_Triceps",
     "name": "오버헤드 삼두 스트레칭",
     "englishName": "Overhead Triceps",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
       "광배근"
     ],
@@ -4025,10 +4008,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Parallel_Bar_Dip",
     "name": "평행봉 딥스",
     "englishName": "Parallel Bar Dip",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4063,7 +4046,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
       "복근",
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -4085,10 +4068,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Plyo_Push-up",
     "name": "박수 푸시업",
     "englishName": "Plyo Push-up",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4108,7 +4091,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Preacher_Hammer_Dumbbell_Curl",
     "name": "프리처 해머 덤벨 컬",
     "englishName": "Preacher Hammer Dumbbell Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -4131,8 +4114,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Pullups",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "등"
+      "상완이두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4148,11 +4130,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Push-Up_Wide",
     "name": "와이드그립 푸시업",
     "englishName": "Push-Up Wide",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "복근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4172,10 +4154,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Push-Ups_-_Close_Triceps_Position",
     "name": "클로즈그립 푸시업",
     "englishName": "Push-Ups - Close Triceps Position",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4195,10 +4177,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Push-Ups_With_Feet_Elevated",
     "name": "디클라인 푸시업",
     "englishName": "Push-Ups With Feet Elevated",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4218,10 +4200,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Push-Ups_With_Feet_On_An_Exercise_Ball",
     "name": "짐볼 푸시업",
     "englishName": "Push-Ups With Feet On An Exercise Ball",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "짐볼",
     "synonyms": [
@@ -4241,11 +4223,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Push_Up_to_Side_Plank",
     "name": "푸시업 투 사이드 플랭크",
     "englishName": "Push Up to Side Plank",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "복근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4264,10 +4246,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Pushups",
     "name": "푸시업",
     "englishName": "Pushups",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4287,9 +4269,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Pyramid",
     "name": "피라미드 스트레칭",
     "englishName": "Pyramid",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "짐볼",
     "synonyms": [
@@ -4355,7 +4337,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Reverse_Flyes",
     "name": "리버스 플라이",
     "englishName": "Reverse Flyes",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4373,7 +4355,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Rope Jumping",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "햄스트링"
     ],
     "equipment": "기타",
@@ -4392,7 +4374,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Runner's Stretch",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4410,7 +4392,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Russian Twist",
     "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "허리"
+      "척추기립근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4426,10 +4408,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Scapular_Pull-Up",
     "name": "견갑 풀업",
     "englishName": "Scapular Pull-Up",
-    "primaryMuscle": "traps",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
-      "광배근",
-      "등"
+      "광배근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4463,7 +4444,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
     "name": "시티드 원암 덤벨 킥백",
     "englishName": "Seated Bent-Over One-Arm Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4479,7 +4460,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Bent-Over_Rear_Delt_Raise",
     "name": "시티드 벤트오버 레터럴 레이즈",
     "englishName": "Seated Bent-Over Rear Delt Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4499,7 +4480,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension",
     "name": "시티드 투암 덤벨 킥백",
     "englishName": "Seated Bent-Over Two-Arm Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4515,10 +4496,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Biceps",
     "name": "시티드 이두 스트레칭",
     "englishName": "Seated Biceps",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4534,10 +4515,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Calf_Stretch",
     "name": "앉아서 종아리 스트레칭",
     "englishName": "Seated Calf Stretch",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [
       "햄스트링",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4553,7 +4534,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Dumbbell_Curl",
     "name": "시티드 덤벨 컬",
     "englishName": "Seated Dumbbell Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4604,9 +4585,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Dumbbell_Press",
     "name": "시티드 덤벨 숄더 프레스",
     "englishName": "Seated Dumbbell Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -4639,7 +4620,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Seated Floor Hamstring Stretch",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4655,9 +4636,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Front_Deltoid",
     "name": "시티드 전면어깨 스트레칭",
     "englishName": "Seated Front Deltoid",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "가슴"
+      "대흉근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4693,7 +4674,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Seated Hamstring",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4711,7 +4692,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Seated Hamstring and Calf Stretch",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4791,7 +4772,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Side_Lateral_Raise",
     "name": "시티드 사이드 레터럴 레이즈",
     "englishName": "Seated Side Lateral Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4811,7 +4792,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Seated_Triceps_Press",
     "name": "시티드 덤벨 오버헤드 트라이셉스 익스텐션",
     "englishName": "Seated Triceps Press",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4827,10 +4808,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "See-Saw_Press_Alternating_Side_Press",
     "name": "시소 프레스",
     "englishName": "See-Saw Press (Alternating Side Press)",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
       "복근",
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -4846,9 +4827,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Shoulder_Press_-_With_Bands",
     "name": "밴드 숄더 프레스",
     "englishName": "Shoulder Press - With Bands",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -4864,9 +4845,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Shoulder_Raise",
     "name": "어깨 으쓱하기",
     "englishName": "Shoulder Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
-      "광배근"
+      "광배근",
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -4882,7 +4864,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Shoulder_Stretch",
     "name": "어깨 스트레칭",
     "englishName": "Shoulder Stretch",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -4916,7 +4898,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Side Bridge",
     "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -4948,7 +4930,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Side_Lateral_Raise",
     "name": "사이드 레터럴 레이즈",
     "englishName": "Side Lateral Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -4968,9 +4950,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Side_Laterals_to_Front_Raise",
     "name": "사이드 레터럴 투 프론트 레이즈",
     "englishName": "Side Laterals to Front Raise",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "traps"
+      "승모근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5006,7 +4988,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Side Standing Long Jump",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -5026,10 +5008,9 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Side To Side Chins",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
+      "상완이두근",
       "전완근",
-      "등",
-      "어깨"
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -5046,7 +5027,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Side_Wrist_Pull",
     "name": "손목 측면 당기기",
     "englishName": "Side Wrist Pull",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
       "전완근",
       "광배근"
@@ -5068,7 +5049,7 @@ export const EXERCISE_DICTIONARY = [
     "secondaryMuscles": [
       "외전근",
       "내전근",
-      "종아리",
+      "하퇴삼두근",
       "햄스트링"
     ],
     "equipment": "기타",
@@ -5085,10 +5066,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Single-Arm_Push-Up",
     "name": "원암 푸시업",
     "englishName": "Single-Arm Push-Up",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -5128,7 +5109,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Single Leg Push-off",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "햄스트링"
     ],
     "equipment": "기타",
@@ -5163,9 +5144,9 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Spider Crawl",
     "primaryMuscle": "복근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨",
-      "삼두"
+      "대흉근",
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -5181,7 +5162,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Spider_Curl",
     "name": "스파이더 컬",
     "englishName": "Spider Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "e-z curl bar",
     "synonyms": [
@@ -5197,12 +5178,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Spinal_Stretch",
     "name": "척추 스트레칭",
     "englishName": "Spinal Stretch",
-    "primaryMuscle": "등",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
       "광배근",
-      "허리",
-      "목",
-      "traps"
+      "경부근",
+      "승모근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -5220,7 +5200,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Split Jump",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -5269,7 +5249,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Split Squats",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "대퇴사두"
     ],
@@ -5300,10 +5280,10 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Squats - With Bands",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -5323,9 +5303,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Alternating_Dumbbell_Press",
     "name": "스탠딩 얼터네이팅 덤벨 프레스",
     "englishName": "Standing Alternating Dumbbell Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5341,9 +5321,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Bent-Over_One-Arm_Dumbbell_Triceps_Extension",
     "name": "스탠딩 원암 덤벨 킥백",
     "englishName": "Standing Bent-Over One-Arm Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5359,7 +5339,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Bent-Over_Two-Arm_Dumbbell_Triceps_Extension",
     "name": "스탠딩 투암 덤벨 킥백",
     "englishName": "Standing Bent-Over Two-Arm Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5375,10 +5355,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Biceps_Stretch",
     "name": "스탠딩 이두 스트레칭",
     "englishName": "Standing Biceps Stretch",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -5394,7 +5374,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Concentration_Curl",
     "name": "스탠딩 컨센트레이션 컬",
     "englishName": "Standing Concentration Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -5412,7 +5392,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Dumbbell_Calf_Raise",
     "name": "스탠딩 덤벨 카프 레이즈",
     "englishName": "Standing Dumbbell Calf Raise",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5430,9 +5410,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Dumbbell_Press",
     "name": "스탠딩 덤벨 숄더 프레스",
     "englishName": "Standing Dumbbell Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5448,7 +5428,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Dumbbell_Reverse_Curl",
     "name": "스탠딩 덤벨 리버스 컬",
     "englishName": "Standing Dumbbell Reverse Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -5466,7 +5446,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Dumbbell_Straight-Arm_Front_Delt_Raise_Above_Head",
     "name": "스탠딩 덤벨 풀레인지 프론트 레이즈",
     "englishName": "Standing Dumbbell Straight-Arm Front Delt Raise Above Head",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5482,7 +5462,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Dumbbell_Triceps_Extension",
     "name": "스탠딩 덤벨 오버헤드 트라이셉스 익스텐션",
     "englishName": "Standing Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5498,10 +5478,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Dumbbell_Upright_Row",
     "name": "스탠딩 덤벨 업라이트 로우",
     "englishName": "Standing Dumbbell Upright Row",
-    "primaryMuscle": "traps",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
-      "이두",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5533,7 +5513,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Gastrocnemius_Calf_Stretch",
     "name": "스탠딩 비복근 스트레칭",
     "englishName": "Standing Gastrocnemius Calf Stretch",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [
       "햄스트링"
     ],
@@ -5601,7 +5581,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Inner-Biceps_Curl",
     "name": "스탠딩 이너 바이셉스 컬",
     "englishName": "Standing Inner-Biceps Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5636,7 +5616,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Standing Long Jump",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -5654,7 +5634,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_One-Arm_Dumbbell_Curl_Over_Incline_Bench",
     "name": "스탠딩 원암 인클라인 덤벨 컬",
     "englishName": "Standing One-Arm Dumbbell Curl Over Incline Bench",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5673,10 +5653,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_One-Arm_Dumbbell_Triceps_Extension",
     "name": "스탠딩 원암 덤벨 오버헤드 익스텐션",
     "englishName": "Standing One-Arm Dumbbell Triceps Extension",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5692,7 +5672,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Standing_Soleus_And_Achilles_Stretch",
     "name": "스탠딩 가자미근/아킬레스건 스트레칭",
     "englishName": "Standing Soleus And Achilles Stretch",
-    "primaryMuscle": "종아리",
+    "primaryMuscle": "하퇴삼두근",
     "secondaryMuscles": [],
     "equipment": "기타",
     "synonyms": [
@@ -5710,7 +5690,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Standing Toe Touches",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리"
+      "하퇴삼두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -5729,7 +5709,7 @@ export const EXERCISE_DICTIONARY = [
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
       "둔근",
-      "허리"
+      "척추기립근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5750,11 +5730,11 @@ export const EXERCISE_DICTIONARY = [
     "id": "Straight-Arm_Dumbbell_Pullover",
     "name": "스트레이트암 덤벨 풀오버",
     "englishName": "Straight-Arm Dumbbell Pullover",
-    "primaryMuscle": "가슴",
+    "primaryMuscle": "대흉근",
     "secondaryMuscles": [
       "광배근",
-      "어깨",
-      "삼두"
+      "삼각근",
+      "상완삼두근"
     ],
     "equipment": "덤벨",
     "synonyms": [
@@ -5769,7 +5749,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Superman",
     "name": "슈퍼맨 자세",
     "englishName": "Superman",
-    "primaryMuscle": "허리",
+    "primaryMuscle": "척추기립근",
     "secondaryMuscles": [
       "둔근",
       "햄스트링"
@@ -5812,7 +5792,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Tricep_Dumbbell_Kickback",
     "name": "덤벨 킥백",
     "englishName": "Tricep Dumbbell Kickback",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [],
     "equipment": "덤벨",
     "synonyms": [
@@ -5828,9 +5808,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Tricep_Side_Stretch",
     "name": "트라이셉 사이드 스트레칭",
     "englishName": "Tricep Side Stretch",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -5846,7 +5826,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Triceps_Stretch",
     "name": "삼두 스트레칭",
     "englishName": "Triceps Stretch",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
       "광배근"
     ],
@@ -5882,13 +5862,13 @@ export const EXERCISE_DICTIONARY = [
     "id": "Two-Arm_Kettlebell_Clean",
     "name": "투암 케틀벨 클린",
     "englishName": "Two-Arm Kettlebell Clean",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링",
-      "허리",
-      "traps"
+      "척추기립근",
+      "승모근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -5904,9 +5884,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Two-Arm_Kettlebell_Military_Press",
     "name": "투암 케틀벨 밀리터리 프레스",
     "englishName": "Two-Arm Kettlebell Military Press",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "삼두"
+      "상완삼두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -5923,10 +5903,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Two-Arm_Kettlebell_Row",
     "name": "투암 케틀벨 로우",
     "englishName": "Two-Arm Kettlebell Row",
-    "primaryMuscle": "등",
+    "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "광배근"
+      "상완이두근"
     ],
     "equipment": "케틀벨",
     "synonyms": [
@@ -5942,9 +5921,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Upper_Back_Stretch",
     "name": "상부 등 스트레칭",
     "englishName": "Upper Back Stretch",
-    "primaryMuscle": "등",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
-      "등"
+      "광배근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -5960,9 +5939,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Upright_Row_-_With_Bands",
     "name": "밴드 업라이트 로우",
     "englishName": "Upright Row - With Bands",
-    "primaryMuscle": "traps",
+    "primaryMuscle": "승모근",
     "secondaryMuscles": [
-      "어깨"
+      "삼각근"
     ],
     "equipment": "밴드",
     "synonyms": [
@@ -5978,9 +5957,9 @@ export const EXERCISE_DICTIONARY = [
     "id": "Upward_Stretch",
     "name": "업워드 스트레칭",
     "englishName": "Upward Stretch",
-    "primaryMuscle": "어깨",
+    "primaryMuscle": "삼각근",
     "secondaryMuscles": [
-      "가슴",
+      "대흉근",
       "광배근"
     ],
     "equipment": "기타",
@@ -5999,9 +5978,8 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "V-Bar Pullup",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "등",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -6018,10 +5996,10 @@ export const EXERCISE_DICTIONARY = [
     "id": "Weighted_Bench_Dip",
     "name": "웨이티드 벤치 딥스",
     "englishName": "Weighted Bench Dip",
-    "primaryMuscle": "삼두",
+    "primaryMuscle": "상완삼두근",
     "secondaryMuscles": [
-      "가슴",
-      "어깨"
+      "대흉근",
+      "삼각근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -6039,8 +6017,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Weighted Pull Ups",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "등"
+      "상완이두근"
     ],
     "equipment": "기타",
     "synonyms": [
@@ -6059,7 +6036,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Weighted Squat",
     "primaryMuscle": "대퇴사두",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "햄스트링"
     ],
@@ -6083,9 +6060,8 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "Wide-Grip Rear Pull-Up",
     "primaryMuscle": "광배근",
     "secondaryMuscles": [
-      "이두",
-      "등",
-      "어깨"
+      "상완이두근",
+      "삼각근"
     ],
     "equipment": "맨몸",
     "synonyms": [
@@ -6104,7 +6080,7 @@ export const EXERCISE_DICTIONARY = [
     "englishName": "World's Greatest Stretch",
     "primaryMuscle": "햄스트링",
     "secondaryMuscles": [
-      "종아리",
+      "하퇴삼두근",
       "둔근",
       "대퇴사두"
     ],
@@ -6122,7 +6098,7 @@ export const EXERCISE_DICTIONARY = [
     "id": "Zottman_Curl",
     "name": "조트맨 컬",
     "englishName": "Zottman Curl",
-    "primaryMuscle": "이두",
+    "primaryMuscle": "상완이두근",
     "secondaryMuscles": [
       "전완근"
     ],
@@ -6137,40 +6113,3 @@ export const EXERCISE_DICTIONARY = [
     "user_id": null
   }
 ];
-
-export const MUSCLE_TRANSLATIONS = {
-  "chest": "가슴",
-  "shoulders": "어깨",
-  "triceps": "삼두",
-  "biceps": "이두",
-  "lats": "광배근",
-  "middle back": "등",
-  "lower back": "허리",
-  "quadriceps": "대퇴사두",
-  "hamstrings": "햄스트링",
-  "calves": "종아리",
-  "glutes": "둔근",
-  "abdominals": "복근",
-  "forearms": "전완근",
-  "trapezius": "승모근",
-  "neck": "목",
-  "cardiovascular system": "유산소",
-  "adductors": "내전근",
-  "abductors": "외전근"
-};
-
-export const EQUIPMENT_TRANSLATIONS = {
-  "barbell": "바벨",
-  "dumbbell": "덤벨",
-  "cable": "케이블",
-  "machine": "머신",
-  "body only": "맨몸",
-  "kettlebells": "케틀벨",
-  "medicine ball": "메디신볼",
-  "exercise ball": "짐볼",
-  "bands": "밴드",
-  "foam roll": "폼롤러",
-  "ez-bar": "EZ바",
-  "other": "기타",
-  "none": "없음"
-};

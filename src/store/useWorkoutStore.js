@@ -1,20 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
+import { normalizeMuscleLabel } from '../data/muscleGroups.js';
 
 const generateUUID = () => crypto.randomUUID();
 
 // Default seed exercises with muscle and equipment info
 const DEFAULT_EXERCISES = [
-  { id: generateUUID(), name: '벤치프레스', primary_muscle: '가슴', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '스쿼트', primary_muscle: '허벅지 앞 (대퇴사두)', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '데드리프트', primary_muscle: '등 (하부/허리)', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '풀업', primary_muscle: '등 (광배근)', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 로우', primary_muscle: '등 (중부)', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '오버헤드 프레스', primary_muscle: '어깨', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 컬', primary_muscle: '이두', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '레그 익스텐션', primary_muscle: '허벅지 앞 (대퇴사두)', equipment: '머신', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '푸시업', primary_muscle: '가슴', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '벤치프레스', primary_muscle: '대흉근', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '스쿼트', primary_muscle: '대퇴사두', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '데드리프트', primary_muscle: '척추기립근', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '풀업', primary_muscle: '광배근', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '바벨 로우', primary_muscle: '광배근', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '오버헤드 프레스', primary_muscle: '삼각근', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '바벨 컬', primary_muscle: '상완이두근', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '레그 익스텐션', primary_muscle: '대퇴사두', equipment: '머신', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '푸시업', primary_muscle: '대흉근', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: generateUUID(), name: '플랭크', primary_muscle: '복근', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
@@ -56,7 +57,7 @@ export const useWorkoutStore = create(
         const newExercise = {
           id: generateUUID(),
           name,
-          primary_muscle: muscle || '기타',
+          primary_muscle: normalizeMuscleLabel(muscle) || '기타',
           equipment: equip || '기타',
           unit,
           user_id: currentUser.id,
@@ -492,7 +493,7 @@ export const useWorkoutStore = create(
     }),
     {
       name: 'workout-tracker-storage', // Key for local storage
-      version: 2, // Upgrade to version 2
+      version: 3,
       migrate: (persistedState, version) => {
         let newState = { ...persistedState };
 
@@ -560,6 +561,16 @@ export const useWorkoutStore = create(
             ...newState,
             routines,
             sessions
+          };
+        }
+
+        if (version < 3) {
+          newState = {
+            ...newState,
+            exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => ({
+              ...exercise,
+              primary_muscle: normalizeMuscleLabel(exercise.primary_muscle) || '기타',
+            })),
           };
         }
 

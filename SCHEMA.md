@@ -69,14 +69,31 @@ workout_logs (실제 수행 기록, 세션 참조)
 - `id` (UUID, PK)
 - `name` (String): 운동 한글명 (예: "벤치프레스", "플랭크")
 - `englishName` (String, Nullable): 운동 영문명 (예: "Bench Press", "Plank"). 커스텀 운동은 Null 가능
-- `primaryMuscle` (String): 주동근 (예: "가슴", "대퇴사두")
-- `secondaryMuscles` (String[]): 보조근 목록 (예: ["어깨", "삼두"]). 없으면 빈 배열
+- `primaryMuscle` (String): 대표 주동근 (예: "대흉근", "대퇴사두", "광배근")
+- `secondaryMuscles` (String[]): 보조근 목록 (예: ["삼각근", "상완삼두근"]). 없으면 빈 배열
 - `equipment` (String): 사용 장비 (예: "바벨", "덤벨", "맨몸", "케틀벨", "밴드", "기타")
 - `category` (String): 운동 유형. `strength` / `stretching` / `cardio` / `plyometrics` / `powerlifting` 중 하나
 - `unit` (String): 기록 단위. `kg` / `reps` / `sec` 중 하나
 - `synonyms` (String[]): 자동완성 검색용 동의어 목록 (한글 줄임말, 영문명 등). 없으면 빈 배열
 - `user_id` (String, Nullable): 유저가 커스텀으로 추가한 경우 유저 ID. 기본 제공 운동은 Null
 - `created_at` / `updated_at`
+
+### 근육명 표준
+
+운동 사전(`src/data/exerciseDictionary.js`)과 추출 원본(`scratch/extracted_exercises.json`)은 같은 323개 운동을 유지합니다. 사전 원본은 `primaryMuscle`/`secondaryMuscles`를 쓰고, 로컬 저장소에 실제 추가된 운동은 기존 store 구조에 맞춰 `primary_muscle`로 저장합니다.
+
+근육명은 설명형 라벨보다 해부학/운동학에서 쓰는 짧은 전문 용어를 우선합니다. 예를 들어 "허벅지 앞", "등 (중부)", "엉덩이" 같은 UI 설명형 값은 저장하지 않고 각각 "대퇴사두", "광배근", "둔근"처럼 저장합니다.
+
+허용 기본 분류:
+
+`대흉근`, `광배근`, `승모근`, `삼각근`, `상완이두근`, `상완삼두근`, `전완근`, `복근`, `척추기립근`, `둔근`, `대퇴사두`, `햄스트링`, `내전근`, `외전근`, `하퇴삼두근`, `경부근`, `기타`
+
+분류 기준:
+
+- `primaryMuscle`은 사용자가 필터링/그룹핑할 때 가장 직관적으로 찾을 대표 주동근 하나를 고릅니다.
+- `secondaryMuscles`에는 `primaryMuscle`과 같은 값을 중복해서 넣지 않습니다.
+- 영어 원문 태그(`traps` 등)는 저장하지 않고 한국어 표준명(`승모근`)으로 정규화합니다.
+- 커스텀 운동 추가 UI와 저장소 마이그레이션은 과거 값(`가슴`, `어깨`, `허벅지 앞 (대퇴사두)` 등)을 위 표준명으로 변환합니다.
 
 ---
 
