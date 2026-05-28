@@ -1,20 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary';
 
 const generateUUID = () => crypto.randomUUID();
 
-// Default seed exercises
+// Default seed exercises with muscle and equipment info
 const DEFAULT_EXERCISES = [
-  { id: generateUUID(), name: '벤치프레스', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '스쿼트', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '데드리프트', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '풀업', unit: 'reps', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 로우', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '오버헤드 프레스', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 컬', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '레그 익스텐션', unit: 'kg', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '푸시업', unit: 'reps', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '플랭크', unit: 'sec', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '벤치프레스', primary_muscle: '가슴', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '스쿼트', primary_muscle: '허벅지 앞 (대퇴사두)', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '데드리프트', primary_muscle: '등 (하부/허리)', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '풀업', primary_muscle: '등 (광배근)', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '바벨 로우', primary_muscle: '등 (중부)', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '오버헤드 프레스', primary_muscle: '어깨', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '바벨 컬', primary_muscle: '이두', equipment: '바벨', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '레그 익스텐션', primary_muscle: '허벅지 앞 (대퇴사두)', equipment: '머신', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '푸시업', primary_muscle: '가슴', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: generateUUID(), name: '플랭크', primary_muscle: '복근', equipment: '맨몸', user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
 export const useWorkoutStore = create(
@@ -30,11 +31,32 @@ export const useWorkoutStore = create(
       setRecords: [],
 
       // --- Actions: Exercises ---
-      addExercise: (name, unit = 'kg') => {
-        const { currentUser } = get();
+      addExercise: (name, primary_muscle = null, equipment = null, unit = 'kg') => {
+        const { currentUser, exercises } = get();
+        
+        // 중복 방지
+        const existing = exercises.find(ex => ex.name.toLowerCase() === name.toLowerCase());
+        if (existing) return existing;
+
+        // 로컬 사전에 주동근/장비가 정의되어 있다면 가져옴
+        let muscle = primary_muscle;
+        let equip = equipment;
+        if (!muscle || !equip) {
+          const dictEntry = EXERCISE_DICTIONARY.find(ex => 
+            ex.name.toLowerCase() === name.toLowerCase() || 
+            (ex.synonyms && ex.synonyms.includes(name.toLowerCase()))
+          );
+          if (dictEntry) {
+            muscle = muscle || dictEntry.primaryMuscle;
+            equip = equip || dictEntry.equipment;
+          }
+        }
+
         const newExercise = {
           id: generateUUID(),
           name,
+          primary_muscle: muscle || '기타',
+          equipment: equip || '기타',
           unit,
           user_id: currentUser.id,
           created_at: new Date().toISOString(),
