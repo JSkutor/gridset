@@ -3,6 +3,19 @@ import { normalizeMuscleLabel } from './muscleGroups.js';
 
 export const generateUUID = () => crypto.randomUUID();
 
+export const DEFAULT_EXERCISE_IDS = {
+  '벤치프레스': '00000000-0000-4000-8000-000000000001',
+  '스쿼트': '00000000-0000-4000-8000-000000000002',
+  '데드리프트': '00000000-0000-4000-8000-000000000003',
+  '풀업': '00000000-0000-4000-8000-000000000004',
+  '바벨 로우': '00000000-0000-4000-8000-000000000005',
+  '오버헤드 프레스': '00000000-0000-4000-8000-000000000006',
+  '바벨 컬': '00000000-0000-4000-8000-000000000007',
+  '레그 익스텐션': '00000000-0000-4000-8000-000000000008',
+  '푸시업': '00000000-0000-4000-8000-000000000009',
+  '플랭크': '00000000-0000-4000-8000-000000000010',
+};
+
 const DEFAULT_EXERCISE_UNITS = {
   '벤치프레스': 'kg',
   '스쿼트': 'kg',
@@ -20,16 +33,16 @@ export const getDefaultExerciseUnit = (name) => DEFAULT_EXERCISE_UNITS[name] || 
 
 // Default seed exercises with muscle and equipment info
 export const DEFAULT_EXERCISES = [
-  { id: generateUUID(), name: '벤치프레스', primary_muscle: '대흉근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '스쿼트', primary_muscle: '대퇴사두', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '데드리프트', primary_muscle: '척추기립근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '풀업', primary_muscle: '광배근', equipment: '맨몸', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 로우', primary_muscle: '광배근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '오버헤드 프레스', primary_muscle: '삼각근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '바벨 컬', primary_muscle: '상완이두근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '레그 익스텐션', primary_muscle: '대퇴사두', equipment: '머신', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '푸시업', primary_muscle: '대흉근', equipment: '맨몸', unit: 'reps', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: generateUUID(), name: '플랭크', primary_muscle: '복근', equipment: '맨몸', unit: 'sec', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['벤치프레스'], name: '벤치프레스', primary_muscle: '대흉근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['스쿼트'], name: '스쿼트', primary_muscle: '대퇴사두', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['데드리프트'], name: '데드리프트', primary_muscle: '척추기립근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['풀업'], name: '풀업', primary_muscle: '광배근', equipment: '맨몸', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['바벨 로우'], name: '바벨 로우', primary_muscle: '광배근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['오버헤드 프레스'], name: '오버헤드 프레스', primary_muscle: '삼각근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['바벨 컬'], name: '바벨 컬', primary_muscle: '상완이두근', equipment: '바벨', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['레그 익스텐션'], name: '레그 익스텐션', primary_muscle: '대퇴사두', equipment: '머신', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['푸시업'], name: '푸시업', primary_muscle: '대흉근', equipment: '맨몸', unit: 'reps', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['플랭크'], name: '플랭크', primary_muscle: '복근', equipment: '맨몸', unit: 'sec', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
 ];
 
 function targetExercise(name, target_sets, target_record, rest_between_sets = 90, rest_after_exercise = 120) {
