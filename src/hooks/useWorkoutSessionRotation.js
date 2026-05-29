@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
+import { getRegularRoutineSessions, getRoutineTemporarySession } from '../utils/sessionHelper';
 
 export function useWorkoutSessionRotation() {
   const routines = useWorkoutStore(state => state.routines);
@@ -34,36 +35,44 @@ export function useWorkoutSessionRotation() {
     })[0];
   }, [routines, sessions, workoutLogs]);
 
-  // 2. 최신 루틴에 포함된 세션들 (session_order 기준 순서 정렬)
-  const latestRoutineSessions = useMemo(() => {
+  // 2. 최신 루틴에 포함된 정규 세션들 (session_order 기준 순서 정렬)
+  const latestRoutineRegularSessions = useMemo(() => {
     if (!latestRoutine) return [];
-    return sessions
-      .filter(s => s.routine_id === latestRoutine.id)
-      .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+    return getRegularRoutineSessions(sessions, latestRoutine.id);
   }, [latestRoutine, sessions]);
+
+  const latestRoutineTemporarySession = useMemo(() => {
+    if (!latestRoutine) return null;
+    return getRoutineTemporarySession(sessions, latestRoutine.id);
+  }, [latestRoutine, sessions]);
+
+  const latestRoutineSessions = useMemo(() => {
+    if (!latestRoutineTemporarySession) return latestRoutineRegularSessions;
+    return [...latestRoutineRegularSessions, latestRoutineTemporarySession];
+  }, [latestRoutineRegularSessions, latestRoutineTemporarySession]);
 
   // 3. 최근 수행한 세션의 다음 세션 로테이션 (기본값은 첫 세션인 Day A)
   const nextDefaultSession = useMemo(() => {
-    if (latestRoutineSessions.length === 0) return null;
+    if (latestRoutineRegularSessions.length === 0) return null;
 
-    const sessionIds = new Set(latestRoutineSessions.map(s => s.id));
+    const sessionIds = new Set(latestRoutineRegularSessions.map(s => s.id));
     
-    // 최신 루틴 세션들 중 최근 수행한 로그 조회
+    // 최신 루틴의 정규 세션들 중 최근 수행한 로그 조회. 임시 세션 기록은 순서를 넘기지 않는다.
     const routineLogs = workoutLogs
       .filter(log => log.session_id && sessionIds.has(log.session_id))
       .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 
     if (routineLogs.length > 0) {
       const lastSessionId = routineLogs[0].session_id;
-      const lastIndex = latestRoutineSessions.findIndex(s => s.id === lastSessionId);
+      const lastIndex = latestRoutineRegularSessions.findIndex(s => s.id === lastSessionId);
       if (lastIndex !== -1) {
-        const nextIndex = (lastIndex + 1) % latestRoutineSessions.length;
-        return latestRoutineSessions[nextIndex];
+        const nextIndex = (lastIndex + 1) % latestRoutineRegularSessions.length;
+        return latestRoutineRegularSessions[nextIndex];
       }
     }
 
-    return latestRoutineSessions[0] || null;
-  }, [latestRoutineSessions, workoutLogs]);
+    return latestRoutineRegularSessions[0] || null;
+  }, [latestRoutineRegularSessions, workoutLogs]);
 
   // 4. 활성화할 세션 결정
   const selectedSession = useMemo(() => {
@@ -71,8 +80,8 @@ export function useWorkoutSessionRotation() {
       const found = latestRoutineSessions.find(s => s.id === selectedSessionId);
       if (found) return found;
     }
-    return nextDefaultSession || latestRoutineSessions[0] || null;
-  }, [selectedSessionId, latestRoutineSessions, nextDefaultSession]);
+    return nextDefaultSession || latestRoutineRegularSessions[0] || latestRoutineTemporarySession || null;
+  }, [selectedSessionId, latestRoutineSessions, latestRoutineRegularSessions, latestRoutineTemporarySession, nextDefaultSession]);
 
   return {
     latestRoutineSessions,

@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { LayoutGroup } from 'framer-motion';
+import { Clock, Plus } from 'lucide-react';
 import RoutineHeader from './RoutineHeader';
 import RoutineAddButton from './RoutineAddButton';
 import { SessionEditRow, SessionRow } from './SessionRows';
@@ -7,6 +8,7 @@ import { SessionEditRow, SessionRow } from './SessionRows';
 export default function SessionListPanel({
   routine,
   routineSessions,
+  temporarySession,
   activeSessionId,
   isPanelFocused,
   sessions,
@@ -28,8 +30,10 @@ export default function SessionListPanel({
   onCancelSessionEdit,
   onDeleteSession,
   onAddSession,
+  onCreateTemporarySession,
   onSelectSession,
   onSessionKeyDown,
+  onTemporarySessionKeyDown,
   onAddSessionButtonKeyDown,
   onSessionRef,
   addSessionBtnRef,
@@ -45,6 +49,12 @@ export default function SessionListPanel({
       }
     }, 50);
   };
+
+  const temporaryExerciseCount = temporarySession
+    ? sessionExercises.filter(se => se.session_id === temporarySession.id).length
+    : 0;
+  const isTemporarySessionEditing = temporarySession && editingSessionId === temporarySession.id;
+  const isTemporarySessionActive = temporarySession && temporarySession.id === activeSessionId;
 
   return (
     <div
@@ -86,6 +96,53 @@ export default function SessionListPanel({
           </span>
         )}
       </div>
+
+      {routine && (
+        <div className="routine-temporary-session-zone">
+          <div className="routine-temporary-session-heading">
+            <span>
+              <Clock size={12} />
+              임시 세션
+            </span>
+            <b>순서 제외 · 최대 1개</b>
+          </div>
+
+          {!temporarySession ? (
+            <button
+              type="button"
+              className="routine-temporary-session-create"
+              onClick={onCreateTemporarySession}
+              onFocus={onPanelFocus}
+            >
+              <Plus size={14} />
+              임시 세션 설정
+            </button>
+          ) : isTemporarySessionEditing ? (
+            <SessionEditRow
+              session={temporarySession}
+              editingName={editingSessionName}
+              onEditingNameChange={onEditingSessionNameChange}
+              onFinish={onFinishSessionEdit}
+              onCancel={onCancelSessionEdit}
+            />
+          ) : (
+            <SessionRow
+              refCallback={element => onSessionRef(temporarySession.id, element)}
+              session={temporarySession}
+              index={-1}
+              sessions={sessions}
+              exerciseCount={temporaryExerciseCount}
+              isActive={isTemporarySessionActive}
+              isHighlighted={isTemporarySessionActive && isPanelFocused}
+              onKeyDown={onTemporarySessionKeyDown}
+              onFocus={onPanelFocus}
+              onSelect={onSelectSession}
+              onStartEdit={onStartSessionEdit}
+              onDelete={onDeleteSession}
+            />
+          )}
+        </div>
+      )}
 
       <div ref={scrollContainerRef} className="session-scroll-container" style={{ flex: 1, overflowY: 'auto', padding: '0 8px 16px' }}>
         {!routine ? (

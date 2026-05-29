@@ -9,8 +9,29 @@ export const SESSION_COLORS = [
 ];
 
 export const MAX_SESSIONS_PER_ROUTINE = SESSION_COLORS.length;
+export const TEMPORARY_SESSION_ORDER = 0;
+export const TEMPORARY_SESSION_COLOR = '#9ECE6A';
+
+export function isTemporarySession(session) {
+  return session?.session_order !== null &&
+    session?.session_order !== undefined &&
+    Number(session.session_order) === TEMPORARY_SESSION_ORDER;
+}
+
+export function getRegularRoutineSessions(allSessions, routineId) {
+  if (!allSessions || !routineId) return [];
+  return allSessions
+    .filter((session) => session.routine_id === routineId && !isTemporarySession(session))
+    .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+}
+
+export function getRoutineTemporarySession(allSessions, routineId) {
+  if (!allSessions || !routineId) return null;
+  return allSessions.find((session) => session.routine_id === routineId && isTemporarySession(session)) || null;
+}
 
 export function getSessionColor(session) {
+  if (isTemporarySession(session)) return TEMPORARY_SESSION_COLOR;
   const order = Number(session?.session_order) || 1;
   return SESSION_COLORS[Math.max(1, order) - 1] || '#6B7394';
 }
@@ -24,9 +45,8 @@ export function getSessionColor(session) {
  */
 export function getSessionDayLetter(session, allSessions) {
   if (!session || !allSessions) return '';
-  const routineSessions = allSessions
-    .filter(s => s.routine_id === session.routine_id)
-    .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+  if (isTemporarySession(session)) return '';
+  const routineSessions = getRegularRoutineSessions(allSessions, session.routine_id);
   
   const index = routineSessions.findIndex(s => s.id === session.id);
   if (index === -1) return '';
@@ -42,6 +62,7 @@ export function getSessionDayLetter(session, allSessions) {
  */
 export function getFormattedSessionName(session, allSessions) {
   if (!session) return '';
+  if (isTemporarySession(session)) return `임시 : ${session.name}`;
   const dayLetter = getSessionDayLetter(session, allSessions);
   return dayLetter ? `Day ${dayLetter} : ${session.name}` : session.name;
 }

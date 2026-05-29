@@ -16,6 +16,7 @@ function swapItems(items, fromIndex, toIndex) {
 export function useRoutineKeyboardNavigation({
   effectiveRoutineId,
   effectiveSessionId,
+  temporarySessionId,
   effectiveRoutineSessions,
   activeSessionExercises,
   sessionExercises,
@@ -161,6 +162,9 @@ export function useRoutineKeyboardNavigation({
             onSelectSession(effectiveRoutineSessions[prevIndex].id);
             focusSession(prevIndex);
           }
+        } else if (temporarySessionId && !isReordering) {
+          onSelectSession(temporarySessionId);
+          focusSessionById(temporarySessionId);
         }
         break;
       }
@@ -268,6 +272,9 @@ export function useRoutineKeyboardNavigation({
         const lastIndex = effectiveRoutineSessions.length - 1;
         onSelectSession(effectiveRoutineSessions[lastIndex].id);
         focusSession(lastIndex);
+      } else if (temporarySessionId) {
+        onSelectSession(temporarySessionId);
+        focusSessionById(temporarySessionId);
       }
     } else if (event.key === 'ArrowRight') {
       event.preventDefault();
@@ -281,9 +288,9 @@ export function useRoutineKeyboardNavigation({
   };
 
   const focusFirstSessionFirstExercise = () => {
-    if (effectiveRoutineSessions.length === 0) return;
+    if (effectiveRoutineSessions.length === 0 && !temporarySessionId) return;
 
-    const firstSession = effectiveRoutineSessions[0];
+    const firstSession = effectiveRoutineSessions[0] || { id: temporarySessionId };
     setSelectedSessionId(firstSession.id);
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(false);

@@ -4,6 +4,7 @@ import { ListPlus } from 'lucide-react';
 import AddExerciseRow from './AddExerciseRow';
 import ExerciseRow from './ExerciseRow';
 import RoutineAddButton from './RoutineAddButton';
+import { isTemporarySession } from '../../utils/sessionHelper';
 
 export default function SessionExerciseListPanel({
   session,
@@ -25,6 +26,7 @@ export default function SessionExerciseListPanel({
   onPanelFocus,
 }) {
   const scrollContainerRef = useRef(null);
+  const isTemporary = isTemporarySession(session);
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -56,11 +58,19 @@ export default function SessionExerciseListPanel({
       }}>
         <span>
           {session ? (
-            <>
+            isTemporary ? (
+              <>
+                <span className="routine-session-temp-badge">임시</span>
+                <span style={{ margin: '0 6px', opacity: 0.5 }}>:</span>
+                <span>{session.name}</span>
+              </>
+            ) : (
+              <>
               <span style={{ color: 'var(--accent)', fontWeight: '700' }}>Day {dayLetter}</span>
               <span style={{ margin: '0 6px', opacity: 0.5 }}>:</span>
               <span>{session.name}</span>
-            </>
+              </>
+            )
           ) : '운동'}
         </span>
       </div>

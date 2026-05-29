@@ -1900,6 +1900,103 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   outline: none;
 }
 
+.routine-temporary-session-zone {
+  padding: 0 12px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.routine-temporary-session-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 2px 4px 8px;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.routine-temporary-session-heading span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #9ece6a;
+}
+
+.routine-temporary-session-heading b {
+  overflow: hidden;
+  font-size: 10px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.62;
+}
+
+.routine-temporary-session-create {
+  width: 100%;
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px;
+  border: 1px dashed rgba(158, 206, 106, 0.25);
+  border-radius: 8px;
+  background: rgba(158, 206, 106, 0.035);
+  color: rgba(214, 245, 164, 0.76);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  transition: color 0.15s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.routine-temporary-session-create:hover,
+.routine-temporary-session-create:focus-visible {
+  border-color: rgba(158, 206, 106, 0.42);
+  background: rgba(158, 206, 106, 0.07);
+  color: #d6f5a4;
+  outline: none;
+  box-shadow: 0 0 0 1px rgba(158, 206, 106, 0.08), 0 0 14px rgba(158, 206, 106, 0.08);
+}
+
+.routine-session-row--temporary {
+  border-color: rgba(158, 206, 106, 0.16) !important;
+  background: rgba(158, 206, 106, 0.035);
+}
+
+.routine-session-row--temporary:hover {
+  background: rgba(158, 206, 106, 0.055);
+}
+
+.routine-session-temp-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.routine-session-temp-title > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.routine-session-temp-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 20px;
+  padding: 2px 6px;
+  border: 1px solid rgba(158, 206, 106, 0.24);
+  border-radius: 6px;
+  background: rgba(158, 206, 106, 0.08);
+  color: #9ece6a;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+}
+
 .routine-exercise-row {
   position: relative;
   border: 1px solid transparent !important;

@@ -2,7 +2,13 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
-import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
+import {
+  MAX_SESSIONS_PER_ROUTINE,
+  TEMPORARY_SESSION_ORDER,
+  getRegularRoutineSessions,
+  getRoutineTemporarySession,
+  isTemporarySession,
+} from '../utils/sessionHelper.js';
 import { DEFAULT_EXERCISES, createDummyWorkoutData, generateUUID } from '../data/dummyGenerator.js';
 import { migrateWorkoutPersistState } from './workoutPersistenceMigration.js';
 import * as workoutRepository from '../api/supabaseWorkoutRepository.js';
@@ -328,7 +334,7 @@ export const useWorkoutStore = create(
       // --- Actions: Sessions (Workout Templates) ---
       addSession: (routine_id, name) => {
         const { currentUser, sessions } = get();
-        const routineSessions = sessions.filter(s => s.routine_id === routine_id);
+        const routineSessions = getRegularRoutineSessions(sessions, routine_id);
         if (routineSessions.length >= MAX_SESSIONS_PER_ROUTINE) return null;
 
         const nextOrder = routineSessions.length + 1;
@@ -350,6 +356,31 @@ export const useWorkoutStore = create(
 
         return newSession;
       },
+      createTemporarySession: (routine_id, name = '임시 세션') => {
+        if (!routine_id) return null;
+        const { currentUser, sessions } = get();
+        const existingTemporarySession = getRoutineTemporarySession(sessions, routine_id);
+        if (existingTemporarySession) return existingTemporarySession;
+
+        const createdAt = new Date().toISOString();
+        const newSession = {
+          id: generateUUID(),
+          name,
+          routine_id,
+          session_order: TEMPORARY_SESSION_ORDER,
+          user_id: currentUser.id,
+          created_at: createdAt,
+          updated_at: createdAt
+        };
+
+        set((state) => ({ sessions: [...state.sessions, newSession] }));
+
+        if (!currentUser.isGuest) {
+          runRemoteSync('createTemporarySession', () => workoutRepository.insertRow('sessions', newSession));
+        }
+
+        return newSession;
+      },
       deleteSession: (id) => {
         const { currentUser, sessions } = get();
         const sessionToDelete = sessions.find(s => s.id === id);
@@ -362,7 +393,7 @@ export const useWorkoutStore = create(
           const remainingSessions = state.sessions.filter(sn => sn.id !== id);
           
           const routineSessions = remainingSessions
-            .filter(s => s.routine_id === routineId)
+            .filter(s => s.routine_id === routineId && !isTemporarySession(s))
             .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
 
           const orderMap = new Map();
@@ -371,7 +402,7 @@ export const useWorkoutStore = create(
           });
 
           finalSessions = remainingSessions.map(s => {
-            if (s.routine_id === routineId) {
+            if (s.routine_id === routineId && !isTemporarySession(s)) {
               return { ...s, session_order: orderMap.get(s.id) || 1 };
             }
             return s;
@@ -411,7 +442,7 @@ export const useWorkoutStore = create(
         
         set((state) => {
           updatedSessions = state.sessions.map(s => {
-            if (s.routine_id === routine_id) {
+            if (s.routine_id === routine_id && !isTemporarySession(s)) {
               const newOrderIndex = orderedSessionIds.indexOf(s.id);
               if (newOrderIndex !== -1) {
                 return { ...s, session_order: newOrderIndex + 1, updated_at: new Date().toISOString() };

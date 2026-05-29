@@ -2,10 +2,15 @@ import { test, describe } from 'vitest';
 import assert from 'node:assert/strict';
 import {
   getFormattedSessionName,
+  getRegularRoutineSessions,
+  getRoutineTemporarySession,
   getSessionColor,
   getSessionDayLetter,
+  isTemporarySession,
   MAX_SESSIONS_PER_ROUTINE,
   SESSION_COLORS,
+  TEMPORARY_SESSION_COLOR,
+  TEMPORARY_SESSION_ORDER,
 } from './sessionHelper.js';
 
 const sessions = [
@@ -13,6 +18,7 @@ const sessions = [
   { id: 'pull', routine_id: 'ppl', name: 'Pull', session_order: 1 },
   { id: 'legs', routine_id: 'ppl', name: 'Legs', session_order: 3 },
   { id: 'upper', routine_id: 'upper-lower', name: 'Upper', session_order: 1 },
+  { id: 'temp', routine_id: 'ppl', name: '오늘 보강', session_order: TEMPORARY_SESSION_ORDER },
 ];
 
 describe('sessionHelper: Day Lettering & Palette Styling', () => {
@@ -37,5 +43,19 @@ describe('sessionHelper: Day Lettering & Palette Styling', () => {
     assert.equal(getSessionColor({ session_order: 1 }), SESSION_COLORS[0]);
     assert.equal(getSessionColor({ session_order: MAX_SESSIONS_PER_ROUTINE }), SESSION_COLORS[6]);
     assert.equal(getSessionColor({ session_order: MAX_SESSIONS_PER_ROUTINE + 1 }), '#6B7394');
+  });
+
+  test('temporary sessions sit outside day ordering', () => {
+    const temporarySession = sessions.find((session) => session.id === 'temp');
+
+    assert.equal(isTemporarySession(temporarySession), true);
+    assert.equal(getSessionDayLetter(temporarySession, sessions), '');
+    assert.equal(getFormattedSessionName(temporarySession, sessions), '임시 : 오늘 보강');
+    assert.equal(getSessionColor(temporarySession), TEMPORARY_SESSION_COLOR);
+    assert.deepEqual(
+      getRegularRoutineSessions(sessions, 'ppl').map((session) => session.id),
+      ['pull', 'push', 'legs'],
+    );
+    assert.equal(getRoutineTemporarySession(sessions, 'ppl').id, temporarySession.id);
   });
 });

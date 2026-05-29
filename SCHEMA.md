@@ -38,7 +38,7 @@ workout_logs (실제 수행 기록, 세션 참조)
 - `id` (UUID, PK)
 - `name` (String): 세션명 (예: "상체 (Push & Pull)", "하체 (Legs)")
 - `routine_id` (UUID, FK → `routines.id`): 소속 루틴
-- `session_order` (Int): 루틴 내에서의 세션 순서 (1, 2, 3...)
+- `session_order` (Int): 루틴 내에서의 세션 순서 (1, 2, 3...). `0`은 순서/로테이션에서 제외되는 임시 세션 예약값이며 루틴당 최대 1개만 사용합니다.
 - `user_id` (String): 세션 소유자 (독립 조회 및 추후 확장 대비)
 - `created_at` / `updated_at`
 

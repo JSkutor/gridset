@@ -26,7 +26,7 @@ CREATE TABLE public.sessions (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     routine_id UUID NOT NULL REFERENCES public.routines(id) ON DELETE CASCADE,
-    session_order INTEGER NOT NULL,
+    session_order INTEGER NOT NULL, -- 0 is reserved for the single temporary session outside routine rotation
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -148,6 +148,7 @@ CREATE POLICY "Users can manage their own set records" ON public.set_records
 CREATE INDEX IF NOT EXISTS idx_routines_user ON public.routines(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_routine ON public.sessions(routine_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON public.sessions(user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_one_temporary_per_routine ON public.sessions(routine_id) WHERE session_order = 0;
 CREATE INDEX IF NOT EXISTS idx_exercises_user ON public.exercises(user_id);
 CREATE INDEX IF NOT EXISTS idx_session_exercises_session ON public.session_exercises(session_id);
 CREATE INDEX IF NOT EXISTS idx_workout_logs_user ON public.workout_logs(user_id);

@@ -1,4 +1,9 @@
-import { getFormattedSessionName, getSessionColor } from './sessionHelper';
+import {
+  getFormattedSessionName,
+  getRegularRoutineSessions,
+  getRoutineTemporarySession,
+  getSessionColor,
+} from './sessionHelper';
 import { getRecordMetric, toDate } from './logFormatters';
 
 export function buildLogSummaries(workoutLogs, recordsByLogId) {
@@ -84,9 +89,9 @@ export function buildRoutineSummaries(routines, sessions, sessionExercises, exer
   const maxSessionLogCount = Math.max(1, ...[...logCountBySession.values()].map((logs) => logs.length));
 
   return routines.map((routine) => {
-    const routineSessions = sessions
-      .filter((session) => session.routine_id === routine.id)
-      .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
+    const regularSessions = getRegularRoutineSessions(sessions, routine.id);
+    const temporarySession = getRoutineTemporarySession(sessions, routine.id);
+    const routineSessions = temporarySession ? [...regularSessions, temporarySession] : regularSessions;
 
     const sessionSummaries = routineSessions.map((session) => {
       const linkedExercises = sessionExercises
@@ -129,5 +134,4 @@ export function buildRoutineSummaries(routines, sessions, sessionExercises, exer
     return dateB - dateA;
   });
 }
-
 

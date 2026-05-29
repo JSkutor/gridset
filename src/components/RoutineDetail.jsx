@@ -1,7 +1,13 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useRoutineKeyboardNavigation } from '../hooks/useRoutineKeyboardNavigation';
-import { MAX_SESSIONS_PER_ROUTINE, getSessionDayLetter } from '../utils/sessionHelper';
+import {
+  MAX_SESSIONS_PER_ROUTINE,
+  getRegularRoutineSessions,
+  getRoutineTemporarySession,
+  getSessionDayLetter,
+  isTemporarySession,
+} from '../utils/sessionHelper';
 import ExerciseSettingsPanel from './routine/ExerciseSettingsPanel';
 import RoutineTabs from './routine/RoutineTabs';
 import SessionExerciseListPanel from './routine/SessionExerciseListPanel';
@@ -18,6 +24,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   const duplicateRoutine = useWorkoutStore(state => state.duplicateRoutine);
   const updateRoutine = useWorkoutStore(state => state.updateRoutine);
   const addSession = useWorkoutStore(state => state.addSession);
+  const createTemporarySession = useWorkoutStore(state => state.createTemporarySession);
   const deleteSession = useWorkoutStore(state => state.deleteSession);
   const updateSession = useWorkoutStore(state => state.updateSession);
   const addSessionExercise = useWorkoutStore(state => state.addSessionExercise);
@@ -86,8 +93,9 @@ const RoutineDetail = forwardRef((props, ref) => {
 
   const handleSelectRoutine = (id) => {
     setSelectedRoutineId(id);
-    const routineSessions = sessions.filter(s => s.routine_id === id);
-    setSelectedSessionId(routineSessions[0]?.id || null);
+    const routineSessions = getRegularRoutineSessions(sessions, id);
+    const temporarySession = getRoutineTemporarySession(sessions, id);
+    setSelectedSessionId(routineSessions[0]?.id || temporarySession?.id || null);
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(false);
     setFocusedRoutinePanel('sessions');
@@ -102,11 +110,16 @@ const RoutineDetail = forwardRef((props, ref) => {
 
   const effectiveRoutineId = selectedRoutineId || routines[0]?.id || null;
   const effectiveRoutine = routines.find(routine => routine.id === effectiveRoutineId) || null;
-  const effectiveRoutineSessions = sessions
-    .filter(session => session.routine_id === effectiveRoutineId)
-    .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
-  const effectiveSessionId = selectedSessionId || effectiveRoutineSessions[0]?.id || null;
-  const effectiveSession = effectiveRoutineSessions.find(session => session.id === effectiveSessionId) || null;
+  const effectiveRoutineSessions = getRegularRoutineSessions(sessions, effectiveRoutineId);
+  const effectiveTemporarySession = getRoutineTemporarySession(sessions, effectiveRoutineId);
+  const effectiveSessionOptions = effectiveTemporarySession
+    ? [...effectiveRoutineSessions, effectiveTemporarySession]
+    : effectiveRoutineSessions;
+  const selectedSessionStillExists = effectiveSessionOptions.some(session => session.id === selectedSessionId);
+  const effectiveSessionId = selectedSessionStillExists
+    ? selectedSessionId
+    : effectiveRoutineSessions[0]?.id || effectiveTemporarySession?.id || null;
+  const effectiveSession = effectiveSessionOptions.find(session => session.id === effectiveSessionId) || null;
   const activeSessionExercises = sessionExercises
     .filter(sessionExercise => sessionExercise.session_id === (effectiveSession?.id || null))
     .sort((a, b) => a.order - b.order);
@@ -128,6 +141,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   } = useRoutineKeyboardNavigation({
     effectiveRoutineId,
     effectiveSessionId,
+    temporarySessionId: effectiveTemporarySession?.id || null,
     effectiveRoutineSessions,
     activeSessionExercises,
     sessionExercises,
@@ -203,6 +217,21 @@ const RoutineDetail = forwardRef((props, ref) => {
     setFocusedRoutinePanel('sessions');
   };
 
+  const handleCreateTemporarySession = () => {
+    if (!effectiveRoutineId || effectiveTemporarySession) return;
+    const newSession = createTemporarySession(effectiveRoutineId, '임시 세션');
+    if (!newSession) return;
+
+    setPendingNewSessionId(newSession.id);
+    setPendingNewSessionReturnId(effectiveSessionId);
+    setSelectedSessionId(newSession.id);
+    setEditingSessionId(newSession.id);
+    setEditingSessionNameVal(newSession.name);
+    setSelectedExerciseId(null);
+    setIsAddingExerciseRow(false);
+    setFocusedRoutinePanel('sessions');
+  };
+
   const handleStartSessionEdit = (session) => {
     setEditingSessionId(session.id);
     setEditingSessionNameVal(session.name);
@@ -227,9 +256,9 @@ const RoutineDetail = forwardRef((props, ref) => {
   const cancelSessionEdit = (session) => {
     const isPendingNewSession = pendingNewSessionId === session.id;
     if (pendingNewSessionId === session.id) {
-      const fallbackId = effectiveRoutineSessions.some(item => item.id === pendingNewSessionReturnId)
+      const fallbackId = effectiveSessionOptions.some(item => item.id === pendingNewSessionReturnId)
         ? pendingNewSessionReturnId
-        : effectiveRoutineSessions.find(item => item.id !== session.id)?.id || null;
+        : effectiveSessionOptions.find(item => item.id !== session.id)?.id || null;
 
       deleteSession(session.id);
       setSelectedSessionId(fallbackId);
@@ -250,10 +279,49 @@ const RoutineDetail = forwardRef((props, ref) => {
   };
 
   const handleDeleteSession = (session) => {
-    if (confirm('이 세션을 삭제하시겠습니까?')) {
+    const confirmMessage = isTemporarySession(session)
+      ? '임시 세션을 삭제하시겠습니까? 등록한 운동 구성도 함께 제거됩니다.'
+      : '이 세션을 삭제하시겠습니까?';
+
+    if (confirm(confirmMessage)) {
       deleteSession(session.id);
-      const remainingSessions = effectiveRoutineSessions.filter(item => item.id !== session.id);
+      const remainingSessions = effectiveSessionOptions.filter(item => item.id !== session.id);
       setSelectedSessionId(remainingSessions[0]?.id || null);
+    }
+  };
+
+  const handleTemporarySessionKeyDown = (event) => {
+    switch (event.key) {
+      case 'ArrowDown': {
+        event.preventDefault();
+        if (effectiveRoutineSessions.length > 0) {
+          handleSelectSession(effectiveRoutineSessions[0].id);
+          focusSessionRow(effectiveRoutineSessions[0].id, 0);
+        } else if (canAddSession) {
+          focusSessionAddButton(0);
+        }
+        break;
+      }
+      case 'ArrowRight': {
+        event.preventDefault();
+        if (!effectiveTemporarySession) return;
+        handleSelectSession(effectiveTemporarySession.id);
+        if (effectiveSessionId !== effectiveTemporarySession.id) return;
+        if (activeSessionExercises.length > 0) {
+          setSelectedExerciseId(activeSessionExercises[0].id);
+        } else if (!isAddingExerciseRow) {
+          setTimeout(() => addExerciseBtnRef.current?.focus(), 20);
+        }
+        break;
+      }
+      case 'Enter':
+      case ' ': {
+        event.preventDefault();
+        if (effectiveTemporarySession) handleSelectSession(effectiveTemporarySession.id);
+        break;
+      }
+      default:
+        break;
     }
   };
 
@@ -340,6 +408,7 @@ const RoutineDetail = forwardRef((props, ref) => {
         <SessionListPanel
           routine={effectiveRoutine}
           routineSessions={effectiveRoutineSessions}
+          temporarySession={effectiveTemporarySession}
           activeSessionId={effectiveSessionId}
           isPanelFocused={focusedRoutinePanel === 'sessions'}
           sessions={sessions}
@@ -361,8 +430,10 @@ const RoutineDetail = forwardRef((props, ref) => {
           onCancelSessionEdit={cancelSessionEdit}
           onDeleteSession={handleDeleteSession}
           onAddSession={handleAddSession}
+          onCreateTemporarySession={handleCreateTemporarySession}
           onSelectSession={handleSelectSession}
           onSessionKeyDown={handleSessionKeyDown}
+          onTemporarySessionKeyDown={handleTemporarySessionKeyDown}
           onAddSessionButtonKeyDown={handleAddSessionButtonKeyDown}
           onSessionRef={setSessionRef}
           addSessionBtnRef={addSessionBtnRef}

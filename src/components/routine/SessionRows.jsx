@@ -5,7 +5,7 @@ import {
   getRoutineRowAnimation,
   getRoutineRowHoverAnimation,
 } from '../../utils/routineRowAnimation';
-import { getFormattedSessionName, getSessionColor, getSessionDayLetter } from '../../utils/sessionHelper';
+import { getFormattedSessionName, getSessionColor, getSessionDayLetter, isTemporarySession } from '../../utils/sessionHelper';
 
 export function SessionEditRow({ session, editingName, onEditingNameChange, onFinish, onCancel }) {
   return (
@@ -95,6 +95,7 @@ export function SessionRow({
   onStartEdit,
   onDelete,
 }) {
+  const isTemporary = isTemporarySession(session);
   const sessionDayLetter = getSessionDayLetter(session, sessions);
   const sessionColor = getSessionColor(session);
 
@@ -105,7 +106,7 @@ export function SessionRow({
       onKeyDown={(event) => onKeyDown(event, index)}
       onFocus={onFocus}
       onClick={() => onSelect(session.id)}
-      className="routine-session-row"
+      className={`routine-session-row ${isTemporary ? 'routine-session-row--temporary' : ''}`}
       layout="position"
       animate={getRoutineRowAnimation(isHighlighted)}
       transition={ROUTINE_ROW_LAYOUT_TRANSITION}
@@ -131,7 +132,12 @@ export function SessionRow({
           overflow: 'hidden',
           textOverflow: 'ellipsis',
         }}>
-          {sessionDayLetter ? (
+          {isTemporary ? (
+            <span className="routine-session-temp-title">
+              <span className="routine-session-temp-badge">임시</span>
+              <span>{session.name}</span>
+            </span>
+          ) : sessionDayLetter ? (
             <>
               <span style={{
                 color: sessionColor,
@@ -148,7 +154,7 @@ export function SessionRow({
           )}
         </div>
         <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-          운동 {exerciseCount}개
+          운동 {exerciseCount}개{isTemporary ? ' · 로테이션 제외' : ''}
         </div>
       </div>
 

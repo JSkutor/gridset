@@ -3,7 +3,7 @@ import { Plus, ChevronDown, Check } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
 import { useWorkoutDraft } from '../hooks/useWorkoutDraft';
-import { getFormattedSessionName } from '../utils/sessionHelper';
+import { getFormattedSessionName, isTemporarySession } from '../utils/sessionHelper';
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
@@ -92,6 +92,29 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
   const exerciseHeaderRefs = useRef(new Map());
   const lastScrolledBlockIndexRef = useRef(-1);
   const noteRef = useRef(null);
+  const regularSessionOptions = latestRoutineSessions.filter((item) => !isTemporarySession(item));
+  const temporarySessionOption = latestRoutineSessions.find((item) => isTemporarySession(item));
+
+  const renderSessionOptions = () => (
+    <>
+      {regularSessionOptions.length > 0 && (
+        <optgroup label="정규 세션">
+          {regularSessionOptions.map(s => (
+            <option key={s.id} value={s.id} className="session-inline-option">
+              {getFormattedSessionName(s, sessions)}
+            </option>
+          ))}
+        </optgroup>
+      )}
+      {temporarySessionOption && (
+        <optgroup label="임시 세션">
+          <option value={temporarySessionOption.id} className="session-inline-option">
+            {getFormattedSessionName(temporarySessionOption, sessions)}
+          </option>
+        </optgroup>
+      )}
+    </>
+  );
 
   // 포커스된 운동 종목(blockIndex)이 변경될 때 해당 종목 헤더로 부드럽게 스크롤 보정
   useEffect(() => {
@@ -151,14 +174,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                     <option value="" disabled className="session-inline-option">
                       세션 선택...
                     </option>
-                    {latestRoutineSessions.map(s => {
-                      const dayLetter = String.fromCharCode(65 + (latestRoutineSessions.indexOf(s) % 26));
-                      return (
-                        <option key={s.id} value={s.id} className="session-inline-option">
-                          Day {dayLetter} : {s.name}
-                        </option>
-                      );
-                    })}
+                    {renderSessionOptions()}
                   </select>
                   <div className="session-dropdown-arrow">
                     <ChevronDown size={13} />
@@ -210,14 +226,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                   onChange={(e) => onSessionChange?.(e.target.value)}
                   className="session-inline-select"
                 >
-                  {latestRoutineSessions.map(s => {
-                    const dayLetter = String.fromCharCode(65 + (latestRoutineSessions.indexOf(s) % 26));
-                    return (
-                      <option key={s.id} value={s.id} className="session-inline-option">
-                        Day {dayLetter} : {s.name}
-                      </option>
-                    );
-                  })}
+                  {renderSessionOptions()}
                 </select>
                 <div className="session-dropdown-arrow">
                   <ChevronDown size={13} />
