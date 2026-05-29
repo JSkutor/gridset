@@ -1,5 +1,7 @@
+// @vitest-environment node
 import fs from 'node:fs';
-import test from 'node:test';
+import path from 'node:path';
+import { test } from 'vitest';
 import assert from 'node:assert/strict';
 import { EXERCISE_DICTIONARY } from './exerciseDictionary.js';
 import { MUSCLE_GROUPS } from './muscleGroups.js';
@@ -11,8 +13,9 @@ function stripRuntimeFields(exercise) {
 }
 
 test('exercise dictionary stays in sync with extracted exercise data', () => {
+  const jsonPath = path.resolve(import.meta.dirname, '../../scratch/extracted_exercises.json');
   let extractedExercises = JSON.parse(
-    fs.readFileSync(new URL('../../scratch/extracted_exercises.json', import.meta.url), 'utf8'),
+    fs.readFileSync(jsonPath, 'utf8'),
   );
 
   // Filter out warning note in JSON

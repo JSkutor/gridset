@@ -1,3 +1,4 @@
+import React from 'react';
 import { Pause, Play, X } from 'lucide-react';
 
 function formatRestTime(seconds) {

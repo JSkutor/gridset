@@ -3,29 +3,12 @@
 > [!NOTE]
 > 이 파일에 기록된 내용들은 **현재 구현된 진행 상황과는 무관한, 개발자 본인의 생각과 향후 개선 아이디어를 자유롭게 정리한 내용**입니다.
 
-## ⚖️ TODO: 좌우 (편측성 운동 세트 표기) (완료)
-
-- **아이디어**: 좌우 열(column)을 따로 만들지 않고, **세트(Set) 데이터 내에 좌우 정보를 포함**시키는 방식.
-  - **이유**: 좌우 구분이 필요 없는 운동이 많고, 열이 맞지 않으면 화면이 안 예쁘게 보일 수 있음.
-  - **예시**: 세트 입력 칸에 `1(R) 1(L)`과 같은 방식으로 직관적으로 표기.
-  - **주의사항**: UI상에서는 세트 안에 묶여서 표현되더라도, 내부 DB 상에는 추후 데이터 분석 등을 위해 구분되어 저장될 수 있도록 설계해야 함.
-  - **반영 결과**: `exercises`에 `is_unilateral` (Boolean), `set_records`에 `side` ('L', 'R', 'both') 추가 완료. `is_completed` 필드는 제거됨.
-
 ## 💾 TODO 메모: Git 방식의 운동 메모
 
 - **아이디어**: 매일 수행하는 운동 종목마다 고유의 메모를 기록할 수 있도록 함. (단순히 덮어쓰는 방식이 아닌 **Git의 이력 관리(Commit)처럼 쌓이는 구조** 구상)
 - **사용자 경험(UX)**:
   - 세트를 입력하다가 엔터(Enter)를 치거나 특정 영역을 클릭하면 메모 창이 열려 타이핑 가능.
   - 저장된 메모는 **이전 기록 카드(History Card)**에서 바로 확인할 수 있도록 설계.
-
-## ⏱️ TODO: 타이머
-
-- **아이디어**: 타이머의 위치를 **네비게이션 바(Navigation Bar) 바로 아래**에 배치하면 어떨지 구상 중.
-  - 상단에 고정되어 있으면서도 시야를 너무 방해하지 않고 자연스럽게 노출되는 구조.
-
-## ⏸️ TODO: 휴식시간
-
-- 세트 완료 후 휴식 시간 측정 및 알림 기능 설계 필요.
 
 ## 📱 TODO: 모바일 및 플랫폼 방향성 (중요한 타협)
 
@@ -49,30 +32,27 @@ command + arrow 로 순서 바꾸는거랑
 ## TODO: supabase 연결 및 데이터 동기화 구체적인 로드맵
 
 ### Phase 1: Supabase 프로젝트 셋업 및 스키마 반영
+
 - [ ] Supabase 프로젝트 생성 및 API Key/URL 발급 (`.env.local` 설정)
-- [ ] 현재 로컬 스키마(`SCHEMA.md`)를 기반으로 Supabase SQL DDL 작성 및 테이블 생성 
+- [ ] 현재 로컬 스키마(`SCHEMA.md`)를 기반으로 Supabase SQL DDL 작성 및 테이블 생성
 - [ ] Row Level Security (RLS) 정책 설정 (자신의 `user_id` 데이터만 CRUD 가능하도록 설정)
 - [ ] `@supabase/supabase-js` 패키지 설치 및 클라이언트 초기화 코드 (`src/utils/supabaseClient.js`) 작성
 
 ### Phase 2: Auth (인증) 플로우 구현
+
 - [ ] Zustand 스토어에 `session`, `user` 상태 추가
 - [ ] UI에 로그인/회원가입 모달 또는 페이지 구현 (Email/Password 기반)
 - [ ] 앱 로드 시 Supabase Auth 상태 리스너 등록 (`onAuthStateChange`)
 - [ ] 비로그인 시 기존의 "로컬 게스트 모드" 지원 방침을 유지할지 결정 (유지한다면 회원가입 시 로컬 데이터를 DB로 Bulk Insert 하는 마이그레이션 기능 필요)
 
 ### Phase 3: Zustand Store 로직 비동기 연동 (Local -> Remote)
+
 - [ ] 데이터베이스 접근 전용 API 레이어 생성 (`src/api/workouts.js`, `src/api/routines.js` 등)하여 Supabase 통신 관심사 분리
 - [ ] Zustand 스토어의 로컬 업데이트 액션(`addRoutine`, `updateExercise` 등) 내부에 API 호출 추가
   - **Optimistic UI**: 스토어 상태를 먼저 동기적으로 업데이트하고, 비동기 호출로 Supabase에 저장. (에러 발생 시 로컬 상태 롤백 처리)
 - [ ] 앱 초기 진입(새로고침) 시 Supabase에서 사용자의 모든 데이터를 Fetch하여 Zustand 스토어에 초기화(Hydrate)하는 함수 구현
 
 ### Phase 4: 실시간 동기화 및 마무리
+
 - [ ] 다중 기기(웹/앱) 실시간 반영이 필요하다면 Supabase Realtime 채널 구독(Subscription) 설정
 - [ ] Zustand의 `persist` 미들웨어(로컬스토리지 백업)를 오프라인 대비용 캐시로 사용할지, 아니면 걷어낼지 결정
-
-
-## TODO: 입력할 세션/루틴 선택 어떻게 할건지
-
-## TODO: 순서 바꾸는거 버그 고쳐.
-
-rountine 페이지에서 세션이나 운동 순서를 바꾸면, 위치는 바뀌고, 원래 포커스를 가지고 있던 요소가 위치가 바뀌고도 회색 처리는 되있는데, 실제 포커스는 그 원래 요소가 있던 자리에 머물러있음. 고쳐.

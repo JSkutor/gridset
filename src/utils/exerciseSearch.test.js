@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test, describe } from 'vitest';
 import assert from 'node:assert/strict';
 import { getExerciseSuggestions } from './exerciseSearch.js';
 
@@ -37,29 +37,31 @@ const fixtures = [
   },
 ];
 
-test('getExerciseSuggestions ranks exact Korean names first', () => {
-  const suggestions = getExerciseSuggestions('풀업', fixtures);
+describe('exerciseSearch: Exercise Search & Suggestions', () => {
+  test('ranks exact Korean names first', () => {
+    const suggestions = getExerciseSuggestions('풀업', fixtures);
 
-  assert.equal(suggestions[0].id, 'pullup');
-});
+    assert.equal(suggestions[0].id, 'pullup');
+  });
 
-test('getExerciseSuggestions supports chosung search', () => {
-  const suggestions = getExerciseSuggestions('ㅂㅊ', fixtures);
+  test('supports chosung search', () => {
+    const suggestions = getExerciseSuggestions('ㅂㅊ', fixtures);
 
-  assert.deepEqual(suggestions.map((exercise) => exercise.id), ['bench']);
-});
+    assert.deepEqual(suggestions.map((exercise) => exercise.id), ['bench']);
+  });
 
-test('getExerciseSuggestions supports synonyms and English aliases', () => {
-  assert.equal(getExerciseSuggestions('턱걸이', fixtures)[0].id, 'pullup');
-  assert.equal(getExerciseSuggestions('ohp', fixtures)[0].id, 'overhead-press');
-});
+  test('supports synonyms and English aliases', () => {
+    assert.equal(getExerciseSuggestions('턱걸이', fixtures)[0].id, 'pullup');
+    assert.equal(getExerciseSuggestions('ohp', fixtures)[0].id, 'overhead-press');
+  });
 
-test('getExerciseSuggestions respects the result limit', () => {
-  const suggestions = getExerciseSuggestions('p', fixtures, 2);
+  test('respects the result limit', () => {
+    const suggestions = getExerciseSuggestions('p', fixtures, 2);
 
-  assert.equal(suggestions.length, 2);
-});
+    assert.equal(suggestions.length, 2);
+  });
 
-test('getExerciseSuggestions returns no results for empty queries', () => {
-  assert.deepEqual(getExerciseSuggestions('   ', fixtures), []);
+  test('returns no results for empty queries', () => {
+    assert.deepEqual(getExerciseSuggestions('   ', fixtures), []);
+  });
 });
