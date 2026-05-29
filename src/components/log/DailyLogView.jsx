@@ -1,6 +1,6 @@
 import { Activity, Dumbbell, Timer } from 'lucide-react';
 import { getDateKey, toDate, formatDate, formatDuration, getMonthStart } from '../../utils/logFormatters';
-import { EmptyState, StatPill } from './LogShared';
+import { EmptyState, StatPill } from './LogSharedComponents';
 import LogCalendar from './LogCalendar';
 import DailyLogCard from './DailyLogCard';
 

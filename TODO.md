@@ -3,13 +3,6 @@
 > [!NOTE]
 > 이 파일에 기록된 내용들은 **현재 구현된 진행 상황과는 무관한, 개발자 본인의 생각과 향후 개선 아이디어를 자유롭게 정리한 내용**입니다.
 
-## 💾 TODO 메모: Git 방식의 운동 메모
-
-- **아이디어**: 매일 수행하는 운동 종목마다 고유의 메모를 기록할 수 있도록 함. (단순히 덮어쓰는 방식이 아닌 **Git의 이력 관리(Commit)처럼 쌓이는 구조** 구상)
-- **사용자 경험(UX)**:
-  - 세트를 입력하다가 엔터(Enter)를 치거나 특정 영역을 클릭하면 메모 창이 열려 타이핑 가능.
-  - 저장된 메모는 **이전 기록 카드(History Card)**에서 바로 확인할 수 있도록 설계.
-
 ## 📱 TODO: 모바일 및 플랫폼 방향성 (중요한 타협)
 
 - **기존 고민**: 모바일에서는 가운데 열만 보이고, 양쪽을 스와이프하면 나오게 개발하려 했음.
@@ -20,39 +13,17 @@
     1. 맥용 웹(Web) 환경을 먼저 극도로 매끄럽고 완벽하게 완성함.
     2. 추후 단축키 지원 및 시스템 통합(OS 밀착형 기능)을 위해 **Tauri**를 사용하여 데스크톱 앱으로 패키징/감싸는 방식 도입 검토.
 
-## 🔄 TODO: 일시적 세션 운동 대체
-
-- 정해진 루틴대로 진행하되, 당일 컨디션이나 기구 상황에 따라 일시적으로 세션 내 특정 운동을 다른 운동으로 대체할 수 있는 기능 추가.
+---
 
 ## TODO: 스무스 트랜지션.
 
 command + arrow 로 순서 바꾸는거랑
 페이지 이동하는거 스무스하게.
 
-## TODO: supabase 연결 및 데이터 동기화 구체적인 로드맵
+## TODO: 더미 데이터 관련. 나 말고 사용자한테 보여질 페이지 배포 준비. 개발용 버튼 없애고.
 
-### Phase 1: Supabase 프로젝트 셋업 및 스키마 반영
+## TODO: dev DB 툴
 
-- [ ] Supabase 프로젝트 생성 및 API Key/URL 발급 (`.env.local` 설정)
-- [ ] 현재 로컬 스키마(`SCHEMA.md`)를 기반으로 Supabase SQL DDL 작성 및 테이블 생성
-- [ ] Row Level Security (RLS) 정책 설정 (자신의 `user_id` 데이터만 CRUD 가능하도록 설정)
-- [ ] `@supabase/supabase-js` 패키지 설치 및 클라이언트 초기화 코드 (`src/utils/supabaseClient.js`) 작성
-
-### Phase 2: Auth (인증) 플로우 구현
-
-- [ ] Zustand 스토어에 `session`, `user` 상태 추가
-- [ ] UI에 로그인/회원가입 모달 또는 페이지 구현 (Email/Password 기반)
-- [ ] 앱 로드 시 Supabase Auth 상태 리스너 등록 (`onAuthStateChange`)
-- [ ] 비로그인 시 기존의 "로컬 게스트 모드" 지원 방침을 유지할지 결정 (유지한다면 회원가입 시 로컬 데이터를 DB로 Bulk Insert 하는 마이그레이션 기능 필요)
-
-### Phase 3: Zustand Store 로직 비동기 연동 (Local -> Remote)
-
-- [ ] 데이터베이스 접근 전용 API 레이어 생성 (`src/api/workouts.js`, `src/api/routines.js` 등)하여 Supabase 통신 관심사 분리
-- [ ] Zustand 스토어의 로컬 업데이트 액션(`addRoutine`, `updateExercise` 등) 내부에 API 호출 추가
-  - **Optimistic UI**: 스토어 상태를 먼저 동기적으로 업데이트하고, 비동기 호출로 Supabase에 저장. (에러 발생 시 로컬 상태 롤백 처리)
-- [ ] 앱 초기 진입(새로고침) 시 Supabase에서 사용자의 모든 데이터를 Fetch하여 Zustand 스토어에 초기화(Hydrate)하는 함수 구현
-
-### Phase 4: 실시간 동기화 및 마무리
-
-- [ ] 다중 기기(웹/앱) 실시간 반영이 필요하다면 Supabase Realtime 채널 구독(Subscription) 설정
-- [ ] Zustand의 `persist` 미들웨어(로컬스토리지 백업)를 오프라인 대비용 캐시로 사용할지, 아니면 걷어낼지 결정
+DB 수동으로 보면서 수정할 수 있게끔.
+dev 용 페이지를 만들던가 해야됨.
+또 다른 dev 페이지 무슨 기능 필요한지.

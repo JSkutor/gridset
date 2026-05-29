@@ -4,7 +4,7 @@ import {
   RestTimeStepper,
   SettingRow,
   UnilateralStepper,
-} from "./SettingControls";
+} from "./RoutineSettingSteppers";
 import { useWorkoutStore } from "../../store/useWorkoutStore";
 
 export default function ExerciseSettingsPanel({

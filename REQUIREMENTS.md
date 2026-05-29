@@ -5,9 +5,9 @@ GridSet is a desktop-first workout logging web app for MacBook users who want a 
 
 ## 2. Current Product Scope
 - Target platform: desktop web, optimized for MacBook-sized screens.
-- Current mode: local guest mode only.
-- Current persistence: Zustand Persist with browser `localStorage`.
-- Current data model: local UUID-based entities that mirror the planned Supabase schema.
+- Current mode: local guest mode plus optional Supabase Auth account sync.
+- Current persistence: Zustand Persist with browser `localStorage`, with Supabase used as the remote source for signed-in users.
+- Current data model: local UUID-based entities that mirror the Supabase schema.
 - Mobile support: not required for the current phase.
 - Future packaging: Tauri-based macOS desktop app.
 
@@ -93,6 +93,8 @@ The Set tab is the current workout-entry surface.
 
 ## 7. State And Data
 - Global app state is managed with Zustand.
+- Signed-in users hydrate and sync their data through Supabase.
+- Guest users can continue using local-only data, and local guest data is migrated to Supabase when a user signs in.
 - Persisted local entities:
   - `currentUser`
   - `exercises` (includes `is_unilateral`)
@@ -101,7 +103,7 @@ The Set tab is the current workout-entry surface.
   - `sessionExercises`
   - `workoutLogs`
   - `setRecords` (includes `side` field: 'L', 'R', 'both')
-- Debug utilities are available in the UI:
+- Debug utilities are available only in development builds:
   - Generate dummy data.
   - Clear all data.
 
@@ -118,6 +120,10 @@ Current automated tests cover:
   - Order compaction.
   - Routine duplication.
   - Workout log deletion cascading to set records.
+- Supabase sync behavior:
+  - Public exercise hydration.
+  - Custom exercise upload for foreign-key references.
+  - Public master exercise rows are not re-uploaded as user custom rows.
 
 ## 9. Current Architecture Notes
 - Pure utility logic lives in `src/utils`.
@@ -126,7 +132,14 @@ Current automated tests cover:
 - `RoutineDetail.jsx` has been refactored and modularized into subcomponents in `src/components/routine/`.
 - **Maintainability Status**:
   - `useWorkoutStore.js` has been successfully refactored (dummy data generator extracted into `src/data/dummyGenerator.js`).
+  - Supabase read/write concerns are isolated in `src/api/supabaseWorkoutRepository.js`.
+  - Persist migration logic is isolated in `src/store/workoutPersistenceMigration.js`.
   - `App.jsx` responsibilities have been modularized using custom hooks (`useGlobalShortcuts.js` and `useSessionRotation.js`).
+  - Supabase Auth session bridging is isolated in `src/hooks/useAuthSessionBridge.js`.
+  - Account/auth menu UI is isolated in `src/components/AccountMenu.jsx`, and debug utilities are hidden outside development builds.
+  - Log summary derivation is isolated in `src/utils/logSummaries.js`.
+  - Exercise history metric derivation is isolated in `src/utils/exerciseHistory.js`.
+  - Set Grid draft state and mutation logic is isolated in `src/hooks/useWorkoutDraft.js`.
   - `SetGrid` "Finish Workout" / "Save Session" workflow has been implemented to persist inputs to `workoutLogs` and `setRecords`.
 
 ## 10. Future Requirements
@@ -137,8 +150,10 @@ Current automated tests cover:
   - [x] Implement actual workout start/finish flow to persist Set tab entries into `workoutLogs` and `setRecords` (Completed)
   - Add exercise substitution for a single workout without modifying the saved routine template.
 - **Supabase Integration**:
-  - Replace/sync local Zustand persistence with Supabase Postgres database.
-  - Implement Auth, real-time sync, and remote data fetching.
+  - [x] Implement Auth and remote data fetching.
+  - [x] Implement optimistic local updates with Supabase write-through sync.
+  - [x] Migrate local guest data into Supabase on sign-in.
+  - Add rollback/retry UX for failed remote writes.
+  - Add Supabase Realtime only if multi-device live updates become a product requirement.
 - **Packaging**:
   - Package the app as a native-feeling macOS app via Tauri.
-

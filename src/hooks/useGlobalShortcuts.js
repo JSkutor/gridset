@@ -38,7 +38,7 @@ export function useGlobalShortcuts({
   NAV_TAB_IDS,
   activeTab,
   setActiveTab,
-  setGridRef,
+  workoutGridRef,
   routineDetailRef,
   focusScopeSelector,
   focusTargetSelector,
@@ -59,7 +59,7 @@ export function useGlobalShortcuts({
       if (!hasModifier && event.code === 'Backquote') {
         event.preventDefault();
         event.stopImmediatePropagation();
-        const grid = setGridRef.current;
+        const grid = workoutGridRef.current;
         const routineDetail = routineDetailRef.current;
         if (grid) {
           const activeEl = document.activeElement;
@@ -111,7 +111,7 @@ export function useGlobalShortcuts({
     focusScopeSelector,
     focusTargetSelector,
     setActiveTab,
-    setGridRef,
+    workoutGridRef,
     routineDetailRef,
   ]);
 }

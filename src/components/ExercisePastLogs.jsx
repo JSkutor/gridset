@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 
-export default function PastLogs({ activeExerciseId }) {
+export default function ExercisePastLogs({ activeExerciseId }) {
   const workoutLogs = useWorkoutStore(state => state.workoutLogs);
   const setRecords = useWorkoutStore(state => state.setRecords);
   const exercises = useWorkoutStore(state => state.exercises);
@@ -72,28 +72,23 @@ export default function PastLogs({ activeExerciseId }) {
 
   if (!activeExerciseId) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+      <div className="past-logs-empty">
         운동을 선택해주세요
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}>
-      <div style={{ flex: 1, overflowY: 'auto', padding: '0 0 100px 0' }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+    <div className="past-logs-container">
+      <div className="past-logs-scroll-area">
+        <div className="past-logs-list">
           {pastLogs.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)', textAlign: 'center', marginTop: '20px' }}>기록이 없습니다.</div>
+            <div className="past-logs-empty-message">기록이 없습니다.</div>
           ) : pastLogs.map((log) => (
-            <div key={log.id} className="glass-card" style={{ padding: '16px' }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '10px'
-              }}>
-                <span style={{ fontWeight: '600', fontSize: '14px', color: 'var(--text-bright)' }}>{log.date}</span>
-                <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '500' }}>{log.totalVolume.toLocaleString()} {displayUnit}</span>
+            <div key={log.id} className="glass-card past-logs-card">
+              <div className="past-logs-card-header">
+                <span className="past-logs-card-date">{log.date}</span>
+                <span className="past-logs-card-volume">{log.totalVolume.toLocaleString()} {displayUnit}</span>
               </div>
 
               <table className="spreadsheet spreadsheet--readonly">
@@ -120,51 +115,18 @@ export default function PastLogs({ activeExerciseId }) {
                 const setsWithMemo = log.sets.filter(s => s.memo && s.memo.trim() !== '');
                 if (setsWithMemo.length === 0) return null;
                 return (
-                  <div style={{
-                    marginTop: '12px',
-                    paddingTop: '10px',
-                    borderTop: '1px dashed var(--border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '6px'
-                  }}>
+                  <div className="past-logs-memos-wrapper">
                     {setsWithMemo.map((set) => (
-                      <div key={set.id} style={{
-                        display: 'flex',
-                        alignItems: 'flex-start',
-                        gap: '8px',
-                        fontSize: '12px',
-                        lineHeight: '1.4',
-                        color: 'var(--text-main)'
-                      }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          fontWeight: '600',
-                          color: 'var(--accent)',
-                          whiteSpace: 'nowrap',
-                          fontSize: '11px',
-                          paddingTop: '1px'
-                        }}>
+                      <div key={set.id} className="past-logs-memo-row">
+                        <span className="past-logs-memo-badge">
                           {set.set_number}세트
                           {set.side && set.side !== 'both' && (
-                            <span style={{
-                              fontSize: '9px',
-                              padding: '0 2px',
-                              borderRadius: '2px',
-                              background: set.side === 'L' ? 'rgba(235, 94, 85, 0.15)' : 'rgba(79, 195, 247, 0.15)',
-                              color: set.side === 'L' ? '#eb5e55' : '#4fc3f7',
-                              marginLeft: '4px'
-                            }}>
+                            <span className={`past-logs-memo-badge-side ${set.side === 'L' ? 'side-l' : 'side-r'}`}>
                               {set.side}
                             </span>
                           )}
                         </span>
-                        <span style={{
-                          color: 'var(--text-muted)',
-                          fontStyle: 'italic',
-                          wordBreak: 'break-all'
-                        }}>
+                        <span className="past-logs-memo-text">
                           "{set.memo}"
                         </span>
                       </div>

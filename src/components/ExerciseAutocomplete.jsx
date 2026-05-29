@@ -104,9 +104,9 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
   };
 
   return (
-    <div ref={containerRef} style={{ position: 'relative', width: '100%', zIndex: 100 }}>
+    <div ref={containerRef} className="exercise-search-wrap">
       {/* Input Box */}
-      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+      <div className="exercise-search-input-group">
         <input
           ref={inputRef}
           type="text"
@@ -121,28 +121,12 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          style={{
-            width: '100%',
-            padding: '12px 16px 12px 42px',
-            background: 'rgba(0, 0, 0, 0.25)',
-            border: isOpen ? '1px solid var(--border-focus)' : '1px solid var(--border)',
-            borderRadius: 'var(--radius-md)',
-            color: 'var(--text-bright)',
-            fontSize: '14px',
-            fontFamily: 'inherit',
-            outline: 'none',
-            boxShadow: isOpen ? '0 0 12px var(--accent-glow)' : 'none',
-            transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
+          className={`exercise-search-input ${isOpen ? 'is-open' : ''}`}
         />
         <Search
           size={16}
           color={isOpen ? 'var(--accent)' : 'var(--text-muted)'}
-          style={{
-            position: 'absolute',
-            left: '16px',
-            transition: 'color 0.2s'
-          }}
+          className="exercise-search-icon"
         />
         {query && (
           <button
@@ -151,16 +135,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
               setSelectedIndex(-1);
               inputRef.current?.focus();
             }}
-            style={{
-              position: 'absolute',
-              right: '16px',
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--text-muted)',
-              cursor: 'pointer',
-              fontSize: '12px',
-              padding: 0
-            }}
+            className="exercise-search-clear-btn"
           >
             Clear
           </button>
@@ -169,26 +144,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
 
       {/* Suggestions Dropdown */}
       {isOpen && suggestions.length > 0 && (
-        <ul
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            left: 0,
-            right: 0,
-            margin: 0,
-            padding: '6px',
-            listStyle: 'none',
-            background: 'rgba(12, 14, 24, 0.95)',
-            backdropFilter: 'blur(30px)',
-            WebkitBackdropFilter: 'blur(30px)',
-            border: '1px solid var(--border-strong)',
-            borderRadius: 'var(--radius-md)',
-            maxHeight: '280px',
-            overflowY: 'auto',
-            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.45)',
-            animation: 'fadeIn 0.15s ease-out'
-          }}
-        >
+        <ul className="exercise-suggestions-dropdown">
           {suggestions.map((exercise, index) => {
             const isSelected = index === selectedIndex;
             return (
@@ -196,60 +152,30 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                 key={exercise.id}
                 onClick={() => handleSelect(exercise)}
                 onMouseEnter={() => setSelectedIndex(index)}
-                style={{
-                  padding: '10px 14px',
-                  borderRadius: '6px',
-                  background: isSelected ? 'rgba(122, 162, 247, 0.12)' : 'transparent',
-                  color: isSelected ? 'var(--text-bright)' : 'var(--text-main)',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px',
-                  transition: 'all 0.15s ease'
-                }}
+                className={`exercise-suggestion-item ${isSelected ? 'is-selected' : ''}`}
               >
                 {/* Exercise Name */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontWeight: '600', fontSize: '14px' }}>
+                <div className="exercise-suggestion-header">
+                  <span className="exercise-suggestion-name">
                     {exercise.name}
                   </span>
                   {exercise.englishName && (
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    <span className="exercise-suggestion-english">
                       {exercise.englishName}
                     </span>
                   )}
                 </div>
 
                 {/* Badges / Meta tags */}
-                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '2px' }}>
+                <div className="exercise-suggestion-meta">
                   {/* 주동근 태그 */}
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '3px',
-                    fontSize: '11px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    background: 'rgba(122, 162, 247, 0.08)',
-                    color: 'var(--accent)',
-                    border: '1px solid rgba(122, 162, 247, 0.15)'
-                  }}>
+                  <span className="exercise-badge-muscle">
                     <Dumbbell size={10} />
                     {exercise.primaryMuscle || exercise.primary_muscle}
                   </span>
                   
                   {/* 장비 태그 */}
-                  <span style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '3px',
-                    fontSize: '11px',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    color: 'var(--text-muted)',
-                    border: '1px solid var(--border)'
-                  }}>
+                  <span className="exercise-badge-equipment">
                     <Tag size={10} />
                     {exercise.equipment}
                   </span>
@@ -262,46 +188,26 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
 
       {/* No Results Fallback / Custom Exercise Addition Form */}
       {isOpen && query.trim() !== '' && suggestions.length === 0 && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 8px)',
-            left: 0,
-            right: 0,
-            padding: '20px',
-            background: 'rgba(12, 14, 24, 0.96)',
-            backdropFilter: 'blur(30px)',
-            WebkitBackdropFilter: 'blur(30px)',
-            border: '1px solid var(--border-strong)',
-            borderRadius: 'var(--radius-md)',
-            color: 'var(--text-muted)',
-            fontSize: '13px',
-            boxShadow: '0 12px 45px rgba(0, 0, 0, 0.5)',
-            animation: 'fadeIn 0.15s ease-out',
-            zIndex: 101,
-            maxHeight: '380px',
-            overflowY: 'auto'
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
+        <div className="exercise-custom-popup">
+          <div className="exercise-custom-popup-header">
             <Sparkles size={16} style={{ color: 'var(--accent)' }} />
-            <span style={{ color: 'var(--text-bright)', fontWeight: '600' }}>"{query}"</span>
+            <span className="exercise-custom-popup-header-title">"{query}"</span>
             <span>검색 결과 없음</span>
           </div>
 
-          <div style={{ fontSize: '11px', textAlign: 'center', color: 'var(--text-muted)', marginBottom: '16px' }}>
+          <div className="exercise-custom-popup-desc">
             아래에서 주동근과 장비를 선택하고 나만의 커스텀 운동으로 등록할 수 있습니다.
           </div>
 
           {/* Custom Exercise Form */}
-          <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', paddingTop: '16px', textAlign: 'left' }}>
+          <div className="exercise-custom-form">
             
             {/* 1. Target Muscle */}
-            <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div className="exercise-custom-label">
               <Dumbbell size={11} color="var(--accent)" />
               주동근 선택
             </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+            <div className="exercise-custom-options">
               {MUSCLE_GROUPS.map(muscle => {
                 const isSelected = selectedMuscle === muscle;
                 return (
@@ -312,16 +218,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                       e.preventDefault();
                       setSelectedMuscle(muscle);
                     }}
-                    style={{
-                      fontSize: '10.5px',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      background: isSelected ? 'rgba(122, 162, 247, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                      color: isSelected ? 'var(--accent)' : 'var(--text-muted)',
-                      border: isSelected ? '1px solid rgba(122, 162, 247, 0.35)' : '1px solid var(--border)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
+                    className={`exercise-custom-option-btn ${isSelected ? 'is-active' : ''}`}
                   >
                     {muscle}
                   </button>
@@ -330,11 +227,11 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
             </div>
 
             {/* 2. Equipment */}
-            <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-main)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <div className="exercise-custom-label">
               <Tag size={11} color="var(--accent)" />
               장비 선택
             </div>
-            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '20px' }}>
+            <div className="exercise-custom-options" style={{ marginBottom: '20px' }}>
               {EQUIPMENTS.map(equip => {
                 const isSelected = selectedEquipment === equip;
                 return (
@@ -345,16 +242,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                       e.preventDefault();
                       setSelectedEquipment(equip);
                     }}
-                    style={{
-                      fontSize: '10.5px',
-                      padding: '4px 8px',
-                      borderRadius: '4px',
-                      background: isSelected ? 'rgba(122, 162, 247, 0.15)' : 'rgba(255, 255, 255, 0.02)',
-                      color: isSelected ? 'var(--accent)' : 'var(--text-muted)',
-                      border: isSelected ? '1px solid rgba(122, 162, 247, 0.35)' : '1px solid var(--border)',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
+                    className={`exercise-custom-option-btn ${isSelected ? 'is-active' : ''}`}
                   >
                     {equip}
                   </button>
@@ -363,19 +251,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
             </div>
 
             {/* 3. Unilateral Option */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              background: 'rgba(255, 255, 255, 0.02)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '12px 14px',
-              marginBottom: '20px',
-              cursor: 'pointer',
-              userSelect: 'none',
-              transition: 'background 0.2s, border-color 0.2s'
-            }} onClick={() => setIsUnilateral(!isUnilateral)}>
+            <div className="exercise-unilateral-toggle" onClick={() => setIsUnilateral(!isUnilateral)}>
               <div>
                 <div style={{ fontSize: '12px', fontWeight: '600', color: 'var(--text-bright)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Sparkles size={12} color="var(--accent)" />
@@ -385,26 +261,8 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                   런지, 원암 덤벨 로우처럼 편측성 운동인 경우 활성화
                 </div>
               </div>
-              <div style={{
-                width: '38px',
-                height: '20px',
-                borderRadius: '10px',
-                background: isUnilateral ? 'var(--accent)' : 'rgba(255, 255, 255, 0.08)',
-                position: 'relative',
-                transition: 'background 0.2s',
-                display: 'flex',
-                alignItems: 'center'
-              }}>
-                <div style={{
-                  width: '14px',
-                  height: '14px',
-                  borderRadius: '50%',
-                  background: '#ffffff',
-                  position: 'absolute',
-                  left: isUnilateral ? '21px' : '3px',
-                  transition: 'left 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.4)'
-                }} />
+              <div className={`toggle-switch-track ${isUnilateral ? 'is-active' : ''}`}>
+                <div className="toggle-switch-thumb" />
               </div>
             </div>
 
@@ -415,31 +273,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                 e.preventDefault();
                 handleCustomSelect();
               }}
-              style={{
-                width: '100%',
-                padding: '11px',
-                background: 'linear-gradient(135deg, var(--accent) 0%, #5b87e6 100%)',
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                color: '#ffffff',
-                fontWeight: '600',
-                fontSize: '12.5px',
-                cursor: 'pointer',
-                boxShadow: '0 4px 15px rgba(122, 162, 247, 0.25)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '6px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.filter = 'brightness(1.1)';
-                e.currentTarget.style.transform = 'translateY(-1px)';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.filter = 'none';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
+              className="exercise-custom-submit-btn"
             >
               <Plus size={13} />
               나만의 커스텀 운동으로 추가하기

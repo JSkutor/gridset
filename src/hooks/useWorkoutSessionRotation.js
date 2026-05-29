@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 
-export function useSessionRotation() {
+export function useWorkoutSessionRotation() {
   const routines = useWorkoutStore(state => state.routines);
   const sessions = useWorkoutStore(state => state.sessions);
   const workoutLogs = useWorkoutStore(state => state.workoutLogs);

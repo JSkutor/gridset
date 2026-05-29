@@ -8,7 +8,7 @@ import {
   getMonthStart,
   groupByDate,
 } from '../../utils/logFormatters';
-import { EmptyState, StatPill } from './LogShared';
+import { EmptyState, StatPill } from './LogSharedComponents';
 import LogCalendar from './LogCalendar';
 import ExerciseProgressChart from './ExerciseProgressChart';
 import SetRecordTable from './SetRecordTable';

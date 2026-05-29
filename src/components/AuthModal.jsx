@@ -107,148 +107,36 @@ export default function AuthModal({ isOpen, onClose }) {
   };
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        zIndex: 10000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'rgba(5, 7, 12, 0.7)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        animation: 'fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-      }}
-      onClick={handleClose}
-    >
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slideUp {
-          from { transform: translateY(15px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .auth-modal-content {
-          animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-        .auth-input:focus-within {
-          border-color: var(--accent) !important;
-          box-shadow: 0 0 10px rgba(122, 162, 247, 0.15) !important;
-        }
-      `}</style>
-
-      <div
-        className="auth-modal-content"
-        style={{
-          width: '380px',
-          background: 'rgba(18, 22, 36, 0.85)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
-          borderRadius: '16px',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.45), 0 0 1px rgba(255, 255, 255, 0.1) inset',
-          padding: '32px',
-          position: 'relative',
-          display: 'flex',
-          flexDirection: 'column',
-          color: 'var(--text-main)',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="auth-modal-backdrop" onClick={handleClose}>
+      <div className="auth-modal-content" onClick={(e) => e.stopPropagation()}>
         {/* Close Button */}
-        <button
-          onClick={handleClose}
-          style={{
-            position: 'absolute',
-            top: 20,
-            right: 20,
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            padding: '4px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.2s',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--text-main)';
-            e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'var(--text-muted)';
-            e.currentTarget.style.background = 'transparent';
-          }}
-        >
+        <button onClick={handleClose} className="auth-modal-close">
           <X size={18} />
         </button>
 
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <h2 style={{ fontSize: '22px', fontWeight: '700', letterSpacing: '-0.02em', margin: '0 0 8px 0', color: 'var(--text-main)' }}>
-            {isSignUp ? 'GridSet 가입하기' : 'GridSet 로그인'}
-          </h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-            {isSignUp ? '워크아웃 데이터를 안전하게 클라우드에 백업하세요' : '로그인하여 운동 일지를 연동하세요'}
-          </p>
+        <div className="auth-modal-header">
+          <h2>{isSignUp ? 'GridSet 가입하기' : 'GridSet 로그인'}</h2>
+          <p>{isSignUp ? '워크아웃 데이터를 안전하게 클라우드에 백업하세요' : '로그인하여 운동 일지를 연동하세요'}</p>
         </div>
 
         {/* Feedback Messages */}
         {errorMsg && (
-          <div style={{
-            background: 'rgba(247, 118, 142, 0.08)',
-            border: '1px solid rgba(247, 118, 142, 0.2)',
-            borderRadius: '8px',
-            padding: '10px 14px',
-            color: '#f7768e',
-            fontSize: '13px',
-            marginBottom: '16px',
-            lineHeight: '1.4',
-            letterSpacing: '-0.01em'
-          }}>
+          <div className="auth-feedback-msg error">
             {errorMsg}
           </div>
         )}
 
         {successMsg && (
-          <div style={{
-            background: 'rgba(158, 206, 106, 0.08)',
-            border: '1px solid rgba(158, 206, 106, 0.2)',
-            borderRadius: '8px',
-            padding: '10px 14px',
-            color: '#9ece6a',
-            fontSize: '13px',
-            marginBottom: '16px',
-            lineHeight: '1.4',
-            letterSpacing: '-0.01em'
-          }}>
+          <div className="auth-feedback-msg success">
             {successMsg}
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          
+        <form onSubmit={handleSubmit} className="auth-form">
           {isSignUp && (
-            <div
-              className="auth-input"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                background: 'rgba(0, 0, 0, 0.2)',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                padding: '10px 14px',
-                gap: '10px',
-                transition: 'all 0.2s',
-              }}
-            >
+            <div className="auth-input">
               <User size={16} style={{ color: 'var(--text-muted)' }} />
               <input
                 type="text"
@@ -256,31 +144,12 @@ export default function AuthModal({ isOpen, onClose }) {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 disabled={loading}
-                style={{
-                  background: 'transparent',
-                  border: 'none',
-                  outline: 'none',
-                  color: 'var(--text-main)',
-                  fontSize: '14px',
-                  width: '100%',
-                }}
+                className="auth-input-field"
               />
             </div>
           )}
 
-          <div
-            className="auth-input"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: 'rgba(0, 0, 0, 0.2)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '10px 14px',
-              gap: '10px',
-              transition: 'all 0.2s',
-            }}
-          >
+          <div className="auth-input">
             <Mail size={16} style={{ color: 'var(--text-muted)' }} />
             <input
               type="email"
@@ -288,30 +157,11 @@ export default function AuthModal({ isOpen, onClose }) {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: 'var(--text-main)',
-                fontSize: '14px',
-                width: '100%',
-              }}
+              className="auth-input-field"
             />
           </div>
 
-          <div
-            className="auth-input"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              background: 'rgba(0, 0, 0, 0.2)',
-              border: '1px solid var(--border)',
-              borderRadius: '8px',
-              padding: '10px 14px',
-              gap: '10px',
-              transition: 'all 0.2s',
-            }}
-          >
+          <div className="auth-input">
             <Lock size={16} style={{ color: 'var(--text-muted)' }} />
             <input
               type="password"
@@ -319,49 +169,12 @@ export default function AuthModal({ isOpen, onClose }) {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: 'var(--text-main)',
-                fontSize: '14px',
-                width: '100%',
-              }}
+              className="auth-input-field"
             />
           </div>
 
           {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              background: 'var(--accent)',
-              border: 'none',
-              borderRadius: '8px',
-              padding: '12px',
-              color: 'rgba(12, 14, 24, 1)',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '8px',
-              marginTop: '8px',
-              transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(122, 162, 247, 0.2)'
-            }}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.filter = 'brightness(1.1)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) {
-                e.currentTarget.style.filter = 'none';
-              }
-            }}
-          >
+          <button type="submit" disabled={loading} className="auth-submit-btn">
             {loading ? (
               <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
             ) : (
@@ -371,7 +184,7 @@ export default function AuthModal({ isOpen, onClose }) {
         </form>
 
         {/* Bottom Toggle */}
-        <div style={{ marginTop: '24px', textAlign: 'center', fontSize: '13px', color: 'var(--text-muted)' }}>
+        <div className="auth-footer-toggle">
           {isSignUp ? '이미 계정이 있으신가요?' : '처음이신가요?'}
           <button
             type="button"
@@ -381,16 +194,7 @@ export default function AuthModal({ isOpen, onClose }) {
               setSuccessMsg('');
             }}
             disabled={loading}
-            style={{
-              background: 'transparent',
-              border: 'none',
-              color: 'var(--accent)',
-              fontWeight: '600',
-              cursor: 'pointer',
-              marginLeft: '6px',
-              padding: '2px 4px',
-              fontSize: '13px',
-            }}
+            className="auth-toggle-link"
           >
             {isSignUp ? '로그인' : '회원가입'}
           </button>

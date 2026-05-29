@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatDate } from '../../utils/logFormatters';
-import { EmptyState } from './LogShared';
+import { EmptyState } from './LogSharedComponents';
 
 // ─── Branch SVG Layout Constants ─────────────────────────────
 

@@ -2,7 +2,7 @@ import React from 'react';
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import SetGrid from './SetGrid.jsx';
+import WorkoutGrid from './WorkoutGrid.jsx';
 import { useWorkoutStore } from '../store/useWorkoutStore.js';
 
 const guestUser = {
@@ -11,7 +11,7 @@ const guestUser = {
   isGuest: true,
 };
 
-function setupSetGrid() {
+function setupWorkoutGrid() {
   const state = useWorkoutStore.getState();
   const routine = state.addRoutine('테스트 루틴');
   const session = state.addSession(routine.id, '상체 A');
@@ -20,7 +20,7 @@ function setupSetGrid() {
   state.addSessionExercise(session.id, bench.id, 1, 2, '8');
 
   const saveSuccess = vi.fn();
-  render(React.createElement(SetGrid, {
+  render(React.createElement(WorkoutGrid, {
     session,
     onExerciseFocus: vi.fn(),
     onRestStart: vi.fn(),
@@ -47,12 +47,12 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('SetGrid workout start timing', () => {
+describe('WorkoutGrid workout start timing', () => {
   test('starts the workout from the first table input and saves reps-only rows', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-29T01:00:00.000Z'));
 
-    const { bench, saveSuccess } = setupSetGrid();
+    const { bench, saveSuccess } = setupWorkoutGrid();
     const firstInputs = within(getSetRows()[0]).getAllByRole('textbox');
     const saveButton = screen.getByRole('button', { name: /운동 완료/i });
 
@@ -79,7 +79,7 @@ describe('SetGrid workout start timing', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-05-29T02:00:00.000Z'));
 
-    setupSetGrid();
+    setupWorkoutGrid();
     const firstInputs = within(getSetRows()[0]).getAllByRole('textbox');
     const saveButton = screen.getByRole('button', { name: /운동 완료/i });
 
@@ -97,10 +97,10 @@ describe('SetGrid workout start timing', () => {
   });
 });
 
-describe('SetGrid memo entry', () => {
+describe('WorkoutGrid memo entry', () => {
   test('saves memo typed in the set memo textarea with the focused set record', async () => {
     const user = userEvent.setup();
-    const { bench, saveSuccess } = setupSetGrid();
+    const { bench, saveSuccess } = setupWorkoutGrid();
 
     const rows = screen.getAllByRole('row');
     const firstSetRow = rows.find((row) => within(row).queryByText('1'));
@@ -126,7 +126,7 @@ describe('SetGrid memo entry', () => {
 
   test('keeps memos attached to the set that was focused before opening the memo textarea', async () => {
     const user = userEvent.setup();
-    const { bench } = setupSetGrid();
+    const { bench } = setupWorkoutGrid();
 
     const setRows = getSetRows();
     const firstInputs = within(setRows[0]).getAllByRole('textbox');

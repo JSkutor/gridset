@@ -1,18 +1,9 @@
-import React, { useState, useMemo, useRef, useCallback, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
 import { Plus, ChevronDown, Check } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
+import { useWorkoutDraft } from '../hooks/useWorkoutDraft';
 import { getFormattedSessionName } from '../utils/sessionHelper';
-import {
-  buildInitialBlocks,
-  computeNewGlobalIndex,
-  fillExerciseWeightsFromFirstSet,
-  flattenBlocks,
-  getRestTimerPayloadForCompletedSet,
-  getSetCompletionKey,
-  isCompletedRepsValue,
-  isNumericGridValue,
-} from '../utils/setGridModel.js';
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
@@ -64,26 +55,43 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
   );
 }
 
-// ─── SetGrid ──────────────────────────────────────────────────────────────────
+// ─── WorkoutGrid ──────────────────────────────────────────────────────────────
 
-const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart, onSaveSuccess }, ref) {
+const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart, onSaveSuccess }, ref) {
   const sessions         = useWorkoutStore((state) => state.sessions);
   const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
   const exercises        = useWorkoutStore((state) => state.exercises);
   const saveWorkoutLog   = useWorkoutStore((state) => state.saveWorkoutLog);
 
-  const [startTime, setStartTime] = useState(null);
-  const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises));
+  const {
+    blocks,
+    focusedSet,
+    currentMemo,
+    flatRows,
+    totalRows,
+    canSaveWorkout,
+    updateRow,
+    updateMemo,
+    handleSetFocus,
+    handleFirstWeightTab,
+    handleRepsTab,
+    addRow,
+    saveWorkout,
+  } = useWorkoutDraft({
+    session,
+    sessionExercises,
+    exercises,
+    saveWorkoutLog,
+    onRestStart,
+    onSaveSuccess,
+  });
 
-  // 현재 포커스된 세트 위치 (blockIndex, rowIndex)
-  const [focusedSet, setFocusedSet] = useState({ blockIndex: 0, rowIndex: 0 });
+  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus } = useGridNavigation(totalRows + 1);
 
   const scrollContainerRef = useRef(null);
   const exerciseHeaderRefs = useRef(new Map());
   const lastScrolledBlockIndexRef = useRef(-1);
-
-  // 현재 포커스된 세트의 memo를 파생해서 읽음
-  const currentMemo = blocks[focusedSet.blockIndex]?.sets[focusedSet.rowIndex]?.memo ?? '';
+  const noteRef = useRef(null);
 
   // 포커스된 운동 종목(blockIndex)이 변경될 때 해당 종목 헤더로 부드럽게 스크롤 보정
   useEffect(() => {
@@ -112,135 +120,6 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
     }
   }, [focusedSet.blockIndex]);
 
-  // Flat row list — drives both the table render and totalRows for the hook.
-  const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
-  const totalRows = flatRows.length;
-
-  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus } = useGridNavigation(totalRows + 1);
-
-  // Ref for the session note textarea (for C-key toggle)
-  const noteRef = useRef(null);
-  const completedSetSignaturesRef = useRef(new Map());
-
-  // ── mutations ──────────────────────────────────────────────────────────────
-
-  const hasTableInput = (items) =>
-    items.some((block) =>
-      block.sets.some((set) =>
-        String(set.weight ?? '').trim() !== '' ||
-        String(set.reps ?? '').trim() !== ''
-      )
-    );
-
-  const updateRow = (blockIndex, rowIndex, field, value) => {
-    if (!isNumericGridValue(value)) return;
-
-    if (field === 'reps' && !isCompletedRepsValue(value)) {
-      const block = blocks[blockIndex];
-      const set = block?.sets?.[rowIndex];
-      const completionKey = getSetCompletionKey(block, set);
-      if (completionKey) completedSetSignaturesRef.current.delete(completionKey);
-    }
-
-    const nextBlocks = blocks.map((b, bi) =>
-      bi !== blockIndex ? b : {
-        ...b,
-        sets: b.sets.map((s, si) =>
-          si !== rowIndex ? s : { ...s, [field]: value },
-        ),
-      }
-    );
-
-    setBlocks(nextBlocks);
-
-    if (!hasTableInput(nextBlocks)) {
-      setStartTime(null);
-    } else if (String(value).trim() !== '') {
-      setStartTime((currentStartTime) => currentStartTime || new Date().toISOString());
-    }
-  };
-
-  // 현재 포커스된 세트의 memo 업데이트
-  const updateMemo = (value) => {
-    const { blockIndex, rowIndex } = focusedSet;
-    setBlocks((prev) =>
-      prev.map((b, bi) =>
-        bi !== blockIndex ? b : {
-          ...b,
-          sets: b.sets.map((s, si) =>
-            si !== rowIndex ? s : { ...s, memo: value },
-          ),
-        },
-      ),
-    );
-  };
-
-  const handleSetFocus = useCallback((blockIndex, rowIndex) => {
-    setFocusedSet({ blockIndex, rowIndex });
-  }, []);
-
-  const handleFirstWeightTab = useCallback((row, value) => {
-    setBlocks((prev) => fillExerciseWeightsFromFirstSet(prev, row.blockIndex, row.rowIndex, value));
-  }, []);
-
-  const handleRepsTab = useCallback((row, value) => {
-    if (!isCompletedRepsValue(value)) return;
-
-    const block = blocks[row.blockIndex];
-    const set = block?.sets?.[row.rowIndex];
-    const completionKey = getSetCompletionKey(block, set);
-    const completionSignature = String(value).trim();
-
-    if (!completionKey || completedSetSignaturesRef.current.get(completionKey) === completionSignature) return;
-
-    completedSetSignaturesRef.current.set(completionKey, completionSignature);
-
-    const restPayload = getRestTimerPayloadForCompletedSet({
-      blocks,
-      sessionExercises,
-      blockIndex: row.blockIndex,
-      rowIndex: row.rowIndex,
-    });
-
-    if (restPayload) {
-      onRestStart?.(restPayload);
-    }
-  }, [blocks, onRestStart, sessionExercises]);
-
-  const addRow = (blockIndex) => {
-    // Compute the new row's global index *before* updating state so we can
-    // call requestFocus in the same event-handler batch.
-    const newGlobalIdx = computeNewGlobalIndex(blocks, blockIndex);
-    const newRowIndex  = blocks[blockIndex].sets.length; // 추가될 행의 rowIndex
-    const isUnilateral = blocks[blockIndex].is_unilateral;
-
-    setBlocks((prev) =>
-      prev.map((b, i) => {
-        if (i !== blockIndex) return b;
-
-        const maxSetNumber = b.sets.length > 0 ? Math.max(...b.sets.map((s) => s.set_number)) : 0;
-        const nextSetNumber = maxSetNumber + 1;
-
-        const newSets = isUnilateral
-          ? [
-              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'L', weight: '', reps: '', memo: '' },
-              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'R', weight: '', reps: '', memo: '' },
-            ]
-          : [
-              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'both', weight: '', reps: '', memo: '' },
-            ];
-
-        return {
-          ...b,
-          sets: [...b.sets, ...newSets],
-        };
-      })
-    );
-
-    setFocusedSet({ blockIndex, rowIndex: newRowIndex });
-    requestFocus(newGlobalIdx);
-  };
-
   // Expose imperative methods to parent (for ` / ₩ key focus toggle)
   useImperativeHandle(ref, () => ({
     focusGrid: () => focusLastOrFirst(),
@@ -248,52 +127,24 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
     isNoteFocused: () => document.activeElement === noteRef.current,
   }), [focusLastOrFirst]);
 
-  const hasEnteredData = useMemo(() => {
-    return blocks.some((block) =>
-      block.sets.some((set) =>
-        String(set.reps ?? '').trim() !== ''
-      )
-    );
-  }, [blocks]);
-
-  const handleSaveWorkout = () => {
-    if (!hasEnteredData || !startTime) return;
-    saveWorkoutLog(session.id, blocks, startTime);
-    if (onSaveSuccess) {
-      onSaveSuccess();
-    }
-  };
-
 
   // ── render ─────────────────────────────────────────────────────────────────
 
   if (!session) {
     return (
-      <div
-        className="glass-panel--strong"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: '100%',
-          color: 'var(--text-muted)',
-        }}
-      >
+      <div className="glass-panel--strong workout-grid-empty">
         세션을 선택해주세요
       </div>
     );
   }
 
   return (
-    <div
-      className="glass-panel--strong"
-      style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }}
-    >
+    <div className="glass-panel--strong workout-grid-container">
       {/* Header */}
-      <div style={{ padding: '20px 22px 0 22px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: '600', margin: 0, color: 'var(--text-bright)' }}>
+      <div className="workout-grid-header">
+        <div className="workout-grid-header-title-row">
+          <div className="workout-grid-header-selector-group">
+            <h2 className="workout-grid-session-title">
               {getFormattedSessionName(session, sessions)}
             </h2>
             
@@ -322,12 +173,12 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
         </div>
 
         {/* Unified fixed handwriting header bar */}
-        <div style={{ display: 'flex', width: '100%', height: '38px', alignItems: 'center', borderBottom: '1px solid var(--border)' }}>
-          <div style={{ width: '60px', display: 'flex', justifyContent: 'center' }}>
+        <div className="workout-grid-header-bar">
+          <div className="workout-grid-header-col-set">
             <span className="grid-header-badge">Set</span>
           </div>
           {COLUMNS.map(({ field, header }) => (
-            <div key={field} style={{ flex: 1, display: 'flex', justifyContent: 'center' }}>
+            <div key={field} className="workout-grid-header-col-metric">
               <span className="grid-header-badge grid-header-badge--accent">
                 {header}
               </span>
@@ -337,10 +188,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
       </div>
 
       {/* Grid */}
-      <div
-        ref={scrollContainerRef}
-        style={{ flex: 1, overflowY: 'auto', padding: '0 22px 20px 22px' }}
-      >
+      <div ref={scrollContainerRef} className="workout-grid-scroll-area">
         <div className="spreadsheet-wrap">
           <table className={`spreadsheet ${isKeyboardActive ? 'keyboard-navigating' : ''}`}>
             <thead>
@@ -367,19 +215,13 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                           exerciseHeaderRefs.current.delete(blockIndex);
                         }
                       }}
+                      className={`workout-grid-table-row-exercise-header ${
+                        isFirst
+                          ? 'workout-grid-table-row-exercise-header--first'
+                          : 'workout-grid-table-row-exercise-header--subsequent'
+                      }`}
                     >
-                      <td
-                        colSpan={3}
-                        style={{
-                          textAlign: 'left',
-                          padding: isFirst ? '20px 14px 10px 14px' : '40px 14px 10px 14px',
-                          color: 'var(--text-bright)',
-                          fontWeight: '600',
-                          fontSize: '14px',
-                          borderBottom: 'none',
-                          letterSpacing: '-0.02em',
-                        }}
-                      >
+                      <td colSpan={3}>
                         {block.exercise_name}
                       </td>
                     </tr>
@@ -392,7 +234,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                         getCellRef={getCellRef}
                         handleKeyDown={handleKeyDown}
                         updateRow={updateRow}
-                        addRow={addRow}
+                        addRow={(targetBlockIndex) => addRow(targetBlockIndex, requestFocus)}
                         onExerciseFocus={onExerciseFocus}
                         onSetFocus={handleSetFocus}
                         onCellFocus={recordFocus}
@@ -403,23 +245,14 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
 
                     {/* Centered Add Set Button Row */}
                     <tr>
-                      <td
-                        colSpan={3}
-                        style={{
-                          textAlign: 'center',
-                          height: '36px',
-                          padding: 0,
-                          borderBottom: '1px solid var(--border)',
-                          verticalAlign: 'middle',
-                        }}
-                      >
+                      <td colSpan={3} className="workout-grid-table-cell-add-row">
                         <button
-                          onClick={() => addRow(blockIndex)}
+                          onClick={() => addRow(blockIndex, requestFocus)}
                           className="add-set-row-btn-minimal"
                           type="button"
                           title="세트 추가"
                         >
-                          <Plus size={12} style={{ marginRight: '4px' }} />
+                          <Plus size={12} className="workout-grid-add-set-icon" />
                           세트 추가
                         </button>
                       </td>
@@ -436,17 +269,17 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                       getCellRef(totalRows, 0)(el);
                       getCellRef(totalRows, 1)(el);
                     }}
-                    onClick={handleSaveWorkout}
+                    onClick={saveWorkout}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.preventDefault();
-                        handleSaveWorkout();
+                        saveWorkout();
                         return;
                       }
                       handleKeyDown(e, totalRows, 0);
                     }}
                     className="workout-complete-row-btn"
-                    disabled={!hasEnteredData || !startTime}
+                    disabled={!canSaveWorkout}
                     type="button"
                     title="운동 완료 저장"
                   >
@@ -461,7 +294,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
       </div>
 
       {/* Set memo — 현재 포커스된 세트의 메모 */}
-      <div style={{ padding: '18px 22px', borderTop: '1px solid var(--border)' }}>
+      <div className="workout-grid-memo-container">
         <textarea
           ref={noteRef}
           className="note-textarea"
@@ -474,4 +307,4 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
   );
 });
 
-export default SetGrid;
+export default WorkoutGrid;

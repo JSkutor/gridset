@@ -1,6 +1,11 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
 import { Activity, Target, TrendingUp } from 'lucide-react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
+import {
+  buildExerciseHistoryStats,
+  getExerciseDisplayUnitByUnit,
+  getExerciseTotalLabelByUnit,
+} from '../utils/exerciseHistory'
 
 // A premium responsive SVG-based line chart component matching the project design
 function SimpleLineChart({ data, unit, displayUnit }) {
@@ -303,114 +308,16 @@ export default function ExerciseInfo({ activeExerciseId }) {
     return activeExercise.unit || 'kg';
   }, [activeExercise]);
 
-  const isBodyweight = useMemo(() => {
-    return unit === 'reps' || unit === 'sec';
-  }, [unit]);
-
-  const displayUnit = useMemo(() => {
-    if (unit === 'sec') return '초';
-    if (unit === 'reps') return '개';
-    return 'kg';
-  }, [unit]);
-
-  const displayLabel = useMemo(() => {
-    if (unit === 'sec') return 'Total Time (All Time)';
-    if (unit === 'reps') return 'Total Count (All Time)';
-    return 'Total Volume (All Time)';
-  }, [unit]);
-
-  const totalVolume = useMemo(() => {
-    if (!activeExerciseId) return 0;
-    const records = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
-    return records.reduce((acc, sr) => {
-      const weight = Number(sr.weight) || 0;
-      const reps = Number(sr.record) || 0;
-      const val = isBodyweight ? reps : (weight * reps);
-      return acc + val;
-    }, 0);
-  }, [activeExerciseId, setRecords, isBodyweight]);
-
-  // Transform setRecords into historical period-record points
-  const chartData = useMemo(() => {
-    if (!activeExerciseId) return [];
-
-    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
-    
-    // Group peak record by date (daily maximum weight or reps/time)
-    const dailyRecords = {};
-    exerciseSets.forEach(sr => {
-      const log = workoutLogs.find(wl => wl.id === sr.workout_log_id);
-      if (log && log.start_time) {
-        const d = new Date(log.start_time);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        
-        const weight = Number(sr.weight) || 0;
-        const reps = Number(sr.record) || 0;
-        
-        const value = unit === 'kg'
-          ? weight
-          : reps;
-        
-        if (!dailyRecords[dateStr] || value > dailyRecords[dateStr].value) {
-          dailyRecords[dateStr] = {
-            dateObj: d,
-            dateStr: dateStr,
-            formattedDate: `${d.getMonth() + 1}/${d.getDate()}`,
-            value: value,
-            weight: weight,
-            reps: reps
-          };
-        }
-      }
-    });
-
-    // Sort chronologically
-    return Object.values(dailyRecords).sort((a, b) => a.dateObj - b.dateObj);
-  }, [activeExerciseId, setRecords, workoutLogs, unit]);
-
-  const heatmapData = useMemo(() => {
-    if (!activeExerciseId) return Array.from({ length: 70 }).map(() => 0);
-
-    const exerciseSets = setRecords.filter(sr => sr.exercise_id === activeExerciseId);
-    
-    // Group volume/count by date
-    const volumeByDate = {};
-    exerciseSets.forEach(sr => {
-      const log = workoutLogs.find(wl => wl.id === sr.workout_log_id);
-      if (log && log.start_time) {
-        const d = new Date(log.start_time);
-        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        
-        const reps = Number(sr.record) || 0;
-        const val = isBodyweight ? reps : ((Number(sr.weight) || 0) * reps);
-        volumeByDate[dateStr] = (volumeByDate[dateStr] || 0) + val;
-      }
-    });
-
-    const maxVolume = Math.max(0, ...Object.values(volumeByDate));
-
-    // Generate intensities for the last 70 days (ending today)
-    const data = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    for (let i = 69; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      
-      const vol = volumeByDate[dateStr] || 0;
-      let intensity = 0;
-      if (vol > 0) {
-        if (vol >= maxVolume * 0.75) intensity = 4;
-        else if (vol >= maxVolume * 0.5) intensity = 3;
-        else if (vol >= maxVolume * 0.25) intensity = 2;
-        else intensity = 1;
-      }
-      data.push(intensity);
-    }
-    return data;
-  }, [activeExerciseId, setRecords, workoutLogs, isBodyweight]);
+  const displayUnit = useMemo(() => getExerciseDisplayUnitByUnit(unit), [unit]);
+  const displayLabel = useMemo(() => getExerciseTotalLabelByUnit(unit), [unit]);
+  const { totalVolume, chartData, heatmapData } = useMemo(() => (
+    buildExerciseHistoryStats({
+      exerciseId: activeExerciseId,
+      setRecords,
+      workoutLogs,
+      unit,
+    })
+  ), [activeExerciseId, setRecords, workoutLogs, unit]);
 
   const heatmapColors = [
     'rgba(255, 255, 255, 0.03)',
