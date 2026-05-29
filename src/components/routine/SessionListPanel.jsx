@@ -1,15 +1,18 @@
 import { useRef } from 'react';
-import { Plus } from 'lucide-react';
+import { LayoutGroup } from 'framer-motion';
 import RoutineHeader from './RoutineHeader';
+import RoutineAddButton from './RoutineAddButton';
 import { SessionEditRow, SessionRow } from './SessionRows';
 
 export default function SessionListPanel({
   routine,
   routineSessions,
   activeSessionId,
+  isPanelFocused,
   sessions,
   sessionExercises,
   canAddSession,
+  isAddingSessionRow,
   isEditingRoutineName,
   editingRoutineName,
   onEditingRoutineNameChange,
@@ -27,7 +30,11 @@ export default function SessionListPanel({
   onAddSession,
   onSelectSession,
   onSessionKeyDown,
+  onAddSessionButtonKeyDown,
   onSessionRef,
+  addSessionBtnRef,
+  onPanelFocus,
+  onAddButtonFocus,
 }) {
   const scrollContainerRef = useRef(null);
 
@@ -87,67 +94,60 @@ export default function SessionListPanel({
           <>
             {routineSessions.length === 0 ? (
               <EmptyPanelText>세션이 없습니다</EmptyPanelText>
-            ) : routineSessions.map((session, index) => {
-              const isActive = session.id === activeSessionId;
-              const exerciseCount = sessionExercises.filter(se => se.session_id === session.id).length;
-              const isEditing = editingSessionId === session.id;
+            ) : (
+              <LayoutGroup id={`routine-sessions-${routine.id}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 4px 4px 4px' }}>
+                  {routineSessions.map((session, index) => {
+                    const isActive = session.id === activeSessionId;
+                    const exerciseCount = sessionExercises.filter(se => se.session_id === session.id).length;
+                    const isEditing = editingSessionId === session.id;
 
-              if (isEditing) {
-                return (
-                  <SessionEditRow
-                    key={session.id}
-                    session={session}
-                    editingName={editingSessionName}
-                    onEditingNameChange={onEditingSessionNameChange}
-                    onFinish={onFinishSessionEdit}
-                    onCancel={onCancelSessionEdit}
-                  />
-                );
-              }
+                    if (isEditing) {
+                      return (
+                        <SessionEditRow
+                          key={session.id}
+                          session={session}
+                          editingName={editingSessionName}
+                          onEditingNameChange={onEditingSessionNameChange}
+                          onFinish={onFinishSessionEdit}
+                          onCancel={onCancelSessionEdit}
+                        />
+                      );
+                    }
 
-              return (
-                <SessionRow
-                  key={session.id}
-                  refCallback={element => onSessionRef(session.id, element)}
-                  session={session}
-                  index={index}
-                  sessions={sessions}
-                  exerciseCount={exerciseCount}
-                  isActive={isActive}
-                  onKeyDown={onSessionKeyDown}
-                  onSelect={onSelectSession}
-                  onStartEdit={onStartSessionEdit}
-                  onDelete={onDeleteSession}
-                />
-              );
-            })}
+                    return (
+                      <SessionRow
+                        key={session.id}
+                        refCallback={element => onSessionRef(session.id, element)}
+                        session={session}
+                        index={index}
+                        sessions={sessions}
+                        exerciseCount={exerciseCount}
+                        isActive={isActive}
+                        isHighlighted={isActive && isPanelFocused}
+                        onKeyDown={onSessionKeyDown}
+                        onFocus={onPanelFocus}
+                        onSelect={onSelectSession}
+                        onStartEdit={onStartSessionEdit}
+                        onDelete={onDeleteSession}
+                      />
+                    );
+                  })}
+                </div>
+              </LayoutGroup>
+            )}
 
-            {canAddSession && (
-              <button
-                type="button"
+            {canAddSession && !isAddingSessionRow && (
+              <RoutineAddButton
+                ref={addSessionBtnRef}
+                label="세션 추가"
+                onFocus={onAddButtonFocus}
                 onClick={() => {
                   onAddSession();
                   scrollToBottom();
                 }}
-                style={{
-                  width: '100%',
-                  padding: '10px 0',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px dashed var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  marginTop: '8px',
-                }}
-              >
-                <Plus size={14} />
-                세션 추가
-              </button>
+                onKeyDown={onAddSessionButtonKeyDown}
+              />
             )}
           </>
         )}

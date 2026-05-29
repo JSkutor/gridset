@@ -1,7 +1,9 @@
 import { useRef } from 'react';
-import { ListPlus, Plus } from 'lucide-react';
+import { LayoutGroup } from 'framer-motion';
+import { ListPlus } from 'lucide-react';
 import AddExerciseRow from './AddExerciseRow';
 import ExerciseRow from './ExerciseRow';
+import RoutineAddButton from './RoutineAddButton';
 
 export default function SessionExerciseListPanel({
   session,
@@ -9,6 +11,7 @@ export default function SessionExerciseListPanel({
   sessionExercises,
   exercises,
   selectedExerciseId,
+  isPanelFocused,
   isAddingExerciseRow,
   addExerciseBtnRef,
   onExerciseKeyDown,
@@ -19,6 +22,7 @@ export default function SessionExerciseListPanel({
   onAddExercise,
   onStartAddingExercise,
   onCancelAddingExercise,
+  onPanelFocus,
 }) {
   const scrollContainerRef = useRef(null);
 
@@ -72,25 +76,33 @@ export default function SessionExerciseListPanel({
           </div>
         ) : (
           <>
-            {sessionExercises.map((sessionExercise, index) => {
-              const exercise = exercises.find(item => item.id === sessionExercise.exercise_id);
-              if (!exercise) return null;
+            {sessionExercises.length === 0 ? null : (
+              <LayoutGroup id={`session-exercises-${session.id}`}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 4px 4px 4px' }}>
+                  {sessionExercises.map((sessionExercise, index) => {
+                    const exercise = exercises.find(item => item.id === sessionExercise.exercise_id);
+                    if (!exercise) return null;
 
-              const isSelected = sessionExercise.id === selectedExerciseId;
-              return (
-                <ExerciseRow
-                  key={sessionExercise.id}
-                  refCallback={element => onExerciseRef(sessionExercise.id, element)}
-                  sessionExercise={sessionExercise}
-                  exercise={exercise}
-                  index={index}
-                  isSelected={isSelected}
-                  onKeyDown={onExerciseKeyDown}
-                  onSelect={onSelectExercise}
-                  onDelete={onDeleteExercise}
-                />
-              );
-            })}
+                    const isSelected = sessionExercise.id === selectedExerciseId;
+                    return (
+                      <ExerciseRow
+                        key={sessionExercise.id}
+                        refCallback={element => onExerciseRef(sessionExercise.id, element)}
+                        sessionExercise={sessionExercise}
+                        exercise={exercise}
+                        index={index}
+                        isSelected={isSelected}
+                        isHighlighted={isSelected && isPanelFocused}
+                        onKeyDown={onExerciseKeyDown}
+                        onFocus={onPanelFocus}
+                        onSelect={onSelectExercise}
+                        onDelete={onDeleteExercise}
+                      />
+                    );
+                  })}
+                </div>
+              </LayoutGroup>
+            )}
 
             {sessionExercises.length === 0 && !isAddingExerciseRow && (
               <div style={{ padding: '30px 20px 20px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px', opacity: 0.5 }}>
@@ -111,34 +123,19 @@ export default function SessionExerciseListPanel({
             )}
 
             {!isAddingExerciseRow && (
-              <button
+              <RoutineAddButton
                 ref={addExerciseBtnRef}
-                className="routine-add-exercise-btn"
-                onFocus={() => onSelectExercise(null)}
+                label="운동 추가"
+                onFocus={() => {
+                  onPanelFocus();
+                  onSelectExercise(null);
+                }}
                 onClick={() => {
                   onStartAddingExercise();
                   scrollToBottom();
                 }}
                 onKeyDown={onAddExerciseButtonKeyDown}
-                style={{
-                  width: '100%',
-                  padding: '10px 0',
-                  background: 'rgba(255, 255, 255, 0.02)',
-                  border: '1px dashed var(--border)',
-                  borderRadius: '8px',
-                  color: 'var(--text-muted)',
-                  cursor: 'pointer',
-                  fontSize: '13px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '6px',
-                  marginTop: '8px',
-                }}
-              >
-                <Plus size={14} />
-                운동 추가
-              </button>
+              />
             )}
           </>
         )}

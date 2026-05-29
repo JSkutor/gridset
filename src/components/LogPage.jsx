@@ -64,10 +64,12 @@ export default function LogPage({ isActive = true }) {
   useTabNavigation({
     tabIds: LOG_VIEW_IDS,
     shortcuts: LOG_VIEW_SHORTCUTS,
+    activeTab: activeView,
     setActiveTab: setActiveView,
     isActive,
     focusScopeSelector: LOG_FOCUS_SCOPE_SELECTOR,
     focusTargetSelector: getLogFocusTargetSelector,
+    disableTransition: true,
   });
 
   // ── Lookup Maps ──

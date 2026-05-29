@@ -31,6 +31,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
   const [isAddingExerciseRow, setIsAddingExerciseRow] = useState(false);
+  const [focusedRoutinePanel, setFocusedRoutinePanel] = useState('sessions');
 
   const [isEditingRoutineName, setIsEditingRoutineName] = useState(false);
   const [editingRoutineNameVal, setEditingRoutineNameVal] = useState('');
@@ -42,6 +43,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   const sessionRefs = useRef({});
   const exerciseRefs = useRef({});
   const settingControlRefs = useRef([]);
+  const addSessionBtnRef = useRef(null);
   const addExerciseBtnRef = useRef(null);
   const pendingFocusIndexRef = useRef(null);
 
@@ -65,18 +67,37 @@ const RoutineDetail = forwardRef((props, ref) => {
     settingControlRefs.current[index] = element;
   };
 
+  const focusSessionAddButton = (delay = 50) => {
+    setFocusedRoutinePanel('session-add');
+    setTimeout(() => {
+      addSessionBtnRef.current?.focus();
+      addSessionBtnRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, delay);
+  };
+
+  const focusSessionRow = (id, delay = 50) => {
+    if (!id) return;
+    setFocusedRoutinePanel('sessions');
+    setTimeout(() => {
+      sessionRefs.current[id]?.focus();
+      sessionRefs.current[id]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, delay);
+  };
+
   const handleSelectRoutine = (id) => {
     setSelectedRoutineId(id);
     const routineSessions = sessions.filter(s => s.routine_id === id);
     setSelectedSessionId(routineSessions[0]?.id || null);
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(false);
+    setFocusedRoutinePanel('sessions');
   };
 
   const handleSelectSession = (id) => {
     setSelectedSessionId(id);
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(false);
+    setFocusedRoutinePanel('sessions');
   };
 
   const effectiveRoutineId = selectedRoutineId || routines[0]?.id || null;
@@ -100,6 +121,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     handleSettingValueKeyDown,
     handleSessionKeyDown,
     handleExerciseKeyDown,
+    handleAddSessionButtonKeyDown,
     handleAddExerciseButtonKeyDown,
     focusFirstSessionFirstExercise,
     focusExercise,
@@ -114,6 +136,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     sessionRefs,
     exerciseRefs,
     settingControlRefs,
+    addSessionBtnRef,
     addExerciseBtnRef,
     reorderSessions,
     reorderSessionExercises,
@@ -121,6 +144,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     setSelectedSessionId,
     setSelectedExerciseId,
     setIsAddingExerciseRow,
+    setFocusedRoutinePanel,
   });
 
   useImperativeHandle(ref, () => ({
@@ -176,6 +200,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     setEditingSessionNameVal(newSession.name);
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(false);
+    setFocusedRoutinePanel('sessions');
   };
 
   const handleStartSessionEdit = (session) => {
@@ -187,15 +212,20 @@ const RoutineDetail = forwardRef((props, ref) => {
     if (editingSessionNameVal.trim()) {
       updateSession(session.id, editingSessionNameVal.trim());
     }
+    const shouldFocusSessionRow = pendingNewSessionId === session.id || editingSessionId === session.id;
     if (pendingNewSessionId === session.id) {
       setPendingNewSessionId(null);
       setPendingNewSessionReturnId(null);
     }
     setEditingSessionId(null);
     setEditingSessionNameVal('');
+    if (shouldFocusSessionRow) {
+      focusSessionRow(session.id);
+    }
   };
 
   const cancelSessionEdit = (session) => {
+    const isPendingNewSession = pendingNewSessionId === session.id;
     if (pendingNewSessionId === session.id) {
       const fallbackId = effectiveRoutineSessions.some(item => item.id === pendingNewSessionReturnId)
         ? pendingNewSessionReturnId
@@ -205,12 +235,18 @@ const RoutineDetail = forwardRef((props, ref) => {
       setSelectedSessionId(fallbackId);
       setSelectedExerciseId(null);
       setIsAddingExerciseRow(false);
+      setFocusedRoutinePanel('sessions');
       setPendingNewSessionId(null);
       setPendingNewSessionReturnId(null);
     }
 
     setEditingSessionId(null);
     setEditingSessionNameVal('');
+    if (isPendingNewSession) {
+      focusSessionAddButton();
+    } else {
+      focusSessionRow(session.id);
+    }
   };
 
   const handleDeleteSession = (session) => {
@@ -242,6 +278,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     const nextOrder = newIndex + 1;
     const newSessionExercise = addSessionExercise(effectiveSession.id, storeExercise.id, nextOrder, 3, '10');
     setSelectedExerciseId(newSessionExercise.id);
+    setFocusedRoutinePanel('exercises');
     pendingFocusIndexRef.current = newIndex;
   };
 
@@ -265,6 +302,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   const handleStartAddingExercise = () => {
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(true);
+    setFocusedRoutinePanel('exercises');
   };
 
   const handleCancelAddingExercise = (shouldFocusAddButton = true) => {
@@ -295,9 +333,11 @@ const RoutineDetail = forwardRef((props, ref) => {
           routine={effectiveRoutine}
           routineSessions={effectiveRoutineSessions}
           activeSessionId={effectiveSessionId}
+          isPanelFocused={focusedRoutinePanel === 'sessions'}
           sessions={sessions}
           sessionExercises={sessionExercises}
           canAddSession={canAddSession}
+          isAddingSessionRow={Boolean(pendingNewSessionId)}
           isEditingRoutineName={isEditingRoutineName}
           editingRoutineName={editingRoutineNameVal}
           onEditingRoutineNameChange={setEditingRoutineNameVal}
@@ -315,7 +355,11 @@ const RoutineDetail = forwardRef((props, ref) => {
           onAddSession={handleAddSession}
           onSelectSession={handleSelectSession}
           onSessionKeyDown={handleSessionKeyDown}
+          onAddSessionButtonKeyDown={handleAddSessionButtonKeyDown}
           onSessionRef={setSessionRef}
+          addSessionBtnRef={addSessionBtnRef}
+          onPanelFocus={() => setFocusedRoutinePanel('sessions')}
+          onAddButtonFocus={() => setFocusedRoutinePanel('session-add')}
         />
 
         <SessionExerciseListPanel
@@ -324,6 +368,7 @@ const RoutineDetail = forwardRef((props, ref) => {
           sessionExercises={activeSessionExercises}
           exercises={exercises}
           selectedExerciseId={selectedExerciseId}
+          isPanelFocused={focusedRoutinePanel === 'exercises'}
           isAddingExerciseRow={isAddingExerciseRow}
           addExerciseBtnRef={addExerciseBtnRef}
           onExerciseKeyDown={handleExerciseKeyDown}
@@ -334,6 +379,7 @@ const RoutineDetail = forwardRef((props, ref) => {
           onAddExercise={handleAddExerciseToSession}
           onStartAddingExercise={handleStartAddingExercise}
           onCancelAddingExercise={handleCancelAddingExercise}
+          onPanelFocus={() => setFocusedRoutinePanel('exercises')}
         />
 
         <ExerciseSettingsPanel
@@ -342,6 +388,7 @@ const RoutineDetail = forwardRef((props, ref) => {
           onSettingControlRef={setSettingControlRef}
           onSettingValueKeyDown={handleSettingValueKeyDown}
           onUpdateTarget={handleUpdateTarget}
+          onPanelFocus={() => setFocusedRoutinePanel('settings')}
         />
       </div>
     </div>

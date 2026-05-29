@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { startViewTransition } from './useViewTransition';
 
 const RETIRED_NAV_SHORTCUT_KEYS = new Set(['1', '2', '3']);
 
@@ -92,12 +93,15 @@ export function useGlobalShortcuts({
         event.preventDefault();
         event.stopImmediatePropagation();
         const currentIndex = Math.max(0, NAV_TAB_IDS.indexOf(activeTab));
-        const direction = event.key === 'ArrowRight' ? 1 : -1;
-        const nextIndex = (currentIndex + direction + NAV_TAB_IDS.length) % NAV_TAB_IDS.length;
+        const step = event.key === 'ArrowRight' ? 1 : -1;
+        const nextIndex = (currentIndex + step + NAV_TAB_IDS.length) % NAV_TAB_IDS.length;
         const nextTab = NAV_TAB_IDS[nextIndex];
+        const transitionDirection = step === 1 ? 'forward' : 'backward';
 
-        setActiveTab(nextTab);
-        focusNavigationTarget(nextTab, focusScopeSelector, focusTargetSelector);
+        startViewTransition(() => {
+          setActiveTab(nextTab);
+          focusNavigationTarget(nextTab, focusScopeSelector, focusTargetSelector);
+        }, transitionDirection);
       }
     };
 

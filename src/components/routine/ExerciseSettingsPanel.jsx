@@ -13,10 +13,12 @@ export default function ExerciseSettingsPanel({
   onSettingControlRef,
   onSettingValueKeyDown,
   onUpdateTarget,
+  onPanelFocus,
 }) {
   return (
     <div
       className="glass-panel"
+      onFocusCapture={onPanelFocus}
       style={{
         display: "flex",
         flexDirection: "column",

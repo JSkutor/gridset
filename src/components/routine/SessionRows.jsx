@@ -1,4 +1,10 @@
+import { motion } from 'framer-motion';
 import { Check, Pencil, Trash2, X } from 'lucide-react';
+import {
+  ROUTINE_ROW_LAYOUT_TRANSITION,
+  getRoutineRowAnimation,
+  getRoutineRowHoverAnimation,
+} from '../../utils/routineRowAnimation';
 import { getFormattedSessionName, getSessionColor, getSessionDayLetter } from '../../utils/sessionHelper';
 
 export function SessionEditRow({ session, editingName, onEditingNameChange, onFinish, onCancel }) {
@@ -82,8 +88,9 @@ export function SessionRow({
   index,
   sessions,
   exerciseCount,
-  isActive,
+  isHighlighted,
   onKeyDown,
+  onFocus,
   onSelect,
   onStartEdit,
   onDelete,
@@ -92,31 +99,33 @@ export function SessionRow({
   const sessionColor = getSessionColor(session);
 
   return (
-    <div
+    <motion.div
       ref={refCallback}
       tabIndex={0}
       onKeyDown={(event) => onKeyDown(event, index)}
+      onFocus={onFocus}
       onClick={() => onSelect(session.id)}
       className="routine-session-row"
+      layout="position"
+      animate={getRoutineRowAnimation(isHighlighted)}
+      transition={ROUTINE_ROW_LAYOUT_TRANSITION}
+      whileHover={getRoutineRowHoverAnimation(isHighlighted)}
       style={{
         padding: '10px 10px',
         borderRadius: '7px',
         cursor: 'pointer',
-        background: isActive ? 'rgba(228, 232, 240, 0.06)' : 'transparent',
+        border: '1px solid transparent',
         marginBottom: '2px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        transition: 'background 0.15s',
       }}
-      onMouseEnter={event => { if (!isActive) event.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-      onMouseLeave={event => { if (!isActive) event.currentTarget.style.background = 'transparent'; }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
           fontSize: '14px',
-          fontWeight: isActive ? '600' : '400',
-          color: isActive ? 'var(--text-bright)' : 'var(--text-main)',
+          fontWeight: isHighlighted ? '600' : '400',
+          color: isHighlighted ? 'var(--text-bright)' : 'var(--text-main)',
           letterSpacing: '-0.01em',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -143,7 +152,7 @@ export function SessionRow({
         </div>
       </div>
 
-      {isActive && (
+      {isHighlighted && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={event => event.stopPropagation()}>
           <SmallRowButton
             color="var(--accent)"
@@ -159,7 +168,7 @@ export function SessionRow({
           </SmallRowButton>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 

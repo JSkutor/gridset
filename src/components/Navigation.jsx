@@ -1,4 +1,5 @@
 import { Dumbbell, ListChecks, History } from "lucide-react";
+import { startViewTransition } from "../hooks/useViewTransition";
 
 export default function Navigation({ activeTab, setActiveTab }) {
   const tabs = [
@@ -6,6 +7,14 @@ export default function Navigation({ activeTab, setActiveTab }) {
     { id: "S", label: "Set", shortcut: "W", icon: <Dumbbell size={16} /> },
     { id: "L", label: "Log", shortcut: "E", icon: <History size={16} /> },
   ];
+
+  const handleTabClick = (tabId) => {
+    const currentIdx = tabs.findIndex((t) => t.id === activeTab);
+    const targetIdx = tabs.findIndex((t) => t.id === tabId);
+    const direction = targetIdx > currentIdx ? "forward" : "backward";
+
+    startViewTransition(() => setActiveTab(tabId), direction);
+  };
 
   return (
     <div
@@ -37,7 +46,7 @@ export default function Navigation({ activeTab, setActiveTab }) {
             <button
               key={tab.id}
               data-tab-id={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => handleTabClick(tab.id)}
               title={`${tab.label} (${tab.shortcut})`}
               aria-keyshortcuts={tab.shortcut}
               style={{
@@ -68,3 +77,4 @@ export default function Navigation({ activeTab, setActiveTab }) {
     </div>
   );
 }
+

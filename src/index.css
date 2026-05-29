@@ -84,6 +84,59 @@ body::before {
   flex-direction: column;
 }
 
+/* ─── View Transition Animations ─── */
+@keyframes slide-to-left {
+  to { translate: -100% 0; }
+}
+@keyframes slide-from-right {
+  from { translate: 100% 0; }
+}
+@keyframes slide-to-right {
+  to { translate: 100% 0; }
+}
+@keyframes slide-from-left {
+  from { translate: -100% 0; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+}
+@keyframes fade-out {
+  to { opacity: 0; }
+}
+
+/* Keep background, nav, and everything else static */
+::view-transition-group(root) {
+  animation: none;
+}
+
+/* Only animate the page content area */
+::view-transition-group(page-content) {
+  animation-duration: 0.28s;
+  animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Forward: old slides left, new slides in from right */
+html:active-view-transition-type(forward)::view-transition-old(page-content) {
+  animation-name: slide-to-left, fade-out;
+}
+html:active-view-transition-type(forward)::view-transition-new(page-content) {
+  animation-name: slide-from-right, fade-in;
+}
+
+/* Backward: old slides right, new slides in from left */
+html:active-view-transition-type(backward)::view-transition-old(page-content) {
+  animation-name: slide-to-right, fade-out;
+}
+html:active-view-transition-type(backward)::view-transition-new(page-content) {
+  animation-name: slide-from-left, fade-in;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(page-content) {
+    animation: none !important;
+  }
+}
+
 /* ─── App Layout ─── */
 .app-container {
   position: relative;
@@ -1806,24 +1859,20 @@ body::before {
 
 /* ─── Routine Keyboard Focus States ─── */
 .routine-session-row {
+  position: relative;
   border: 1px solid transparent !important;
 }
 
 .routine-session-row:focus-visible {
-  border-color: var(--border-focus) !important;
-  background: rgba(228, 232, 240, 0.08) !important;
-  box-shadow: 0 0 10px rgba(122, 162, 247, 0.15) !important;
   outline: none;
 }
 
 .routine-exercise-row {
+  position: relative;
   border: 1px solid transparent !important;
 }
 
 .routine-exercise-row:focus-visible {
-  border-color: var(--border-focus) !important;
-  background: rgba(228, 232, 240, 0.08) !important;
-  box-shadow: 0 0 10px rgba(122, 162, 247, 0.15) !important;
   outline: none;
 }
 
@@ -2866,4 +2915,9 @@ body::before {
 .setting-stepper-unit {
   font-size: 12px;
   color: var(--text-muted);
+}
+
+/* Disable pointer events globally during keyboard navigation to prevent hover styles from getting stuck */
+body.keyboard-navigating * {
+  pointer-events: none !important;
 }

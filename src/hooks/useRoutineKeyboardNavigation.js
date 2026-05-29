@@ -24,6 +24,7 @@ export function useRoutineKeyboardNavigation({
   sessionRefs,
   exerciseRefs,
   settingControlRefs,
+  addSessionBtnRef,
   addExerciseBtnRef,
   reorderSessions,
   reorderSessionExercises,
@@ -31,12 +32,15 @@ export function useRoutineKeyboardNavigation({
   setSelectedSessionId,
   setSelectedExerciseId,
   setIsAddingExerciseRow,
+  setFocusedRoutinePanel,
 }) {
   const focusSessionById = (id, delay = 0) => {
+    setFocusedRoutinePanel('sessions');
     focusElement(sessionRefs.current[id], delay);
   };
 
   const focusExerciseById = (id, delay = 0) => {
+    setFocusedRoutinePanel('exercises');
     focusElement(exerciseRefs.current[id], delay);
   };
 
@@ -57,6 +61,7 @@ export function useRoutineKeyboardNavigation({
   const focusSettingControl = (index) => {
     const el = settingControlRefs.current[index];
     if (el && document.body.contains(el)) {
+      setFocusedRoutinePanel('settings');
       focusElement(el);
     }
   };
@@ -71,6 +76,12 @@ export function useRoutineKeyboardNavigation({
     if (effectiveSessionId) {
       focusSessionById(effectiveSessionId);
     }
+  };
+
+  const focusAddExerciseButton = () => {
+    setSelectedExerciseId(null);
+    setFocusedRoutinePanel('exercises');
+    focusElement(addExerciseBtnRef.current);
   };
 
   const handleSettingValueKeyDown = (event, index, onIncrement, onDecrement) => {
@@ -129,6 +140,9 @@ export function useRoutineKeyboardNavigation({
             onSelectSession(effectiveRoutineSessions[nextIndex].id);
             focusSession(nextIndex);
           }
+        } else if (nextIndex === effectiveRoutineSessions.length && !isReordering) {
+          setFocusedRoutinePanel('session-add');
+          focusElement(addSessionBtnRef.current);
         }
         break;
       }
@@ -155,6 +169,8 @@ export function useRoutineKeyboardNavigation({
         if (activeSessionExercises.length > 0) {
           setSelectedExerciseId(activeSessionExercises[0].id);
           focusExercise(0);
+        } else if (!isAddingExerciseRow) {
+          focusAddExerciseButton();
         }
         break;
       }
@@ -245,6 +261,25 @@ export function useRoutineKeyboardNavigation({
     }
   };
 
+  const handleAddSessionButtonKeyDown = (event) => {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      if (effectiveRoutineSessions.length > 0) {
+        const lastIndex = effectiveRoutineSessions.length - 1;
+        onSelectSession(effectiveRoutineSessions[lastIndex].id);
+        focusSession(lastIndex);
+      }
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      if (activeSessionExercises.length > 0) {
+        setSelectedExerciseId(activeSessionExercises[0].id);
+        focusExercise(0);
+      } else if (!isAddingExerciseRow) {
+        focusAddExerciseButton();
+      }
+    }
+  };
+
   const focusFirstSessionFirstExercise = () => {
     if (effectiveRoutineSessions.length === 0) return;
 
@@ -271,6 +306,7 @@ export function useRoutineKeyboardNavigation({
     handleSettingValueKeyDown,
     handleSessionKeyDown,
     handleExerciseKeyDown,
+    handleAddSessionButtonKeyDown,
     handleAddExerciseButtonKeyDown,
     focusFirstSessionFirstExercise,
     focusExercise,

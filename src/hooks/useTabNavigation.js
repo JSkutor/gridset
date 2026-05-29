@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { startViewTransition } from './useViewTransition';
 
 /**
  * Checks whether the keyboard event target is an editable element
@@ -46,10 +47,12 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
  *  - Ignores events when any modifier key (Meta / Ctrl / Alt) is held.
  *  - Optionally guards the whole hook behind an `isActive` flag so shortcuts
  *    only fire while the relevant parent page/context is visible.
+ *  - Wraps tab changes in a View Transition for smooth directional animation.
  *
  * @param {{
  *   tabIds: string[],
  *   shortcuts: Record<string, string>,
+ *   activeTab: string,
  *   setActiveTab: (id: string) => void,
  *   isActive?: boolean,
  *   focusScopeSelector?: string,
@@ -61,6 +64,7 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
  * useTabNavigation({
  *   tabIds: ['R', 'S', 'L'],
  *   shortcuts: { KeyQ: 'R', KeyW: 'S', KeyE: 'L' },
+ *   activeTab,
  *   setActiveTab: setActiveTab,
  * });
  *
@@ -70,6 +74,7 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
  * useTabNavigation({
  *   tabIds: ['daily', 'exercise', 'routine'],
  *   shortcuts: { KeyA: 'daily', KeyS: 'exercise', KeyD: 'routine' },
+ *   activeTab: activeView,
  *   setActiveTab: setActiveView,
  *   isActive: activeTab === 'L',
  * });
@@ -77,10 +82,12 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
 export function useTabNavigation({
   tabIds,
   shortcuts,
+  activeTab,
   setActiveTab,
   isActive = true,
   focusScopeSelector,
   focusTargetSelector,
+  disableTransition = false,
 }) {
   useEffect(() => {
     if (!isActive) return;
@@ -97,8 +104,21 @@ export function useTabNavigation({
 
       event.preventDefault();
       event.stopImmediatePropagation();
-      setActiveTab(targetTab);
-      focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector);
+
+      // Determine direction from tab index order.
+      const currentIdx = tabIds.indexOf(activeTab);
+      const targetIdx = tabIds.indexOf(targetTab);
+      const direction = targetIdx > currentIdx ? 'forward' : 'backward';
+
+      if (disableTransition) {
+        setActiveTab(targetTab);
+        focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector);
+      } else {
+        startViewTransition(() => {
+          setActiveTab(targetTab);
+          focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector);
+        }, direction);
+      }
     };
 
     // Use capture phase so this fires before child handlers.
@@ -106,5 +126,5 @@ export function useTabNavigation({
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [focusScopeSelector, focusTargetSelector, isActive, shortcuts, setActiveTab, tabIds]);
+  }, [activeTab, focusScopeSelector, focusTargetSelector, isActive, shortcuts, setActiveTab, tabIds, disableTransition]);
 }

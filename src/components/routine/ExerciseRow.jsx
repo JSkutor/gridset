@@ -1,4 +1,10 @@
+import { motion } from 'framer-motion';
 import { Trash2 } from 'lucide-react';
+import {
+  ROUTINE_ROW_LAYOUT_TRANSITION,
+  getRoutineRowAnimation,
+  getRoutineRowHoverAnimation,
+} from '../../utils/routineRowAnimation';
 
 export default function ExerciseRow({
   refCallback,
@@ -6,31 +12,35 @@ export default function ExerciseRow({
   exercise,
   index,
   isSelected,
+  isHighlighted,
   onKeyDown,
+  onFocus,
   onSelect,
   onDelete,
 }) {
   return (
-    <div
+    <motion.div
       ref={refCallback}
       tabIndex={0}
       onKeyDown={(event) => onKeyDown(event, index)}
+      onFocus={onFocus}
       onClick={() => onSelect(isSelected ? null : sessionExercise.id)}
       className="routine-exercise-row"
+      layout="position"
+      animate={getRoutineRowAnimation(isHighlighted)}
+      transition={ROUTINE_ROW_LAYOUT_TRANSITION}
+      whileHover={getRoutineRowHoverAnimation(isHighlighted)}
       style={{
         padding: '12px 12px',
         borderRadius: '8px',
         cursor: 'pointer',
-        background: isSelected ? 'rgba(228, 232, 240, 0.06)' : 'transparent',
+        border: '1px solid transparent',
         marginBottom: '2px',
         display: 'grid',
         gridTemplateColumns: '24px 1fr 60px 60px 24px',
         alignItems: 'center',
         gap: '12px',
-        transition: 'background 0.15s',
       }}
-      onMouseEnter={event => { if (!isSelected) event.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-      onMouseLeave={event => { if (!isSelected) event.currentTarget.style.background = 'transparent'; }}
     >
       <span style={{
         fontSize: '11px',
@@ -44,8 +54,8 @@ export default function ExerciseRow({
       <div style={{ minWidth: 0 }}>
         <div style={{
           fontSize: '15px',
-          fontWeight: isSelected ? '600' : '400',
-          color: isSelected ? 'var(--text-bright)' : 'var(--text-main)',
+          fontWeight: isHighlighted ? '600' : '400',
+          color: isHighlighted ? 'var(--text-bright)' : 'var(--text-main)',
           letterSpacing: '-0.01em',
           whiteSpace: 'nowrap',
           overflow: 'hidden',
@@ -62,8 +72,8 @@ export default function ExerciseRow({
 
       <span style={{
         fontSize: '15px',
-        color: isSelected ? 'var(--text-bright)' : 'var(--text-muted)',
-        fontWeight: isSelected ? '500' : '400',
+        color: isHighlighted ? 'var(--text-bright)' : 'var(--text-muted)',
+        fontWeight: isHighlighted ? '500' : '400',
         fontVariantNumeric: 'tabular-nums',
         whiteSpace: 'nowrap',
       }}>
@@ -72,8 +82,8 @@ export default function ExerciseRow({
 
       <span style={{
         fontSize: '15px',
-        color: isSelected ? 'var(--text-bright)' : 'var(--text-muted)',
-        fontWeight: isSelected ? '500' : '400',
+        color: isHighlighted ? 'var(--text-bright)' : 'var(--text-muted)',
+        fontWeight: isHighlighted ? '500' : '400',
         fontVariantNumeric: 'tabular-nums',
         whiteSpace: 'nowrap',
         justifySelf: 'end',
@@ -112,6 +122,6 @@ export default function ExerciseRow({
           <Trash2 size={13} />
         </button>
       </div>
-    </div>
+    </motion.div>
   );
 }

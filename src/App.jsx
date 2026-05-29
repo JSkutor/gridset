@@ -119,11 +119,35 @@ function App() {
       window.clearInterval(intervalId);
     };
   }, [restTimer]);
+  
+  // Global listener to remove hover effects when keyboard navigating
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+        document.body.classList.add('keyboard-navigating');
+      }
+    };
+
+    const handleMouseInteraction = () => {
+      document.body.classList.remove('keyboard-navigating');
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    window.addEventListener('mousemove', handleMouseInteraction, true);
+    window.addEventListener('mousedown', handleMouseInteraction, true);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown, true);
+      window.removeEventListener('mousemove', handleMouseInteraction, true);
+      window.removeEventListener('mousedown', handleMouseInteraction, true);
+    };
+  }, []);
 
   // ── Q / W / E: switch top-level tabs ────────────────────────────────────
   useTabNavigation({
     tabIds: NAV_TAB_IDS,
     shortcuts: NAV_SHORTCUTS,
+    activeTab,
     setActiveTab,
     focusScopeSelector: NAV_FOCUS_SCOPE_SELECTOR,
     focusTargetSelector: getNavFocusTargetSelector,
@@ -168,34 +192,36 @@ function App() {
         onDismiss={handleDismissRestTimer}
       />
 
-      {activeTab === 'S' && (
-        <main className="main-grid">
-          <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
-          <WorkoutGrid 
-            ref={workoutGridRef}
-            key={setGridKey}
-            session={selectedSession} 
-            latestRoutineSessions={latestRoutineSessions}
-            onSessionChange={setSelectedSessionId}
-            onExerciseFocus={setActiveExerciseId} 
-            onRestStart={handleRestStart}
-            onSaveSuccess={handleSaveSuccess}
-          />
-          <ExercisePastLogs activeExerciseId={effectiveActiveExerciseId} />
-        </main>
-      )}
+      <div style={{ flex: 1, minHeight: 0, overflow: activeTab === 'R' ? 'visible' : 'hidden', viewTransitionName: 'page-content' }}>
+        {activeTab === 'S' && (
+          <main className="main-grid">
+            <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
+            <WorkoutGrid 
+              ref={workoutGridRef}
+              key={setGridKey}
+              session={selectedSession} 
+              latestRoutineSessions={latestRoutineSessions}
+              onSessionChange={setSelectedSessionId}
+              onExerciseFocus={setActiveExerciseId} 
+              onRestStart={handleRestStart}
+              onSaveSuccess={handleSaveSuccess}
+            />
+            <ExercisePastLogs activeExerciseId={effectiveActiveExerciseId} />
+          </main>
+        )}
 
-      {activeTab === 'R' && (
-        <main style={{ flex: 1, padding: '24px 32px 32px 32px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
-          <RoutineDetail ref={routineDetailRef} />
-        </main>
-      )}
-      
-      {activeTab === 'L' && (
-        <main style={{ flex: 1, minHeight: 0, padding: '24px 32px 32px 32px', overflowX: 'hidden', overflowY: 'auto' }}>
-          <LogPage />
-        </main>
-      )}
+        {activeTab === 'R' && (
+          <main style={{ height: '100%', padding: '24px 32px 32px 32px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
+            <RoutineDetail ref={routineDetailRef} />
+          </main>
+        )}
+        
+        {activeTab === 'L' && (
+          <main style={{ height: '100%', minHeight: 0, padding: '24px 32px 32px 32px', overflowX: 'hidden', overflowY: 'auto' }}>
+            <LogPage />
+          </main>
+        )}
+      </div>
     </div>
   )
 }
