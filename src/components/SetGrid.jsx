@@ -16,7 +16,7 @@ import {
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
-function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus, onRepsTab, onFirstWeightTab }) {
+function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus, onCellFocus, onRepsTab, onFirstWeightTab }) {
   const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
 
   return (
@@ -52,6 +52,7 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
               });
             }}
             onFocus={() => {
+              onCellFocus?.(globalIndex, colIndex);
               onExerciseFocus?.(exerciseId);
               onSetFocus?.(blockIndex, rowIndex);
             }}
@@ -71,7 +72,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
   const exercises        = useWorkoutStore((state) => state.exercises);
   const saveWorkoutLog   = useWorkoutStore((state) => state.saveWorkoutLog);
 
-  const [startTime]      = useState(() => new Date().toISOString());
+  const [startTime, setStartTime] = useState(null);
   const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises));
 
   // 현재 포커스된 세트 위치 (blockIndex, rowIndex)
@@ -115,13 +116,21 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
   const flatRows  = useMemo(() => flattenBlocks(blocks), [blocks]);
   const totalRows = flatRows.length;
 
-  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst } = useGridNavigation(totalRows + 1);
+  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus } = useGridNavigation(totalRows + 1);
 
   // Ref for the session note textarea (for C-key toggle)
   const noteRef = useRef(null);
   const completedSetSignaturesRef = useRef(new Map());
 
   // ── mutations ──────────────────────────────────────────────────────────────
+
+  const hasTableInput = (items) =>
+    items.some((block) =>
+      block.sets.some((set) =>
+        String(set.weight ?? '').trim() !== '' ||
+        String(set.reps ?? '').trim() !== ''
+      )
+    );
 
   const updateRow = (blockIndex, rowIndex, field, value) => {
     if (!isNumericGridValue(value)) return;
@@ -133,16 +142,22 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
       if (completionKey) completedSetSignaturesRef.current.delete(completionKey);
     }
 
-    setBlocks((prev) =>
-      prev.map((b, bi) =>
-        bi !== blockIndex ? b : {
-          ...b,
-          sets: b.sets.map((s, si) =>
-            si !== rowIndex ? s : { ...s, [field]: value },
-          ),
-        },
-      ),
+    const nextBlocks = blocks.map((b, bi) =>
+      bi !== blockIndex ? b : {
+        ...b,
+        sets: b.sets.map((s, si) =>
+          si !== rowIndex ? s : { ...s, [field]: value },
+        ),
+      }
     );
+
+    setBlocks(nextBlocks);
+
+    if (!hasTableInput(nextBlocks)) {
+      setStartTime(null);
+    } else if (String(value).trim() !== '') {
+      setStartTime((currentStartTime) => currentStartTime || new Date().toISOString());
+    }
   };
 
   // 현재 포커스된 세트의 memo 업데이트
@@ -242,7 +257,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
   }, [blocks]);
 
   const handleSaveWorkout = () => {
-    if (!hasEnteredData) return;
+    if (!hasEnteredData || !startTime) return;
     saveWorkoutLog(session.id, blocks, startTime);
     if (onSaveSuccess) {
       onSaveSuccess();
@@ -380,6 +395,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                         addRow={addRow}
                         onExerciseFocus={onExerciseFocus}
                         onSetFocus={handleSetFocus}
+                        onCellFocus={recordFocus}
                         onRepsTab={handleRepsTab}
                         onFirstWeightTab={handleFirstWeightTab}
                       />
@@ -430,7 +446,7 @@ const SetGrid = forwardRef(function SetGrid({ session, latestRoutineSessions = [
                       handleKeyDown(e, totalRows, 0);
                     }}
                     className="workout-complete-row-btn"
-                    disabled={!hasEnteredData}
+                    disabled={!hasEnteredData || !startTime}
                     type="button"
                     title="운동 완료 저장"
                   >

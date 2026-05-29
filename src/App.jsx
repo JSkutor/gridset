@@ -19,6 +19,9 @@ const NAV_SHORTCUTS = {
   KeyW: 'S',
   KeyE: 'L',
 };
+const NAV_FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="main"]';
+const getNavFocusTargetSelector = (tabId) =>
+  `${NAV_FOCUS_SCOPE_SELECTOR} [data-tab-id="${tabId}"]`;
 
 function App() {
   const [activeTab, setActiveTab] = useState('S')
@@ -129,14 +132,19 @@ function App() {
     tabIds: NAV_TAB_IDS,
     shortcuts: NAV_SHORTCUTS,
     setActiveTab,
+    focusScopeSelector: NAV_FOCUS_SCOPE_SELECTOR,
+    focusTargetSelector: getNavFocusTargetSelector,
   });
 
   // ── Miscellaneous global shortcuts (Escape, Backquote, Cmd+Arrow, retired 1/2/3) ──
   useGlobalShortcuts({
     NAV_TAB_IDS,
+    activeTab,
     setActiveTab,
     setGridRef,
     routineDetailRef,
+    focusScopeSelector: NAV_FOCUS_SCOPE_SELECTOR,
+    focusTargetSelector: getNavFocusTargetSelector,
   });
 
   const handleSaveSuccess = useCallback(() => {

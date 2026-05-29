@@ -37,6 +37,9 @@ const LOG_VIEWS = [
 // Shortcut map: KeyA → daily, KeyS → exercise, KeyD → routine
 const LOG_VIEW_SHORTCUTS = { KeyA: 'daily', KeyS: 'exercise', KeyD: 'routine' };
 const LOG_VIEW_IDS = LOG_VIEWS.map((v) => v.id);
+const LOG_FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="log"]';
+const getLogFocusTargetSelector = (viewId) =>
+  `${LOG_FOCUS_SCOPE_SELECTOR} [data-tab-id="${viewId}"]`;
 
 // ─── Data Preparation ────────────────────────────────────────
 
@@ -211,6 +214,8 @@ export default function LogPage({ isActive = true }) {
     shortcuts: LOG_VIEW_SHORTCUTS,
     setActiveTab: setActiveView,
     isActive,
+    focusScopeSelector: LOG_FOCUS_SCOPE_SELECTOR,
+    focusTargetSelector: getLogFocusTargetSelector,
   });
 
   // ── Lookup Maps ──
@@ -276,7 +281,7 @@ export default function LogPage({ isActive = true }) {
         )}
       </div>
 
-      <aside className="log-sidebar" aria-label="로그 보기">
+      <aside className="log-sidebar" aria-label="로그 보기" data-tab-navigation="log">
         {LOG_VIEWS.map((view) => {
           const Icon = view.icon;
           const isActiveView = activeView === view.id;
@@ -284,6 +289,7 @@ export default function LogPage({ isActive = true }) {
             <button
               key={view.id}
               type="button"
+              data-tab-id={view.id}
               className={`log-sidebar-button ${isActiveView ? 'is-active' : ''}`}
               onClick={() => setActiveView(view.id)}
               title={`${view.label} (${view.shortcut})`}

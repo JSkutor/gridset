@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React from 'react';
 import { test, describe, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -6,7 +7,7 @@ import { useGridNavigation } from './useGridNavigation.js';
 
 // Mock component to bind the hook
 function GridMock({ totalRows, onTabAtEnd }) {
-  const { getCellRef, handleKeyDown, focusLastOrFirst, isKeyboardActive } = useGridNavigation(totalRows);
+  const { getCellRef, handleKeyDown, focusLastOrFirst, isKeyboardActive, recordFocus } = useGridNavigation(totalRows);
 
   return (
     <div>
@@ -21,6 +22,7 @@ function GridMock({ totalRows, onTabAtEnd }) {
                   data-testid={`input-${rowIndex}-0`}
                   ref={getCellRef(rowIndex, 0)}
                   onKeyDown={(e) => handleKeyDown(e, rowIndex, 0, { onTabAtEnd })}
+                  onFocus={() => recordFocus(rowIndex, 0)}
                   defaultValue=""
                 />
               </td>
@@ -29,6 +31,7 @@ function GridMock({ totalRows, onTabAtEnd }) {
                   data-testid={`input-${rowIndex}-1`}
                   ref={getCellRef(rowIndex, 1)}
                   onKeyDown={(e) => handleKeyDown(e, rowIndex, 1, { onTabAtEnd })}
+                  onFocus={() => recordFocus(rowIndex, 1)}
                   defaultValue=""
                 />
               </td>
@@ -181,5 +184,22 @@ describe('useGridNavigation Keyboard Navigation Hook', () => {
     // Click focusBtn to trigger focusLastOrFirst
     await user.click(focusBtn);
     expect(document.activeElement).toBe(cell11);
+  });
+
+  test('focusLastOrFirst remembers cells focused without keyboard navigation', async () => {
+    const user = userEvent.setup();
+    render(<GridMock totalRows={3} />);
+
+    const cell10 = screen.getByTestId('input-1-0');
+    const focusBtn = screen.getByTestId('focus-shortcut');
+
+    cell10.focus();
+    expect(document.activeElement).toBe(cell10);
+
+    focusBtn.focus();
+    expect(document.activeElement).toBe(focusBtn);
+
+    await user.click(focusBtn);
+    expect(document.activeElement).toBe(cell10);
   });
 });

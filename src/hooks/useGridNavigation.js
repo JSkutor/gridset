@@ -29,7 +29,7 @@ export const NUM_COLS = COLUMNS.length;
  *                            Tab at the very last cell fires `onTabAtEnd`
  *
  * @param {number} totalRows - Total input rows currently rendered.
- * @returns {{ getCellRef, handleKeyDown, requestFocus }}
+ * @returns {{ getCellRef, handleKeyDown, requestFocus, recordFocus }}
  */
 export function useGridNavigation(totalRows) {
   /** gridRefs.current[rowIndex][colIndex] → <input> DOM node */
@@ -79,13 +79,17 @@ export function useGridNavigation(totalRows) {
 
   // ── internals ───────────────────────────────────────────────────────────────
 
+  const recordFocus = useCallback((row, col) => {
+    lastFocusedCell.current = { row, col };
+  }, []);
+
   const focusCell = useCallback((row, col) => {
     const el = gridRefs.current[row]?.[col];
     if (el) {
       el.focus();
-      lastFocusedCell.current = { row, col };
+      recordFocus(row, col);
     }
-  }, []);
+  }, [recordFocus]);
 
   // ── public API ──────────────────────────────────────────────────────────────
 
@@ -192,5 +196,5 @@ export function useGridNavigation(totalRows) {
     }
   }, []);
 
-  return { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst };
+  return { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus };
 }

@@ -18,6 +18,26 @@ function isEditableTarget(target) {
   );
 }
 
+function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector) {
+  if (!focusTargetSelector) return;
+
+  const activeElement = document.activeElement;
+  if (focusScopeSelector) {
+    if (!(activeElement instanceof HTMLElement)) return;
+    if (!activeElement.closest(focusScopeSelector)) return;
+  }
+
+  const selector =
+    typeof focusTargetSelector === 'function'
+      ? focusTargetSelector(targetTab)
+      : focusTargetSelector;
+  const targetElement = document.querySelector(selector);
+
+  if (targetElement instanceof HTMLElement) {
+    targetElement.focus({ preventScroll: true });
+  }
+}
+
 /**
  * Attaches a global `keydown` listener that maps keyboard shortcuts to tab IDs.
  *
@@ -32,6 +52,8 @@ function isEditableTarget(target) {
  *   shortcuts: Record<string, string>,
  *   setActiveTab: (id: string) => void,
  *   isActive?: boolean,
+ *   focusScopeSelector?: string,
+ *   focusTargetSelector?: string | ((id: string) => string),
  * }} options
  *
  * @example
@@ -52,7 +74,14 @@ function isEditableTarget(target) {
  *   isActive: activeTab === 'L',
  * });
  */
-export function useTabNavigation({ tabIds, shortcuts, setActiveTab, isActive = true }) {
+export function useTabNavigation({
+  tabIds,
+  shortcuts,
+  setActiveTab,
+  isActive = true,
+  focusScopeSelector,
+  focusTargetSelector,
+}) {
   useEffect(() => {
     if (!isActive) return;
 
@@ -69,6 +98,7 @@ export function useTabNavigation({ tabIds, shortcuts, setActiveTab, isActive = t
       event.preventDefault();
       event.stopImmediatePropagation();
       setActiveTab(targetTab);
+      focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector);
     };
 
     // Use capture phase so this fires before child handlers.
@@ -76,5 +106,5 @@ export function useTabNavigation({ tabIds, shortcuts, setActiveTab, isActive = t
     return () => {
       window.removeEventListener('keydown', handleKeyDown, true);
     };
-  }, [isActive, shortcuts, setActiveTab, tabIds]);
+  }, [focusScopeSelector, focusTargetSelector, isActive, shortcuts, setActiveTab, tabIds]);
 }

@@ -280,7 +280,7 @@ function SimpleLineChart({ data, unit, displayUnit }) {
                   fill="var(--bg-deep)"
                   stroke="var(--accent)"
                   strokeWidth={isHovered ? 2.5 : 1.5}
-                  style={{ transition: 'all 0.15s ease', pointerEvents: 'none' }}
+                  style={{ transition: 'r 0.15s ease, stroke-width 0.15s ease', pointerEvents: 'none' }}
                 />
               </g>
             );

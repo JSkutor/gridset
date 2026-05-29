@@ -14,11 +14,34 @@ function isEditableTarget(target) {
   );
 }
 
+function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector) {
+  if (!focusTargetSelector) return;
+
+  const activeElement = document.activeElement;
+  if (focusScopeSelector) {
+    if (!(activeElement instanceof HTMLElement)) return;
+    if (!activeElement.closest(focusScopeSelector)) return;
+  }
+
+  const selector =
+    typeof focusTargetSelector === 'function'
+      ? focusTargetSelector(targetTab)
+      : focusTargetSelector;
+  const targetElement = document.querySelector(selector);
+
+  if (targetElement instanceof HTMLElement) {
+    targetElement.focus({ preventScroll: true });
+  }
+}
+
 export function useGlobalShortcuts({
   NAV_TAB_IDS,
+  activeTab,
   setActiveTab,
   setGridRef,
   routineDetailRef,
+  focusScopeSelector,
+  focusTargetSelector,
 }) {
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
@@ -68,12 +91,13 @@ export function useGlobalShortcuts({
       if ((event.metaKey || event.ctrlKey) && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        setActiveTab((currentTab) => {
-          const currentIndex = Math.max(0, NAV_TAB_IDS.indexOf(currentTab));
-          const direction = event.key === 'ArrowRight' ? 1 : -1;
-          const nextIndex = (currentIndex + direction + NAV_TAB_IDS.length) % NAV_TAB_IDS.length;
-          return NAV_TAB_IDS[nextIndex];
-        });
+        const currentIndex = Math.max(0, NAV_TAB_IDS.indexOf(activeTab));
+        const direction = event.key === 'ArrowRight' ? 1 : -1;
+        const nextIndex = (currentIndex + direction + NAV_TAB_IDS.length) % NAV_TAB_IDS.length;
+        const nextTab = NAV_TAB_IDS[nextIndex];
+
+        setActiveTab(nextTab);
+        focusNavigationTarget(nextTab, focusScopeSelector, focusTargetSelector);
       }
     };
 
@@ -81,5 +105,13 @@ export function useGlobalShortcuts({
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown, true);
     };
-  }, [NAV_TAB_IDS, setActiveTab, setGridRef, routineDetailRef]);
+  }, [
+    NAV_TAB_IDS,
+    activeTab,
+    focusScopeSelector,
+    focusTargetSelector,
+    setActiveTab,
+    setGridRef,
+    routineDetailRef,
+  ]);
 }

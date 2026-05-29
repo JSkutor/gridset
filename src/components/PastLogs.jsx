@@ -114,6 +114,64 @@ export default function PastLogs({ activeExerciseId }) {
                   ))}
                 </tbody>
               </table>
+
+              {/* Memo Section */}
+              {(() => {
+                const setsWithMemo = log.sets.filter(s => s.memo && s.memo.trim() !== '');
+                if (setsWithMemo.length === 0) return null;
+                return (
+                  <div style={{
+                    marginTop: '12px',
+                    paddingTop: '10px',
+                    borderTop: '1px dashed var(--border)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px'
+                  }}>
+                    {setsWithMemo.map((set) => (
+                      <div key={set.id} style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '8px',
+                        fontSize: '12px',
+                        lineHeight: '1.4',
+                        color: 'var(--text-main)'
+                      }}>
+                        <span style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          fontWeight: '600',
+                          color: 'var(--accent)',
+                          whiteSpace: 'nowrap',
+                          fontSize: '11px',
+                          paddingTop: '1px'
+                        }}>
+                          {set.set_number}세트
+                          {set.side && set.side !== 'both' && (
+                            <span style={{
+                              fontSize: '9px',
+                              padding: '0 2px',
+                              borderRadius: '2px',
+                              background: set.side === 'L' ? 'rgba(235, 94, 85, 0.15)' : 'rgba(79, 195, 247, 0.15)',
+                              color: set.side === 'L' ? '#eb5e55' : '#4fc3f7',
+                              marginLeft: '4px'
+                            }}>
+                              {set.side}
+                            </span>
+                          )}
+                        </span>
+                        <span style={{
+                          color: 'var(--text-muted)',
+                          fontStyle: 'italic',
+                          wordBreak: 'break-all'
+                        }}>
+                          "{set.memo}"
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           ))}
         </div>

@@ -17,6 +17,7 @@ export default function Navigation({ activeTab, setActiveTab }) {
       }}
     >
       <nav
+        data-tab-navigation="main"
         style={{
           display: "flex",
           alignItems: "center",
@@ -35,6 +36,7 @@ export default function Navigation({ activeTab, setActiveTab }) {
           return (
             <button
               key={tab.id}
+              data-tab-id={tab.id}
               onClick={() => setActiveTab(tab.id)}
               title={`${tab.label} (${tab.shortcut})`}
               aria-keyshortcuts={tab.shortcut}
