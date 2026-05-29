@@ -7,7 +7,7 @@ import { getFormattedSessionName, isTemporarySession } from '../utils/sessionHel
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
-function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseFocus, onSetFocus, onCellFocus, onRepsTab, onFirstWeightTab }) {
+function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, onSetFocus, onCellFocus, onRepsTab, onFirstWeightTab }) {
   const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
 
   return (
@@ -38,9 +38,7 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, addRow, onExerciseF
                 onRepsTab?.(row, e.currentTarget.value);
               }
 
-              handleKeyDown(e, globalIndex, colIndex, {
-                onTabAtEnd: () => addRow(blockIndex),
-              });
+              handleKeyDown(e, globalIndex, colIndex);
             }}
             onFocus={() => {
               onCellFocus?.(globalIndex, colIndex);
@@ -298,7 +296,6 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                         getCellRef={getCellRef}
                         handleKeyDown={handleKeyDown}
                         updateRow={updateRow}
-                        addRow={(targetBlockIndex) => addRow(targetBlockIndex, requestFocus)}
                         onExerciseFocus={onExerciseFocus}
                         onSetFocus={handleSetFocus}
                         onCellFocus={recordFocus}

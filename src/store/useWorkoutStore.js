@@ -15,12 +15,82 @@ import * as workoutRepository from '../api/supabaseWorkoutRepository.js';
 
 const GUEST_USER = { id: '00000000-0000-0000-0000-000000000000', name: '게스트', isGuest: true };
 
-const runRemoteSync = (label, task) => {
+const failedRemoteSyncTasks = new Map();
+let remoteSyncTaskId = 0;
+
+const getRemoteSyncErrorMessage = (error) => {
+  if (typeof error?.message === 'string' && error.message.trim()) {
+    return error.message;
+  }
+  return '원격 동기화 중 문제가 발생했습니다.';
+};
+
+const updateRemoteSyncError = (set, label, error, overrides = {}) => {
+  set({
+    remoteSyncError: {
+      label,
+      message: getRemoteSyncErrorMessage(error),
+      failedAt: new Date().toISOString(),
+      pendingCount: failedRemoteSyncTasks.size,
+      isRetrying: false,
+      ...overrides,
+    },
+  });
+};
+
+const clearRemoteSyncFailures = (set) => {
+  failedRemoteSyncTasks.clear();
+  set({ remoteSyncError: null });
+};
+
+const runRemoteSync = (set, label, task) => {
+  const id = `remote-sync-${Date.now()}-${remoteSyncTaskId++}`;
+
   Promise.resolve()
     .then(task)
     .catch((error) => {
+      failedRemoteSyncTasks.set(id, { id, label, task, error });
+      updateRemoteSyncError(set, label, error);
       console.error(`Failed to sync ${label}:`, error);
     });
+};
+
+const retryFailedRemoteSyncTasks = async (set) => {
+  const queuedTasks = [...failedRemoteSyncTasks.values()];
+  if (queuedTasks.length === 0) {
+    set({ remoteSyncError: null });
+    return;
+  }
+
+  const firstTask = queuedTasks[0];
+  set((state) => ({
+    remoteSyncError: {
+      label: state.remoteSyncError?.label || firstTask.label,
+      message: state.remoteSyncError?.message || '원격 동기화를 다시 시도하고 있습니다.',
+      failedAt: state.remoteSyncError?.failedAt || new Date().toISOString(),
+      pendingCount: queuedTasks.length,
+      isRetrying: true,
+    },
+  }));
+
+  for (const queuedTask of queuedTasks) {
+    try {
+      await queuedTask.task();
+      failedRemoteSyncTasks.delete(queuedTask.id);
+    } catch (error) {
+      failedRemoteSyncTasks.set(queuedTask.id, { ...queuedTask, error });
+      console.error(`Failed to retry sync ${queuedTask.label}:`, error);
+    }
+  }
+
+  const remainingTasks = [...failedRemoteSyncTasks.values()];
+  if (remainingTasks.length === 0) {
+    set({ remoteSyncError: null });
+    return;
+  }
+
+  const latestFailedTask = remainingTasks[remainingTasks.length - 1];
+  updateRemoteSyncError(set, latestFailedTask.label, latestFailedTask.error);
 };
 
 const initialSeed = createDummyWorkoutData({ userId: GUEST_USER.id, existingExercises: DEFAULT_EXERCISES });
@@ -40,8 +110,17 @@ export const useWorkoutStore = create(
       // Supabase specific states
       isSyncing: false,
       authSession: null,
+      remoteSyncError: null,
 
       // --- Supabase Actions ---
+      retryFailedRemoteSync: async () => {
+        await retryFailedRemoteSyncTasks(set);
+      },
+
+      clearRemoteSyncError: () => {
+        clearRemoteSyncFailures(set);
+      },
+
       fetchPublicExercises: async () => {
         try {
           const exercises = await workoutRepository.fetchPublicExerciseCatalog();
@@ -97,6 +176,8 @@ export const useWorkoutStore = create(
             return;
           }
 
+          failedRemoteSyncTasks.clear();
+
           // Clear session and reset to guest defaults
           set({
             authSession: null,
@@ -106,7 +187,8 @@ export const useWorkoutStore = create(
             sessions: [],
             sessionExercises: [],
             workoutLogs: [],
-            setRecords: []
+            setRecords: [],
+            remoteSyncError: null
           });
           await get().fetchPublicExercises();
         }
@@ -190,7 +272,7 @@ export const useWorkoutStore = create(
         set((state) => ({ exercises: [...state.exercises, newExercise] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('addExercise', () => workoutRepository.insertExercise(newExercise, currentUser.id));
+          runRemoteSync(set, 'addExercise', () => workoutRepository.insertExercise(newExercise, currentUser.id));
         }
 
         return newExercise;
@@ -200,7 +282,7 @@ export const useWorkoutStore = create(
         set((state) => ({ exercises: state.exercises.filter(ex => ex.id !== id) }));
         
         if (!currentUser.isGuest) {
-          runRemoteSync('deleteExercise', () => workoutRepository.deleteRow('exercises', id));
+          runRemoteSync(set, 'deleteExercise', () => workoutRepository.deleteRow('exercises', id));
         }
       },
       updateExercise: (id, updates) => {
@@ -214,7 +296,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('updateExercise', () => workoutRepository.updateExercise(id, updates, updatedAt));
+          runRemoteSync(set, 'updateExercise', () => workoutRepository.updateExercise(id, updates, updatedAt));
         }
       },
 
@@ -232,7 +314,7 @@ export const useWorkoutStore = create(
         set((state) => ({ routines: [...state.routines, newRoutine] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('addRoutine', () => workoutRepository.insertRow('routines', newRoutine));
+          runRemoteSync(set, 'addRoutine', () => workoutRepository.upsertRows('routines', [newRoutine]));
         }
 
         return newRoutine;
@@ -249,7 +331,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('deleteRoutine', () => workoutRepository.deleteRow('routines', id));
+          runRemoteSync(set, 'deleteRoutine', () => workoutRepository.deleteRow('routines', id));
         }
       },
       updateRoutine: (id, name) => {
@@ -261,7 +343,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('updateRoutine', () =>
+          runRemoteSync(set, 'updateRoutine', () =>
             workoutRepository.updateRow('routines', id, { name, updated_at: updatedAt }),
           );
         }
@@ -320,11 +402,11 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('duplicateRoutine', async () => {
+          runRemoteSync(set, 'duplicateRoutine', async () => {
             await get().syncExercisesForReferences(newSessionExercises.map(se => se.exercise_id), currentUser.id);
-            await workoutRepository.insertRow('routines', newRoutine);
-            await workoutRepository.insertRows('sessions', newSessions);
-            await workoutRepository.insertRows('session_exercises', newSessionExercises);
+            await workoutRepository.upsertRows('routines', [newRoutine]);
+            await workoutRepository.upsertRows('sessions', newSessions);
+            await workoutRepository.upsertRows('session_exercises', newSessionExercises);
           });
         }
 
@@ -351,7 +433,7 @@ export const useWorkoutStore = create(
         set((state) => ({ sessions: [...state.sessions, newSession] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('addSession', () => workoutRepository.insertRow('sessions', newSession));
+          runRemoteSync(set, 'addSession', () => workoutRepository.upsertRows('sessions', [newSession]));
         }
 
         return newSession;
@@ -376,7 +458,7 @@ export const useWorkoutStore = create(
         set((state) => ({ sessions: [...state.sessions, newSession] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('createTemporarySession', () => workoutRepository.insertRow('sessions', newSession));
+          runRemoteSync(set, 'createTemporarySession', () => workoutRepository.upsertRows('sessions', [newSession]));
         }
 
         return newSession;
@@ -416,7 +498,7 @@ export const useWorkoutStore = create(
 
         if (!currentUser.isGuest) {
           const sessionsToUpsert = finalSessions.filter(s => s.routine_id === routineId);
-          runRemoteSync('deleteSession', async () => {
+          runRemoteSync(set, 'deleteSession', async () => {
             await workoutRepository.deleteRow('sessions', id);
             await workoutRepository.upsertRows('sessions', sessionsToUpsert);
           });
@@ -431,7 +513,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('updateSession', () =>
+          runRemoteSync(set, 'updateSession', () =>
             workoutRepository.updateRow('sessions', id, { name, updated_at: updatedAt }),
           );
         }
@@ -455,7 +537,7 @@ export const useWorkoutStore = create(
 
         if (!currentUser.isGuest) {
           const sessionsToUpsert = updatedSessions.filter(s => s.routine_id === routine_id);
-          runRemoteSync('reorderSessions', () => workoutRepository.upsertRows('sessions', sessionsToUpsert));
+          runRemoteSync(set, 'reorderSessions', () => workoutRepository.upsertRows('sessions', sessionsToUpsert));
         }
       },
 
@@ -478,9 +560,9 @@ export const useWorkoutStore = create(
         set((state) => ({ sessionExercises: [...state.sessionExercises, newSessionExercise] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('addSessionExercise', async () => {
+          runRemoteSync(set, 'addSessionExercise', async () => {
             await get().syncExercisesForReferences([exercise_id], currentUser.id);
-            await workoutRepository.insertRow('session_exercises', newSessionExercise);
+            await workoutRepository.upsertRows('session_exercises', [newSessionExercise]);
           });
         }
 
@@ -520,7 +602,7 @@ export const useWorkoutStore = create(
 
         if (!currentUser.isGuest) {
           const exercisesToUpsert = finalExercises.filter(se => se.session_id === sessionId);
-          runRemoteSync('deleteSessionExercise', async () => {
+          runRemoteSync(set, 'deleteSessionExercise', async () => {
             await workoutRepository.deleteRow('session_exercises', id);
             await workoutRepository.upsertRows('session_exercises', exercisesToUpsert);
           });
@@ -537,7 +619,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('updateSessionExercise', () =>
+          runRemoteSync(set, 'updateSessionExercise', () =>
             workoutRepository.updateRow('session_exercises', id, { ...updates, updated_at: updatedAt }),
           );
         }
@@ -561,7 +643,7 @@ export const useWorkoutStore = create(
 
         if (!currentUser.isGuest) {
           const exercisesToUpsert = updatedExercises.filter(se => se.session_id === session_id);
-          runRemoteSync('reorderSessionExercises', () =>
+          runRemoteSync(set, 'reorderSessionExercises', () =>
             workoutRepository.upsertRows('session_exercises', exercisesToUpsert),
           );
         }
@@ -586,7 +668,7 @@ export const useWorkoutStore = create(
         set((state) => ({ workoutLogs: [...state.workoutLogs, newLog] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('startWorkoutLog', () => workoutRepository.insertRow('workout_logs', newLog));
+          runRemoteSync(set, 'startWorkoutLog', () => workoutRepository.upsertRows('workout_logs', [newLog]));
         }
 
         return newLog;
@@ -602,7 +684,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('finishWorkoutLog', () =>
+          runRemoteSync(set, 'finishWorkoutLog', () =>
             workoutRepository.updateRow('workout_logs', id, { end_time: endTime, updated_at: endTime }),
           );
         }
@@ -616,7 +698,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('deleteWorkoutLog', () => workoutRepository.deleteRow('workout_logs', id));
+          runRemoteSync(set, 'deleteWorkoutLog', () => workoutRepository.deleteRow('workout_logs', id));
         }
       },
       saveWorkoutLog: (session_id, blocks, start_time) => {
@@ -666,10 +748,10 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('saveWorkoutLog', async () => {
+          runRemoteSync(set, 'saveWorkoutLog', async () => {
             await get().syncExercisesForReferences(newSetRecords.map(record => record.exercise_id), currentUser.id);
-            await workoutRepository.insertRow('workout_logs', newLog);
-            await workoutRepository.insertRows('set_records', newSetRecords);
+            await workoutRepository.upsertRows('workout_logs', [newLog]);
+            await workoutRepository.upsertRows('set_records', newSetRecords);
           });
         }
 
@@ -695,9 +777,9 @@ export const useWorkoutStore = create(
         set((state) => ({ setRecords: [...state.setRecords, newSetRecord] }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('addSetRecord', async () => {
+          runRemoteSync(set, 'addSetRecord', async () => {
             await get().syncExercisesForReferences([exercise_id], currentUser.id);
-            await workoutRepository.insertRow('set_records', newSetRecord);
+            await workoutRepository.upsertRows('set_records', [newSetRecord]);
           });
         }
 
@@ -714,7 +796,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('updateSetRecord', () =>
+          runRemoteSync(set, 'updateSetRecord', () =>
             workoutRepository.updateRow('set_records', id, { ...updates, updated_at: updatedAt }),
           );
         }
@@ -726,7 +808,7 @@ export const useWorkoutStore = create(
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync('deleteSetRecord', () => workoutRepository.deleteRow('set_records', id));
+          runRemoteSync(set, 'deleteSetRecord', () => workoutRepository.deleteRow('set_records', id));
         }
       },
 
@@ -744,7 +826,7 @@ export const useWorkoutStore = create(
 
         if (!currentUser.isGuest) {
           const userId = currentUser.id;
-          runRemoteSync('clearAllData', () => workoutRepository.clearUserWorkoutData(userId));
+          runRemoteSync(set, 'clearAllData', () => workoutRepository.clearUserWorkoutData(userId));
         }
       },
       generateDummyData: () => {
@@ -757,13 +839,11 @@ export const useWorkoutStore = create(
         set(seedData);
 
         if (!currentUser.isGuest) {
-          Promise.resolve().then(async () => {
+          runRemoteSync(set, 'generateDummyData', async () => {
+            set({ isSyncing: true });
             try {
-              set({ isSyncing: true });
               await workoutRepository.replaceUserWorkoutDataWithSeed(seedData, currentUser.id);
               console.log('Dummy data successfully generated and synced with Supabase!');
-            } catch (err) {
-              console.error('Failed to sync generateDummyData:', err);
             } finally {
               set({ isSyncing: false });
             }
@@ -774,7 +854,10 @@ export const useWorkoutStore = create(
     {
       name: 'workout-tracker-storage', // Key for local storage
       version: 7,
-      migrate: migrateWorkoutPersistState
+      migrate: migrateWorkoutPersistState,
+      partialize: (state) => Object.fromEntries(
+        Object.entries(state).filter(([key]) => key !== 'remoteSyncError'),
+      ),
     }
   )
 );

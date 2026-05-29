@@ -25,8 +25,7 @@ export const NUM_COLS = COLUMNS.length;
  *  • ArrowUp / ArrowDown  — move between rows, same column
  *  • ArrowLeft / ArrowRight — wrap to adjacent cell when cursor is at edge
  *  • Enter                 — move down one row
- *  • Tab / Shift+Tab       — move forward / backward through all cells;
- *                            Tab at the very last cell fires `onTabAtEnd`
+ *  • Tab / Shift+Tab       — move forward / backward through all cells
  *
  * @param {number} totalRows - Total input rows currently rendered.
  * @returns {{ getCellRef, handleKeyDown, requestFocus, recordFocus }}
@@ -108,12 +107,9 @@ export function useGridNavigation(totalRows) {
    * @param {React.KeyboardEvent} e
    * @param {number} rowIndex     Global (flattened) row index of the focused cell.
    * @param {number} colIndex     Column index of the focused cell.
-   * @param {{ onTabAtEnd?: () => void }} options
-   *   onTabAtEnd — called when Tab is pressed on the very last cell;
-   *                use this to add a new row.
    */
   const handleKeyDown = useCallback(
-    (e, rowIndex, colIndex, { onTabAtEnd } = {}) => {
+    (e, rowIndex, colIndex) => {
       switch (e.key) {
         case 'ArrowUp':
           e.preventDefault();
@@ -138,7 +134,6 @@ export function useGridNavigation(totalRows) {
           if (!e.shiftKey) {
             if      (colIndex < NUM_COLS - 1)       focusCell(rowIndex, colIndex + 1);
             else if (rowIndex < totalRows - 1)       focusCell(rowIndex + 1, 0);
-            else                                     onTabAtEnd?.();
           } else {
             if      (colIndex > 0)                   focusCell(rowIndex, colIndex - 1);
             else if (rowIndex > 0)                   focusCell(rowIndex - 1, NUM_COLS - 1);

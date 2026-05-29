@@ -1,12 +1,12 @@
 // eslint-disable-next-line no-unused-vars
 import React from 'react';
-import { test, describe, expect, vi } from 'vitest';
+import { test, describe, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useGridNavigation } from './useGridNavigation.js';
 
 // Mock component to bind the hook
-function GridMock({ totalRows, onTabAtEnd }) {
+function GridMock({ totalRows }) {
   const { getCellRef, handleKeyDown, focusLastOrFirst, isKeyboardActive, recordFocus } = useGridNavigation(totalRows);
 
   return (
@@ -21,7 +21,7 @@ function GridMock({ totalRows, onTabAtEnd }) {
                 <input
                   data-testid={`input-${rowIndex}-0`}
                   ref={getCellRef(rowIndex, 0)}
-                  onKeyDown={(e) => handleKeyDown(e, rowIndex, 0, { onTabAtEnd })}
+                  onKeyDown={(e) => handleKeyDown(e, rowIndex, 0)}
                   onFocus={() => recordFocus(rowIndex, 0)}
                   defaultValue=""
                 />
@@ -30,7 +30,7 @@ function GridMock({ totalRows, onTabAtEnd }) {
                 <input
                   data-testid={`input-${rowIndex}-1`}
                   ref={getCellRef(rowIndex, 1)}
-                  onKeyDown={(e) => handleKeyDown(e, rowIndex, 1, { onTabAtEnd })}
+                  onKeyDown={(e) => handleKeyDown(e, rowIndex, 1)}
                   onFocus={() => recordFocus(rowIndex, 1)}
                   defaultValue=""
                 />
@@ -121,17 +121,16 @@ describe('useGridNavigation Keyboard Navigation Hook', () => {
     expect(document.activeElement).toBe(cell00);
   });
 
-  test('Tab on final cell calls onTabAtEnd callback', async () => {
+  test('Tab on final cell does not append or leave the grid', async () => {
     const user = userEvent.setup();
-    const handleTabAtEnd = vi.fn();
-    render(<GridMock totalRows={2} onTabAtEnd={handleTabAtEnd} />);
+    render(<GridMock totalRows={2} />);
 
     const lastCell = screen.getByTestId('input-1-1');
 
     lastCell.focus();
     await user.keyboard('{Tab}');
 
-    expect(handleTabAtEnd).toHaveBeenCalledTimes(1);
+    expect(document.activeElement).toBe(lastCell);
   });
 
   test('LeftArrow/RightArrow wrap when cursor is at edge', async () => {

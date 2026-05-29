@@ -8,6 +8,7 @@ import LogPage from './components/LogPage'
 import RestTimer from './components/RestTimer'
 import AccountMenu from './components/AccountMenu'
 import HelpModal from './components/HelpModal'
+import SyncStatusBanner from './components/SyncStatusBanner'
 import { HelpCircle } from 'lucide-react'
 import { useWorkoutStore } from './store/useWorkoutStore'
 import { useTabNavigation } from './hooks/useTabNavigation'
@@ -214,6 +215,7 @@ function App() {
         </button>
         <AccountMenu onDataReset={handleDataReset} />
       </div>
+      <SyncStatusBanner />
       
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       <RestTimer

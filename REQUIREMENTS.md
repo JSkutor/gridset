@@ -85,7 +85,7 @@ The Set tab is the core real-time workout-entry surface.
 - **Special Tab & Keybind Shortcuts**:
   - **First-Weight Tab Auto-Fill**: Pressing `Tab` after entering the `weight` on the **first set** of an exercise block automatically propagates/copies that weight value to all subsequent sets of that exercise block, eliminating repetitive typing.
   - **Reps Tab Rest-Timer Trigger**: Pressing `Tab` on a completed, numeric `reps` cell completes the set and immediately kicks off the **automatic rest timer** (based on that exercise's Rest Between Sets template setting).
-  - **Row Append Tab**: Pressing `Tab` on the final cell (reps cell) of the final row in an exercise block automatically appends a new set row for that exercise and moves focus to it.
+  - **Manual Row Append**: Pressing `Tab` never appends set rows automatically. Extra sets are added only through the visible `세트 추가` button so the grid does not grow by accident during fast keyboard entry.
   - **Backquote (\`) Note Toggle**: Pressing the backquote key (`\`` or `₩`) instantly toggles keyboard focus directly between the active spreadsheet cell and the per-set memo textarea at the bottom, allowing seamless note writing.
 - The manual `세트 추가` button adds another set row for an exercise.
 - Per-set memo input at the bottom of the grid, updated as the user focuses on different sets.

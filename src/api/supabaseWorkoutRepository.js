@@ -174,7 +174,7 @@ export async function syncExercisesForReferences({ exercises, exerciseIds, userI
 }
 
 export async function insertExercise(exercise, userId) {
-  throwIfSupabaseError(await supabase.from('exercises').insert(exerciseForSupabase(exercise, userId)));
+  throwIfSupabaseError(await supabase.from('exercises').upsert(exerciseForSupabase(exercise, userId)));
 }
 
 export async function updateExercise(id, updates, updatedAt) {

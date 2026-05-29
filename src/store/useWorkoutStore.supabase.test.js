@@ -29,6 +29,7 @@ const memberUser = {
 
 function resetStore() {
   window.localStorage.clear();
+  useWorkoutStore.getState().clearRemoteSyncError();
   useWorkoutStore.setState({
     currentUser: guestUser,
     exercises: DEFAULT_EXERCISES,
@@ -39,6 +40,13 @@ function resetStore() {
     setRecords: [],
     isSyncing: false,
     authSession: null,
+    remoteSyncError: null,
+  });
+}
+
+function waitForRemoteSync() {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, 0);
   });
 }
 
@@ -189,5 +197,32 @@ describe('Workout Store: Supabase exercise master sync', () => {
       .syncExercisesForReferences([DEFAULT_EXERCISES[0].id, DEFAULT_EXERCISES[1].id], memberUser.id);
 
     assert.equal(supabaseMock.from.mock.calls.length, 0);
+  });
+
+  test('failed remote writes show retryable sync state and clear after retry', async () => {
+    const syncError = new Error('offline');
+    const upsert = vi
+      .fn()
+      .mockResolvedValueOnce({ data: null, error: syncError })
+      .mockResolvedValueOnce({ data: null, error: null });
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    supabaseMock.from.mockReturnValue({ upsert });
+    useWorkoutStore.setState({ currentUser: memberUser });
+
+    const routine = useWorkoutStore.getState().addRoutine('클라우드 테스트');
+    await waitForRemoteSync();
+
+    assert.equal(useWorkoutStore.getState().routines.some((item) => item.id === routine.id), true);
+    assert.equal(useWorkoutStore.getState().remoteSyncError.label, 'addRoutine');
+    assert.equal(useWorkoutStore.getState().remoteSyncError.pendingCount, 1);
+
+    await useWorkoutStore.getState().retryFailedRemoteSync();
+
+    assert.equal(useWorkoutStore.getState().remoteSyncError, null);
+    assert.equal(upsert.mock.calls.length, 2);
+    assert.deepEqual(upsert.mock.calls[1][0], [routine]);
+
+    consoleError.mockRestore();
   });
 });
