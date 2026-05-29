@@ -57,7 +57,7 @@ export function useGridNavigation(totalRows) {
   // After a new row is added (totalRows grows), focus the pending cell.
   useEffect(() => {
     if (pendingFocusIndex !== null && gridRefs.current[pendingFocusIndex]?.[0]) {
-      gridRefs.current[pendingFocusIndex][0].focus();
+      gridRefs.current[pendingFocusIndex][0].focus({ preventScroll: true });
       setPendingFocusIndex(null);
     }
   }, [pendingFocusIndex, totalRows]);
@@ -85,7 +85,7 @@ export function useGridNavigation(totalRows) {
   const focusCell = useCallback((row, col) => {
     const el = gridRefs.current[row]?.[col];
     if (el) {
-      el.focus();
+      el.focus({ preventScroll: true });
       recordFocus(row, col);
     }
   }, [recordFocus]);
@@ -184,10 +184,10 @@ export function useGridNavigation(totalRows) {
     const { row, col } = lastFocusedCell.current;
     const el = gridRefs.current[row]?.[col];
     if (el) {
-      el.focus();
+      el.focus({ preventScroll: true });
     } else {
       // fallback: focus first available cell
-      gridRefs.current[0]?.[0]?.focus();
+      gridRefs.current[0]?.[0]?.focus({ preventScroll: true });
     }
   }, []);
 

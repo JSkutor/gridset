@@ -1,4 +1,4 @@
-import React, { useRef, useImperativeHandle, forwardRef, useEffect } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState } from 'react';
 import { Plus, ChevronDown, Check } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
@@ -7,7 +7,7 @@ import { getFormattedSessionName, isTemporarySession } from '../utils/sessionHel
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
-function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, onSetFocus, onCellFocus, onRepsTab, onFirstWeightTab }) {
+function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, onSetFocus, onCellFocus, onRepsTab, onFirstWeightTab, isScrolling }) {
   const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
 
   return (
@@ -29,7 +29,13 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, on
             inputMode="decimal"
             value={row[field]}
             onChange={(e) => updateRow(blockIndex, rowIndex, field, e.target.value)}
+            maxLength={10}
             onKeyDown={(e) => {
+              if (isScrolling && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) {
+                e.preventDefault();
+                return;
+              }
+
               if (field === 'weight' && e.key === 'Tab' && !e.shiftKey) {
                 onFirstWeightTab?.(row, e.currentTarget.value);
               }
@@ -90,6 +96,18 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
   const exerciseHeaderRefs = useRef(new Map());
   const lastScrolledBlockIndexRef = useRef(-1);
   const noteRef = useRef(null);
+
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
   const regularSessionOptions = latestRoutineSessions.filter((item) => !isTemporarySession(item));
   const temporarySessionOption = latestRoutineSessions.find((item) => isTemporarySession(item));
 
@@ -120,18 +138,44 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
     if (blockIndex === undefined || blockIndex === null) return;
 
     if (blockIndex !== lastScrolledBlockIndexRef.current) {
+      const isFirstScroll = lastScrolledBlockIndexRef.current === -1;
       lastScrolledBlockIndexRef.current = blockIndex;
 
       const container = scrollContainerRef.current;
       const headerElement = exerciseHeaderRefs.current.get(blockIndex);
 
       if (container && headerElement) {
-        const containerRect = container.getBoundingClientRect();
-        const headerRect = headerElement.getBoundingClientRect();
-        const relativeTop = headerRect.top - containerRect.top + container.scrollTop;
+        // Calculate static relative top offset of headerElement inside container,
+        // completely independent of current scroll position or active scroll animations.
+        let headerOffsetTop = 0;
+        let curr = headerElement;
+        while (curr) {
+          headerOffsetTop += curr.offsetTop;
+          curr = curr.offsetParent;
+        }
+
+        let containerOffsetTop = 0;
+        let temp = container;
+        while (temp) {
+          containerOffsetTop += temp.offsetTop;
+          temp = temp.offsetParent;
+        }
+
+        const relativeTop = headerOffsetTop - containerOffsetTop;
 
         // 24px 더 내려서 이전 운동 블록의 경계선(border)을 완벽하게 감추고 헤더 텍스트를 상단에 정렬
         const targetScrollTop = blockIndex === 0 ? 0 : Math.max(0, relativeTop + 24);
+
+        // Lock inputs and key navigation only on actual block transition scrolls (not on initial mount scroll)
+        if (!isFirstScroll) {
+          setIsScrolling(true);
+          if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
+          }
+          scrollTimeoutRef.current = setTimeout(() => {
+            setIsScrolling(false);
+          }, 150);
+        }
 
         container.scrollTo({
           top: targetScrollTop,
@@ -301,6 +345,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                         onCellFocus={recordFocus}
                         onRepsTab={handleRepsTab}
                         onFirstWeightTab={handleFirstWeightTab}
+                        isScrolling={isScrolling}
                       />
                     ))}
 
@@ -332,6 +377,10 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                     }}
                     onClick={saveWorkout}
                     onKeyDown={(e) => {
+                      if (isScrolling && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) {
+                        e.preventDefault();
+                        return;
+                      }
                       if (e.key === 'Enter') {
                         e.preventDefault();
                         saveWorkout();
@@ -362,6 +411,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
           placeholder="이 세트에 대한 메모..."
           value={currentMemo}
           onChange={(e) => updateMemo(e.target.value)}
+          maxLength={1000}
         />
       </div>
     </div>
