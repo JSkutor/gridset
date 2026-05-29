@@ -236,9 +236,10 @@ export const useWorkoutStore = create(
       // --- Actions: Exercises ---
       addExercise: (name, primary_muscle = null, equipment = null, unit = 'kg', is_unilateral = false) => {
         const { currentUser, exercises } = get();
+        const cleanName = (name || '').trim().slice(0, 100) || '이름 없는 운동';
         
-        // 중복 방지
-        const existing = exercises.find(ex => ex.name.toLowerCase() === name.toLowerCase());
+        // 중복 방지 (정제된 이름 기준)
+        const existing = exercises.find(ex => ex.name.toLowerCase() === cleanName.toLowerCase());
         if (existing) return existing;
 
         // 로컬 사전에 주동근/장비가 정의되어 있다면 가져옴
@@ -247,8 +248,8 @@ export const useWorkoutStore = create(
         let isUnilateral = is_unilateral;
         if (!muscle || !equip || !is_unilateral) {
           const dictEntry = EXERCISE_DICTIONARY.find(ex => 
-            ex.name.toLowerCase() === name.toLowerCase() || 
-            (ex.synonyms && ex.synonyms.includes(name.toLowerCase()))
+            ex.name.toLowerCase() === cleanName.toLowerCase() || 
+            (ex.synonyms && ex.synonyms.includes(cleanName.toLowerCase()))
           );
           if (dictEntry) {
             muscle = muscle || dictEntry.primaryMuscle;
@@ -259,7 +260,7 @@ export const useWorkoutStore = create(
 
         const newExercise = {
           id: generateUUID(),
-          name,
+          name: cleanName,
           primary_muscle: normalizeMuscleLabel(muscle) || '기타',
           equipment: equip || '기타',
           unit,
@@ -289,23 +290,29 @@ export const useWorkoutStore = create(
         const { currentUser } = get();
         const updatedAt = new Date().toISOString();
         
+        const cleanUpdates = { ...updates };
+        if ('name' in cleanUpdates) {
+          cleanUpdates.name = (cleanUpdates.name || '').trim().slice(0, 100) || '이름 없는 운동';
+        }
+        
         set((state) => ({
           exercises: state.exercises.map(ex =>
-            ex.id === id ? { ...ex, ...updates, updated_at: updatedAt } : ex
+            ex.id === id ? { ...ex, ...cleanUpdates, updated_at: updatedAt } : ex
           )
         }));
 
         if (!currentUser.isGuest) {
-          runRemoteSync(set, 'updateExercise', () => workoutRepository.updateExercise(id, updates, updatedAt));
+          runRemoteSync(set, 'updateExercise', () => workoutRepository.updateExercise(id, cleanUpdates, updatedAt));
         }
       },
 
       // --- Actions: Routines ---
       addRoutine: (name) => {
-        const { currentUser } = get();
+        const { currentUser, routines } = get();
+        const cleanName = (name || '').trim().slice(0, 100) || `새 루틴 ${routines.length + 1}`;
         const newRoutine = {
           id: generateUUID(),
-          name,
+          name: cleanName,
           user_id: currentUser.id,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -336,15 +343,16 @@ export const useWorkoutStore = create(
       },
       updateRoutine: (id, name) => {
         const { currentUser } = get();
+        const cleanName = (name || '').trim().slice(0, 100) || '이름 없는 루틴';
         const updatedAt = new Date().toISOString();
         
         set((state) => ({
-          routines: state.routines.map(r => r.id === id ? { ...r, name, updated_at: updatedAt } : r)
+          routines: state.routines.map(r => r.id === id ? { ...r, name: cleanName, updated_at: updatedAt } : r)
         }));
 
         if (!currentUser.isGuest) {
           runRemoteSync(set, 'updateRoutine', () =>
-            workoutRepository.updateRow('routines', id, { name, updated_at: updatedAt }),
+            workoutRepository.updateRow('routines', id, { name: cleanName, updated_at: updatedAt }),
           );
         }
       },
@@ -419,10 +427,11 @@ export const useWorkoutStore = create(
         const routineSessions = getRegularRoutineSessions(sessions, routine_id);
         if (routineSessions.length >= MAX_SESSIONS_PER_ROUTINE) return null;
 
+        const cleanName = (name || '').trim().slice(0, 100) || `새 세션 ${routineSessions.length + 1}`;
         const nextOrder = routineSessions.length + 1;
         const newSession = {
           id: generateUUID(),
-          name,
+          name: cleanName,
           routine_id,
           session_order: nextOrder,
           user_id: currentUser.id,
@@ -444,10 +453,11 @@ export const useWorkoutStore = create(
         const existingTemporarySession = getRoutineTemporarySession(sessions, routine_id);
         if (existingTemporarySession) return existingTemporarySession;
 
+        const cleanName = (name || '').trim().slice(0, 100) || '임시 세션';
         const createdAt = new Date().toISOString();
         const newSession = {
           id: generateUUID(),
-          name,
+          name: cleanName,
           routine_id,
           session_order: TEMPORARY_SESSION_ORDER,
           user_id: currentUser.id,
@@ -506,15 +516,16 @@ export const useWorkoutStore = create(
       },
       updateSession: (id, name) => {
         const { currentUser } = get();
+        const cleanName = (name || '').trim().slice(0, 100) || '이름 없는 세션';
         const updatedAt = new Date().toISOString();
         
         set((state) => ({
-          sessions: state.sessions.map(s => s.id === id ? { ...s, name, updated_at: updatedAt } : s)
+          sessions: state.sessions.map(s => s.id === id ? { ...s, name: cleanName, updated_at: updatedAt } : s)
         }));
 
         if (!currentUser.isGuest) {
           runRemoteSync(set, 'updateSession', () =>
-            workoutRepository.updateRow('sessions', id, { name, updated_at: updatedAt }),
+            workoutRepository.updateRow('sessions', id, { name: cleanName, updated_at: updatedAt }),
           );
         }
       },
@@ -726,15 +737,20 @@ export const useWorkoutStore = create(
             const hasReps = String(set.reps ?? '').trim() !== '';
             const hasWeight = String(set.weight ?? '').trim() !== '';
             if (hasReps) {
+              const parsedWeight = parseFloat(set.weight);
+              const safeWeight = isFinite(parsedWeight) ? Math.max(0, parsedWeight) : 0;
+              const safeRecord = String(set.reps || '0').trim().slice(0, 50) || '0';
+              const safeMemo = set.memo && typeof set.memo === 'string' ? set.memo.trim().slice(0, 1000) || null : null;
+
               newSetRecords.push({
                 id: generateUUID(),
                 workout_log_id: logId,
                 exercise_id: block.exercise_id,
                 set_number: set.set_number,
-                weight: hasWeight ? Number(set.weight) : 0,
-                record: String(set.reps || '0').trim(),
+                weight: safeWeight,
+                record: safeRecord,
                 side: set.side || 'both',
-                memo: set.memo || null,
+                memo: safeMemo,
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
               });
@@ -761,15 +777,20 @@ export const useWorkoutStore = create(
       // --- Actions: Set Records ---
       addSetRecord: (workout_log_id, exercise_id, set_number, weight, record, side = 'both', memo = null) => {
         const { currentUser } = get();
+        const parsedWeight = parseFloat(weight);
+        const safeWeight = isFinite(parsedWeight) ? Math.max(0, parsedWeight) : 0;
+        const safeRecord = String(record || '0').trim().slice(0, 50) || '0';
+        const safeMemo = memo && typeof memo === 'string' ? memo.trim().slice(0, 1000) || null : null;
+
         const newSetRecord = {
           id: generateUUID(),
           workout_log_id,
           exercise_id,
           set_number,
-          weight,
-          record,
+          weight: safeWeight,
+          record: safeRecord,
           side,
-          memo,
+          memo: safeMemo,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -789,15 +810,29 @@ export const useWorkoutStore = create(
         const { currentUser } = get();
         const updatedAt = new Date().toISOString();
         
+        const cleanUpdates = { ...updates };
+        if ('weight' in cleanUpdates) {
+          const parsedWeight = parseFloat(cleanUpdates.weight);
+          cleanUpdates.weight = isFinite(parsedWeight) ? Math.max(0, parsedWeight) : 0;
+        }
+        if ('record' in cleanUpdates) {
+          cleanUpdates.record = String(cleanUpdates.record || '0').trim().slice(0, 50) || '0';
+        }
+        if ('memo' in cleanUpdates) {
+          cleanUpdates.memo = cleanUpdates.memo && typeof cleanUpdates.memo === 'string'
+            ? cleanUpdates.memo.trim().slice(0, 1000) || null
+            : null;
+        }
+
         set((state) => ({
           setRecords: state.setRecords.map(sr => 
-            sr.id === id ? { ...sr, ...updates, updated_at: updatedAt } : sr
+            sr.id === id ? { ...sr, ...cleanUpdates, updated_at: updatedAt } : sr
           )
         }));
 
         if (!currentUser.isGuest) {
           runRemoteSync(set, 'updateSetRecord', () =>
-            workoutRepository.updateRow('set_records', id, { ...updates, updated_at: updatedAt }),
+            workoutRepository.updateRow('set_records', id, { ...cleanUpdates, updated_at: updatedAt }),
           );
         }
       },

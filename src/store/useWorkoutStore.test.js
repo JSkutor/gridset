@@ -369,3 +369,88 @@ describe('Workout Store: Seed Data & Resets', () => {
     assert.equal(state.exercises.length, exerciseCount);
   });
 });
+
+describe('Workout Store: Security and Defensive Validation Boundaries', () => {
+  test('truncates extremely long routine, session, and exercise names', () => {
+    const longName = 'A'.repeat(150);
+    
+    // Routine Name
+    const routine = useWorkoutStore.getState().addRoutine(longName);
+    assert.equal(routine.name.length, 100);
+    assert.equal(routine.name, 'A'.repeat(100));
+
+    useWorkoutStore.getState().updateRoutine(routine.id, 'B'.repeat(120));
+    const updatedRoutine = useWorkoutStore.getState().routines.find(r => r.id === routine.id);
+    assert.equal(updatedRoutine.name.length, 100);
+    assert.equal(updatedRoutine.name, 'B'.repeat(100));
+
+    // Session Name
+    const session = useWorkoutStore.getState().addSession(routine.id, longName);
+    assert.equal(session.name.length, 100);
+    assert.equal(session.name, 'A'.repeat(100));
+
+    useWorkoutStore.getState().updateSession(session.id, 'C'.repeat(120));
+    const updatedSession = useWorkoutStore.getState().sessions.find(s => s.id === session.id);
+    assert.equal(updatedSession.name.length, 100);
+    assert.equal(updatedSession.name, 'C'.repeat(100));
+
+    // Exercise Name
+    const exercise = useWorkoutStore.getState().addExercise(longName, '가슴', '바벨');
+    assert.equal(exercise.name.length, 100);
+    assert.equal(exercise.name, 'A'.repeat(100));
+  });
+
+  test('resolves empty or whitespace-only inputs to safe default fallbacks', () => {
+    const emptyName = '    ';
+    
+    // Routine
+    const routine = useWorkoutStore.getState().addRoutine(emptyName);
+    assert.ok(routine.name.startsWith('새 루틴'));
+
+    // Session
+    const session = useWorkoutStore.getState().addSession(routine.id, emptyName);
+    assert.ok(session.name.startsWith('새 세션'));
+
+    // Exercise
+    const exercise = useWorkoutStore.getState().addExercise(emptyName, '기타', '기타');
+    assert.equal(exercise.name, '이름 없는 운동');
+  });
+
+  test('validates and cleanses set records weight, reps record, and memo boundaries', () => {
+    const routine = useWorkoutStore.getState().addRoutine('보안 테스트');
+    const session = useWorkoutStore.getState().addSession(routine.id, '세션');
+    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    
+    const longMemo = 'M'.repeat(1200);
+    const longRecord = 'R'.repeat(60);
+
+    // addSetRecord (weight parsing and memo/record size limits)
+    const log = useWorkoutStore.getState().startWorkoutLog(session.id);
+    const record = useWorkoutStore.getState().addSetRecord(
+      log.id, 
+      bench.id, 
+      1, 
+      'invalid-weight', 
+      longRecord, 
+      'both', 
+      longMemo
+    );
+
+    assert.equal(record.weight, 0); // Invalid weight parsed to float and resolved to 0
+    assert.equal(record.record.length, 50); // Record capped at 50 chars
+    assert.equal(record.memo.length, 1000); // Memo capped at 1000 chars
+
+    // updateSetRecord sanitization
+    useWorkoutStore.getState().updateSetRecord(record.id, {
+      weight: '123.45',
+      record: '10',
+      memo: '   수정된 정상 메모   '
+    });
+
+    const updated = useWorkoutStore.getState().setRecords.find(r => r.id === record.id);
+    assert.equal(updated.weight, 123.45);
+    assert.equal(updated.record, '10');
+    assert.equal(updated.memo, '수정된 정상 메모');
+  });
+});
+

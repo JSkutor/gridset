@@ -117,6 +117,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
             setIsOpen(true);
             setSelectedIndex(nextQuery.trim() ? 0 : -1);
           }}
+          maxLength={100}
           onFocus={() => setIsOpen(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}

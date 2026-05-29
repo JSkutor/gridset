@@ -143,6 +143,7 @@ export default function AuthModal({ isOpen, onClose }) {
                 placeholder="이름 (닉네임)"
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
+                maxLength={50}
                 disabled={loading}
                 className="auth-input-field"
               />
@@ -156,6 +157,7 @@ export default function AuthModal({ isOpen, onClose }) {
               placeholder="이메일 주소"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              maxLength={100}
               disabled={loading}
               className="auth-input-field"
             />
@@ -168,6 +170,7 @@ export default function AuthModal({ isOpen, onClose }) {
               placeholder="비밀번호 (6자 이상)"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              maxLength={100}
               disabled={loading}
               className="auth-input-field"
             />
