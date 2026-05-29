@@ -311,10 +311,21 @@ describe('Workout Store: Seed Data & Resets', () => {
       state.sessions.filter((session) => session.routine_id === routine.id),
     );
 
-    assert.ok(state.routines.length >= 3);
-    assert.equal(sessionsByRoutine.every((sessions) => sessions.length >= 4), true);
+    assert.equal(state.routines.length, 3);
+    assert.equal(sessionsByRoutine.every((sessions) => sessions.length === 4), true);
     assert.ok(state.sessionExercises.length > state.sessions.length);
+    assert.equal(state.workoutLogs.length, 30);
     assert.ok(state.workoutLogs.some((log) => log.end_time === null));
+
+    const logDates = state.workoutLogs.map((log) => new Date(log.start_time).toDateString());
+    assert.equal(new Set(logDates).size, state.workoutLogs.length);
+    const sortedLogTimes = state.workoutLogs
+      .map((log) => new Date(log.start_time).getTime())
+      .sort((a, b) => a - b);
+    const dayGaps = sortedLogTimes.slice(1).map((time, index) =>
+      Math.round((time - sortedLogTimes[index]) / (24 * 60 * 60 * 1000)),
+    );
+    assert.ok(dayGaps.some((gap) => gap === 1));
 
     const unilateralExerciseIds = new Set(
       state.exercises.filter((ex) => ex.is_unilateral).map((ex) => ex.id)
@@ -327,7 +338,19 @@ describe('Workout Store: Seed Data & Resets', () => {
     });
     assert.ok(allCorrectSides);
 
-    assert.ok(state.setRecords.some((record) => record.memo));
+    const memos = state.setRecords.map((record) => record.memo).filter(Boolean);
+    assert.ok(memos.length > 0);
+    assert.ok(memos.length < state.setRecords.length);
+    assert.equal(memos.every((memo) => memo.length <= 45), true);
+    assert.equal(new Set(memos).size, memos.length);
+
+    const linkedExerciseIds = new Set(state.sessionExercises.map((link) => link.exercise_id));
+    const linkedExercises = state.exercises.filter((exercise) => linkedExerciseIds.has(exercise.id));
+    assert.equal(linkedExercises.length, 12);
+    assert.equal(
+      linkedExercises.every((exercise) => ['덤벨', '맨몸', '밴드'].includes(exercise.equipment)),
+      true,
+    );
     assert.ok(state.exercises.length >= initialExerciseCount);
   });
 

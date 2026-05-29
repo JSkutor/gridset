@@ -41,8 +41,7 @@ function App() {
   const [activeExerciseId, setActiveExerciseId] = useState(null)
   const [restTimer, setRestTimer] = useState(null)
 
-  const routines = useWorkoutStore(state => state.routines);
-  const hasHydratedWorkoutStore = useSyncExternalStore(
+  useSyncExternalStore(
     subscribeToWorkoutStoreHydration,
     getWorkoutStoreHydrationSnapshot,
     () => true,

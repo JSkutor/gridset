@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { HelpCircle, X, Keyboard, ShieldAlert, Sparkles, Trash2, AlertTriangle, Play } from 'lucide-react';
+import { HelpCircle, X, Keyboard, ShieldAlert, Sparkles, Trash2, AlertTriangle } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 
 export default function HelpModal({ isOpen, onClose, onDataReset }) {

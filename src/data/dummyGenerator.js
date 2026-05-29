@@ -18,21 +18,34 @@ const DEFAULT_EXERCISE_UNITS = {
   '벤치프레스': 'kg',
   '스쿼트': 'kg',
   '데드리프트': 'kg',
-  '풀업': 'kg',
+  '풀업': 'reps',
   '바벨 로우': 'kg',
   '덤벨 숄더 프레스': 'kg',
   '불가리안 스플릿 스쿼트': 'kg',
   '플랭크': 'sec',
+  '푸시업': 'reps',
+  '데드버그': 'reps',
+  '힙 브릿지': 'reps',
+  '사이드 플랭크': 'sec',
+  '밴드 풀 어파트': 'reps',
+  '마운틴 클라이머': 'reps',
+  '인버티드 로우': 'reps',
 };
 
-export const getDefaultExerciseUnit = (name) => DEFAULT_EXERCISE_UNITS[name] || 'kg';
+const EXERCISE_UNIT_OVERRIDES = new Map(Object.entries(DEFAULT_EXERCISE_UNITS));
+const EXERCISE_EQUIPMENT_OVERRIDES = {
+  '마운틴 클라이머': '맨몸',
+  '인버티드 로우': '맨몸',
+};
+
+export const getDefaultExerciseUnit = (name) => EXERCISE_UNIT_OVERRIDES.get(name) || 'kg';
 
 // Default seed exercises with muscle and equipment info
 export const DEFAULT_EXERCISES = [
   { id: DEFAULT_EXERCISE_IDS['벤치프레스'], name: '벤치프레스', englishName: 'Bench Press', primary_muscle: '대흉근', secondaryMuscles: ['삼각근', '상완삼두근'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: DEFAULT_EXERCISE_IDS['스쿼트'], name: '스쿼트', englishName: 'Squat', primary_muscle: '대퇴사두', secondaryMuscles: ['둔근', '햄스트링'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: DEFAULT_EXERCISE_IDS['데드리프트'], name: '데드리프트', englishName: 'Deadlift', primary_muscle: '척추기립근', secondaryMuscles: ['둔근', '햄스트링'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['풀업'], name: '풀업', englishName: 'Pull Up', primary_muscle: '광배근', secondaryMuscles: ['상완이두근'], equipment: '맨몸', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
+  { id: DEFAULT_EXERCISE_IDS['풀업'], name: '풀업', englishName: 'Pull Up', primary_muscle: '광배근', secondaryMuscles: ['상완이두근'], equipment: '맨몸', category: 'strength', unit: 'reps', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: DEFAULT_EXERCISE_IDS['바벨 로우'], name: '바벨 로우', englishName: 'Barbell Row', primary_muscle: '광배근', secondaryMuscles: ['상완이두근', '삼각근'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: DEFAULT_EXERCISE_IDS['덤벨 숄더 프레스'], name: '덤벨 숄더 프레스', englishName: 'Dumbbell Shoulder Press', primary_muscle: '삼각근', secondaryMuscles: ['상완삼두근'], equipment: '덤벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
   { id: DEFAULT_EXERCISE_IDS['불가리안 스플릿 스쿼트'], name: '불가리안 스플릿 스쿼트', englishName: 'Bulgarian Split Squat', primary_muscle: '대퇴사두', secondaryMuscles: ['둔근', '햄스트링'], equipment: '덤벨', category: 'strength', unit: 'kg', is_unilateral: true, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
@@ -51,160 +64,240 @@ function targetExercise(name, target_sets, target_record, rest_between_sets = 90
 
 const DUMMY_ROUTINE_BLUEPRINTS = [
   {
-    name: '기초 체력 확립 루틴',
+    name: '퇴근 후 기초 홈트',
     sessions: [
       {
-        name: '상체 기초 A',
+        name: '밀기와 코어 적응',
         exercises: [
-          targetExercise('벤치프레스', 2, 10, 90, 120),
-          targetExercise('바벨 로우', 2, 10, 90, 120),
+          targetExercise('푸시업', 3, 8, 75, 90),
+          targetExercise('덤벨 플로어 프레스', 3, 10, 90, 120),
+          targetExercise('데드버그', 2, 8, 45, 60),
         ],
       },
       {
-        name: '하체 및 코어 기초 A',
+        name: '하체 균형 잡기',
         exercises: [
-          targetExercise('불가리안 스플릿 스쿼트', 2, 10, 90, 120),
-          targetExercise('플랭크', 2, 60, 60, 90),
+          targetExercise('덤벨 스쿼트', 3, 10, 90, 120),
+          targetExercise('힙 브릿지', 3, 12, 60, 75),
+          targetExercise('플랭크', 2, 35, 45, 60),
         ],
       },
       {
-        name: '상체 기초 B',
+        name: '등과 자세 보강',
         exercises: [
-          targetExercise('벤치프레스', 2, 10, 90, 120),
-          targetExercise('바벨 로우', 2, 10, 90, 120),
+          targetExercise('덤벨 로우', 3, 10, 90, 120),
+          targetExercise('밴드 풀 어파트', 2, 15, 45, 60),
+          targetExercise('사이드 플랭크', 2, 25, 45, 60),
         ],
       },
       {
-        name: '하체 및 코어 기초 B',
+        name: '전신 가볍게 연결',
         exercises: [
-          targetExercise('불가리안 스플릿 스쿼트', 2, 10, 90, 120),
-          targetExercise('플랭크', 2, 60, 60, 90),
+          targetExercise('덤벨 리버스 런지', 3, 8, 90, 120),
+          targetExercise('덤벨 숄더 프레스', 2, 8, 90, 105),
+          targetExercise('데드버그', 2, 8, 45, 60),
         ],
       },
     ],
   },
   {
-    name: '근비대 성장 루틴',
+    name: '덤벨 볼륨 홈트',
     sessions: [
       {
-        name: '가슴 및 등 밀기 당기기 A',
+        name: '상체 볼륨',
         exercises: [
-          targetExercise('벤치프레스', 3, 8, 120, 150),
-          targetExercise('바벨 로우', 3, 8, 120, 150),
+          targetExercise('푸시업', 3, 12, 75, 90),
+          targetExercise('덤벨 플로어 프레스', 3, 10, 90, 120),
+          targetExercise('덤벨 로우', 3, 12, 90, 120),
         ],
       },
       {
-        name: '어깨 및 하체 협응 A',
+        name: '하체와 둔근',
         exercises: [
-          targetExercise('덤벨 숄더 프레스', 3, 10, 90, 120),
-          targetExercise('불가리안 스플릿 스쿼트', 3, 10, 90, 120),
-          targetExercise('플랭크', 2, 70, 60, 90),
+          targetExercise('덤벨 스쿼트', 4, 10, 90, 120),
+          targetExercise('덤벨 리버스 런지', 3, 10, 90, 120),
+          targetExercise('힙 브릿지', 3, 15, 60, 75),
         ],
       },
       {
-        name: '가슴 및 등 밀기 당기기 B',
+        name: '어깨와 등 자세',
         exercises: [
-          targetExercise('벤치프레스', 3, 8, 120, 150),
-          targetExercise('바벨 로우', 3, 8, 120, 150),
+          targetExercise('덤벨 숄더 프레스', 3, 10, 90, 105),
+          targetExercise('밴드 풀 어파트', 3, 18, 45, 60),
+          targetExercise('사이드 플랭크', 2, 30, 45, 60),
         ],
       },
       {
-        name: '어깨 및 하체 협응 B',
+        name: '짧은 코어 컨디셔닝',
         exercises: [
-          targetExercise('덤벨 숄더 프레스', 3, 10, 90, 120),
-          targetExercise('불가리안 스플릿 스쿼트', 3, 10, 90, 120),
-          targetExercise('플랭크', 2, 70, 60, 90),
+          targetExercise('마운틴 클라이머', 3, 30, 45, 60),
+          targetExercise('플랭크', 2, 45, 45, 60),
+          targetExercise('데드버그', 3, 10, 45, 60),
         ],
       },
     ],
   },
   {
-    name: '피크 스트렝스 루틴',
+    name: '짧고 진한 유지 루틴',
     sessions: [
       {
-        name: '상체 고강도 돌파 A',
+        name: '상체 강도',
         exercises: [
-          targetExercise('벤치프레스', 3, 5, 180, 180),
-          targetExercise('바벨 로우', 3, 6, 150, 150),
-          targetExercise('덤벨 숄더 프레스', 3, 8, 120, 150),
+          targetExercise('덤벨 플로어 프레스', 4, 8, 105, 135),
+          targetExercise('덤벨 로우', 4, 10, 90, 120),
+          targetExercise('푸시업', 2, 12, 75, 90),
         ],
       },
       {
-        name: '하체 및 복근 한계 A',
+        name: '하체 단단히',
         exercises: [
-          targetExercise('불가리안 스플릿 스쿼트', 3, 8, 120, 150),
-          targetExercise('플랭크', 2, 90, 90, 120),
+          targetExercise('덤벨 스쿼트', 4, 8, 105, 135),
+          targetExercise('덤벨 리버스 런지', 3, 8, 90, 120),
+          targetExercise('힙 브릿지', 2, 18, 60, 75),
         ],
       },
       {
-        name: '상체 고강도 돌파 B',
+        name: '어깨와 등 마무리',
         exercises: [
-          targetExercise('벤치프레스', 3, 5, 180, 180),
-          targetExercise('바벨 로우', 3, 6, 150, 150),
-          targetExercise('덤벨 숄더 프레스', 3, 8, 120, 150),
+          targetExercise('덤벨 숄더 프레스', 3, 8, 105, 120),
+          targetExercise('덤벨 로우', 3, 10, 90, 120),
+          targetExercise('밴드 풀 어파트', 2, 20, 45, 60),
         ],
       },
       {
-        name: '하체 및 복근 한계 B',
+        name: '코어 회복',
         exercises: [
-          targetExercise('불가리안 스플릿 스쿼트', 3, 8, 120, 150),
-          targetExercise('플랭크', 2, 90, 90, 120),
+          targetExercise('플랭크', 3, 50, 45, 60),
+          targetExercise('사이드 플랭크', 2, 35, 45, 60),
+          targetExercise('데드버그', 2, 12, 45, 60),
         ],
       },
     ],
   },
 ];
 
-
-
-// MEMO PUZZLE
-const MEMOS_GOOD = [
-  '컨디션 대박! 가볍게 밀림',
-  '자극 꽉꽉 들어온다. 다음 주 무조건 증량',
-  '막셋까지 속도 안 죽고 완벽히 제어함',
-  '근비대 펌핑 지대로 됨. 완전 뿌듯',
-  '오늘따라 통증도 없고 컨디션 최고',
-  '마지막 랩까지 자세 완벽하게 유지 성공',
-  '오늘 헬스장 공기부터 달랐다 증량 대만족',
+const DUMMY_WEEK_COUNT = 8;
+const WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK = [
+  [6, 4, 2, 0],
+  [6, 3, 1],
+  [5, 4, 2, 0],
+  [6, 4, 1, 0],
+  [5, 3, 2, 0],
+  [6, 4, 2],
+  [6, 5, 3, 0],
+  [5, 3, 1, 0],
+];
+const ROUTINE_PHASES = [
+  { routineIndex: 0, startWeek: 0, endWeek: 2, createdDaysAgo: 56 },
+  { routineIndex: 1, startWeek: 3, endWeek: 5, createdDaysAgo: 35 },
+  { routineIndex: 2, startWeek: 6, endWeek: 7, createdDaysAgo: 14 },
 ];
 
-const MEMOS_BAD = [
-  '어제 불면증 때문에 밤새서 그런지 온몸에 힘이 없음',
-  '컨디션 너무 구려서 자극 위주로 중량 낮춰서 진행',
-  '막셋에 깔릴 뻔해서 식은땀 남',
-  '손목이 살짝 시큰거려서 무리 안 하고 마무리',
-  '집중도 하락.. 억지로 채웠다 ㅠㅠ',
-  '자세 무너져서 허리 나갈 뻔함 주의',
-  '요새 피로 누적이 심한 듯. 겨우 들었다',
+const CONDITION_SEQUENCE = [
+  'normal', 'fresh', 'normal', 'tired',
+  'normal', 'normal', 'fresh', 'normal',
+  'tired', 'normal', 'normal', 'fresh',
+  'normal', 'pressed', 'normal', 'normal',
 ];
 
-const MEMOS_UNILATERAL = [
-  '왼쪽 골반이 타이트해서 가동범위가 덜 나옴',
-  '오른발 버틸 때 발바닥 아치 다 풀리고 중심 흔들림',
-  '좌우 밸런스 짝짝이 느낌 심해서 왼발부터 먼저 수행함',
-  '왼발 엉덩이 터질 거 같음 자극 대박',
-  '덤벨 쥐고 하니까 전완근이 먼저 털리네 ㅠ 스트랩 필수',
-];
+const EXERCISE_PROGRESS_PROFILES = {
+  '덤벨 플로어 프레스': { weightStart: 8, weightEnd: 14, weightStep: 1, recordStart: 8, recordEnd: 11 },
+  '덤벨 로우': { weightStart: 10, weightEnd: 18, weightStep: 1, recordStart: 9, recordEnd: 12 },
+  '덤벨 숄더 프레스': { weightStart: 5, weightEnd: 9, weightStep: 1, recordStart: 7, recordEnd: 10 },
+  '덤벨 스쿼트': { weightStart: 10, weightEnd: 16, weightStep: 1, recordStart: 9, recordEnd: 12 },
+  '덤벨 리버스 런지': { weightStart: 5, weightEnd: 9, weightStep: 1, recordStart: 7, recordEnd: 10 },
+  '푸시업': { recordStart: 7, recordEnd: 15 },
+  '힙 브릿지': { recordStart: 12, recordEnd: 20 },
+  '데드버그': { recordStart: 8, recordEnd: 13 },
+  '밴드 풀 어파트': { recordStart: 14, recordEnd: 22 },
+  '마운틴 클라이머': { recordStart: 24, recordEnd: 40 },
+  '플랭크': { recordStart: 30, recordEnd: 62 },
+  '사이드 플랭크': { recordStart: 22, recordEnd: 45 },
+};
 
-const MEMOS_PLANK = [
-  '코어 불타는 느낌. 덜덜덜 진동 옴',
-  '골반 쳐지지 않게 아랫배 꽉 잠그고 버팀',
-  '땀이 매트 위로 뚝뚝 떨어진다',
-  '호흡 차분하게 유지하면서 겨우 채움',
-];
+const EXERCISE_MEMO_DETAILS = {
+  '푸시업': [
+    '손목 수건 괜찮음',
+    '발끝 고정',
+    '팔꿈치 붙이기',
+    '가슴 깊이 체크',
+  ],
+  '덤벨 플로어 프레스': [
+    '팔꿈치 위치 좋음',
+    '내릴 때 조용히',
+    '오른팔 벌어짐',
+    '바닥 멈춤 좋음',
+  ],
+  '덤벨 로우': [
+    '의자 짚고 안정',
+    '무릎 안 스치게',
+    '목 힘 빼기',
+    '끝에서 잠깐 멈춤',
+  ],
+  '덤벨 숄더 프레스': [
+    '위에서 부딪힘 주의',
+    '갈비뼈 내리기',
+    '삼두 먼저 탐',
+    '등받이 없이 진행',
+  ],
+  '덤벨 스쿼트': [
+    '매트 살짝 밀림',
+    '무릎 안쪽 주의',
+    '덤벨 가슴에 붙임',
+    '바닥 전체로 밀기',
+  ],
+  '덤벨 리버스 런지': [
+    '보폭 다시 맞춤',
+    '고관절 뻣뻣',
+    '앞발 엄지 힘',
+    '덤벨 몸 옆 고정',
+  ],
+  '힙 브릿지': [
+    '발 가까이',
+    '상단 1초 멈춤',
+    '뒤꿈치 압력',
+    '무릎 간격 유지',
+  ],
+  '플랭크': [
+    '호흡 숫자 세기',
+    '골반 안 떨구기',
+    '팔꿈치 수건 추가',
+    '복부 먼저 흔들림',
+  ],
+  '사이드 플랭크': [
+    '아래 어깨 체크',
+    '골반 위로',
+    '시선 정면',
+    '발날 압력',
+  ],
+  '데드버그': [
+    '허리 뜨지 않게',
+    '호흡 먼저',
+    '갈비뼈 내리기',
+    '끝 범위 멈춤',
+  ],
+  '밴드 풀 어파트': [
+    '장력 적당함',
+    '엄지 방향 수정',
+    '견갑 느낌 좋음',
+    '반동 줄이기',
+  ],
+  '마운틴 클라이머': [
+    '발 조용히',
+    '골반 흔들림 줄임',
+    '템포 낮춤',
+    '손바닥 땀',
+  ],
+};
 
-const MEMOS_NORMAL = [
-  '마지막 랩 자세 제어에 집중',
-  '네거티브 천천히 가져가기',
-  '그립 다 풀림 스트랩 필수',
-  '어깨 찝힘 살짝 있음. 가동범위 조절',
-  '땀 번벅 갓생 완',
-  '무게 지탱 양호, 무릎 흔들리지 않게',
-];
+const MEMO_CONTEXTS = {
+  normal: ['폼 괜찮음', '템포 유지', '무리 없음', '다음도 동일'],
+  fresh: ['조금 여유', '리듬 좋음', '호흡 안정', '다음 증량 고민'],
+  tired: ['폼 우선', '무리 안 함', '쉬는 시간 필요', '욕심 줄임'],
+  pressed: ['짧게 마무리', '휴식 줄임', '기록만 체크', '시간 빠듯'],
+};
 
-function getRandomItem(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
+const MEMO_UNIQUE_TAILS = ['다음 비교용', '오늘 기준', '마무리 체크', '느낌 저장'];
 
 function getDummyRequiredExerciseNames() {
   return [
@@ -227,9 +320,9 @@ function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
     englishName: dictionaryExercise.englishName || null,
     primary_muscle: normalizeMuscleLabel(dictionaryExercise.primaryMuscle) || '기타',
     secondaryMuscles: dictionaryExercise.secondaryMuscles || [],
-    equipment: dictionaryExercise.equipment || '기타',
+    equipment: EXERCISE_EQUIPMENT_OVERRIDES[dictionaryExercise.name] || dictionaryExercise.equipment || '기타',
     category: dictionaryExercise.category || 'strength',
-    unit: dictionaryExercise.unit || getDefaultExerciseUnit(dictionaryExercise.name),
+    unit: EXERCISE_UNIT_OVERRIDES.get(dictionaryExercise.name) || dictionaryExercise.unit || getDefaultExerciseUnit(dictionaryExercise.name),
     is_unilateral: dictionaryExercise.is_unilateral ?? false,
     synonyms: dictionaryExercise.synonyms || [],
     user_id: dictionaryExercise.user_id ?? null,
@@ -297,6 +390,182 @@ function addMinutes(date, minutes) {
   return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function interpolate(start, end, ratio) {
+  return start + (end - start) * ratio;
+}
+
+function roundToStep(value, step = 1) {
+  return Math.round(value / step) * step;
+}
+
+function formatWeightForMemo(weight) {
+  if (!weight) return '';
+  return Number.isInteger(weight) ? String(weight) : String(Math.round(weight * 10) / 10);
+}
+
+function getRoutinePhaseForWeek(weekIndex) {
+  return ROUTINE_PHASES.find((phase) => weekIndex >= phase.startWeek && weekIndex <= phase.endWeek) || ROUTINE_PHASES[0];
+}
+
+function getProgressRatio(daysAgo) {
+  const oldestWeekOffset = Math.max(...WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK[0]);
+  const oldestDaysAgo = (DUMMY_WEEK_COUNT - 1) * 7 + oldestWeekOffset;
+  return clamp((oldestDaysAgo - daysAgo) / oldestDaysAgo, 0, 1);
+}
+
+function isBodyweightRecordExercise(exercise) {
+  const unit = exercise?.unit || getDefaultExerciseUnit(exercise?.name);
+  return unit === 'reps' || unit === 'sec' || exercise?.equipment === '맨몸';
+}
+
+function getConditionRecordAdjustment(condition, unit) {
+  const isTimed = unit === 'sec';
+  if (condition === 'fresh') return isTimed ? 5 : 1;
+  if (condition === 'tired') return isTimed ? -6 : -2;
+  if (condition === 'pressed') return isTimed ? -3 : -1;
+  return 0;
+}
+
+function getSetFatigueAdjustment(setIndex, unit) {
+  if (setIndex === 0) return 0;
+  if (unit === 'sec') return setIndex === 1 ? -3 : -6;
+  if (setIndex === 1) return 0;
+  if (setIndex === 2) return -1;
+  return -2;
+}
+
+function getSideRecordAdjustment(exercise, side, setIndex, logIndex) {
+  if (!exercise.is_unilateral || side === 'both') return 0;
+
+  const isTimed = exercise.unit === 'sec';
+  const weakerLeftToday = (logIndex + setIndex) % 3 !== 1;
+  if (side === 'L' && weakerLeftToday) return isTimed ? -2 : -1;
+  if (side === 'R' && !weakerLeftToday) return isTimed ? -1 : 0;
+  return 0;
+}
+
+function getSetRecordValue({ exercise, link, setIndex, side, daysAgo, condition, logIndex }) {
+  const profile = EXERCISE_PROGRESS_PROFILES[exercise.name] || {};
+  const progressRatio = getProgressRatio(daysAgo);
+  const targetRecord = Number(link.target_record) || profile.recordStart || 10;
+  const unit = exercise.unit || getDefaultExerciseUnit(exercise.name);
+  const baseRecord = profile.recordStart && profile.recordEnd
+    ? interpolate(profile.recordStart, profile.recordEnd, progressRatio)
+    : targetRecord;
+  const blendedRecord = (baseRecord * 0.7) + (targetRecord * 0.3);
+
+  const adjustedRecord = blendedRecord
+    + getConditionRecordAdjustment(condition, unit)
+    + getSetFatigueAdjustment(setIndex, unit)
+    + getSideRecordAdjustment(exercise, side, setIndex, logIndex);
+
+  const minimum = unit === 'sec' ? 12 : 3;
+  return Math.max(minimum, Math.round(adjustedRecord));
+}
+
+function getSetWeight({ exercise, daysAgo, condition }) {
+  if (isBodyweightRecordExercise(exercise)) return 0;
+
+  const profile = EXERCISE_PROGRESS_PROFILES[exercise.name];
+  if (!profile?.weightStart || !profile?.weightEnd) return 0;
+
+  const progressRatio = getProgressRatio(daysAgo);
+  const step = profile.weightStep || 1;
+  let weight = interpolate(profile.weightStart, profile.weightEnd, progressRatio);
+  if (condition === 'fresh' && progressRatio > 0.35) weight += step;
+  if (condition === 'tired') weight -= step;
+  if (condition === 'pressed' && progressRatio < 0.5) weight -= step;
+
+  return Math.max(profile.weightStart, roundToStep(weight, step));
+}
+
+function getStartClock(weekIndex, sessionDayIndex) {
+  const clocks = [
+    { hour: 19, minute: 10 },
+    { hour: 20, minute: 0 },
+    { hour: 18, minute: 40 },
+    { hour: 10, minute: 30 },
+  ];
+  const base = clocks[sessionDayIndex % clocks.length];
+  return {
+    hour: base.hour,
+    minute: (base.minute + (weekIndex % 3) * 5) % 60,
+  };
+}
+
+function getLogCondition(logIndex) {
+  return CONDITION_SEQUENCE[logIndex % CONDITION_SEQUENCE.length];
+}
+
+function getMemoFallbackDetails(exercise) {
+  if (exercise?.equipment === '덤벨') {
+    return [
+      '핀 확인',
+      '공간 좁음',
+      '손잡이 닦음',
+      '반동 줄임',
+    ];
+  }
+
+  return [
+    '천천히',
+    '호흡 먼저',
+    '범위 확인',
+    '무리 없음',
+  ];
+}
+
+function shouldWriteSetMemo({ exercise, setNumber, side, condition, logIndex }) {
+  const sideScore = side === 'L' ? 1 : side === 'R' ? 2 : 0;
+  const score = exercise.name.length + setNumber + sideScore + logIndex;
+
+  if (condition === 'tired' && setNumber === 1) return true;
+  if (condition === 'pressed' && setNumber > 1) return false;
+  return score % 3 === 0;
+}
+
+function createUniqueSetMemo({ exercise, setNumber, side, weight, record, condition, logIndex, usedMemos }) {
+  const details = EXERCISE_MEMO_DETAILS[exercise.name] || getMemoFallbackDetails(exercise);
+  const memoIndex = usedMemos.size;
+  const detail = details[(memoIndex + setNumber + logIndex) % details.length];
+  const contexts = MEMO_CONTEXTS[condition] || MEMO_CONTEXTS.normal;
+  const context = contexts[(memoIndex + logIndex + setNumber) % contexts.length];
+  const sideLabel = side === 'L' ? '왼쪽 ' : side === 'R' ? '오른쪽 ' : '';
+  const recordUnit = exercise.unit === 'sec' ? '초' : '회';
+  const recordPhrase = weight > 0 ? `${formatWeightForMemo(weight)}kg ${record}${recordUnit}` : `${record}${recordUnit}`;
+  const baseMemo = `${sideLabel}${detail}, ${recordPhrase}. ${context}.`;
+  let memo = baseMemo;
+  let attempt = 0;
+
+  while (usedMemos.has(memo)) {
+    const cycle = Math.floor(attempt / MEMO_UNIQUE_TAILS.length);
+    const tieBreaker = cycle > 0 ? ` ${cycle + 1}` : '';
+    memo = `${baseMemo} ${MEMO_UNIQUE_TAILS[attempt % MEMO_UNIQUE_TAILS.length]}${tieBreaker}.`;
+    attempt += 1;
+  }
+
+  usedMemos.add(memo);
+  return memo;
+}
+
+function estimateDurationMinutes(links, exercisesById, condition, sessionDayIndex) {
+  const totalRows = links.reduce((sum, link) => {
+    const exercise = exercisesById.get(link.exercise_id);
+    const sideMultiplier = exercise?.is_unilateral ? 2 : 1;
+    return sum + (Number(link.target_sets) || 1) * sideMultiplier;
+  }, 0);
+
+  let duration = 18 + links.length * 4 + totalRows * 2 + (sessionDayIndex % 2) * 3;
+  if (condition === 'fresh') duration -= 2;
+  if (condition === 'tired') duration += 4;
+  if (condition === 'pressed') duration -= 6;
+  return clamp(duration, 28, 58);
+}
+
 function createSetRecordsForExercise({
   logId,
   exercise,
@@ -304,152 +573,68 @@ function createSetRecordsForExercise({
   timestamp,
   daysAgo,
   condition,
+  logIndex,
+  usedMemos,
 }) {
-  const targetSets = Number(link.target_sets) || 2;
-  const targetRecord = Number(link.target_record) || 10;
+  const targetSets = Number(link.target_sets) || 3;
   const isUnilateral = exercise.is_unilateral ?? false;
-
-  const progressRatio = (70 - daysAgo) / 70; // 0 (70일 전) -> 1.0 (오늘)
-
-  // 점진적 과부하 베이스 중량 및 한계값
-  let baseWeight = 0;
-  let maxGrowth = 0;
-  let step = 2.5;
-
-  if (exercise.name === '벤치프레스') {
-    baseWeight = 40; maxGrowth = 20; step = 2.5; // 40kg -> 60kg
-  } else if (exercise.name === '바벨 로우') {
-    baseWeight = 30; maxGrowth = 15; step = 2.5; // 30kg -> 45kg
-  } else if (exercise.name === '덤벨 숄더 프레스') {
-    baseWeight = 8; maxGrowth = 6; step = 2;     // 8kg -> 14kg
-  } else if (exercise.name === '불가리안 스플릿 스쿼트') {
-    baseWeight = 6; maxGrowth = 8; step = 2;     // 6kg -> 14kg
-  }
-
-  // 중량 산출
-  let weight = baseWeight + progressRatio * maxGrowth;
-  if (condition === 'good') {
-    weight += step;
-  } else if (condition === 'bad') {
-    weight = Math.max(baseWeight, weight - step * 2);
-  }
-  weight = Math.round(weight / step) * step;
-
-  // 무게 없는 운동(플랭크 등)인 경우
-  const isSecUnit = exercise.unit === 'sec';
-  const isRepsUnit = exercise.unit === 'reps';
-  const isBodyweight = isSecUnit || isRepsUnit || exercise.equipment === '맨몸';
-  if (isBodyweight) {
-    weight = 0;
-  }
-
   const records = [];
 
-  // 각 세트별 수행 횟수/시간 및 피로도 시뮬레이션
-  const generateRepsForSet = (setIdx, side = 'both') => {
-    let repTarget = targetRecord;
-
-    // 플랭크인 경우 시간(초) 점진적 과부하
-    if (exercise.name === '플랭크') {
-      const plankBase = 40;
-      const plankGrowth = 40;
-      repTarget = Math.round(plankBase + progressRatio * plankGrowth);
-    }
-
-    let reps = repTarget;
-
-    // 컨디션 반영
-    if (condition === 'good') {
-      reps += isSecUnit ? 10 : 1;
-    } else if (condition === 'bad') {
-      reps -= isSecUnit ? 15 : 2;
-    }
-
-    // 피로도 모델링: 뒤 세트로 갈수록 횟수가 준다
-    if (setIdx === 1) {
-      // 2번째 세트 (0-indexed 1)
-      reps -= isSecUnit ? 5 : 0;
-    } else if (setIdx === 2) {
-      // 3번째 세트 (0-indexed 2)
-      reps -= isSecUnit ? 5 : 1;
-    } else if (setIdx >= 3) {
-      // 4번째 세트 이상
-      reps -= isSecUnit ? 10 : 2;
-    }
-
-    // 편측성 미세 불균형 (L과 R 횟수가 다를 수 있음)
-    if (isUnilateral && side === 'L' && Math.random() < 0.15) {
-      reps = Math.max(1, reps - 1);
-    }
-
-    return Math.max(isSecUnit ? 15 : 1, reps);
-  };
-
-  // 메모 바인딩
-  const getMemoForSet = () => {
-    // 25% 확률로 메모 작성
-    if (Math.random() > 0.25) return null;
-
-    if (exercise.name === '플랭크') {
-      return getRandomItem(MEMOS_PLANK);
-    }
-    if (isUnilateral) {
-      return getRandomItem(MEMOS_UNILATERAL);
-    }
-    if (condition === 'good') {
-      return getRandomItem(MEMOS_GOOD);
-    }
-    if (condition === 'bad') {
-      return getRandomItem(MEMOS_BAD);
-    }
-    return getRandomItem(MEMOS_NORMAL);
-  };
-
-  // 실제 세트 레코드 생성
   for (let index = 0; index < targetSets; index++) {
     const setNumber = index + 1;
+    const weight = getSetWeight({ exercise, daysAgo, condition });
 
     if (isUnilateral) {
-      // Left side
-      const repL = generateRepsForSet(index, 'L');
-      records.push({
-        id: generateUUID(),
-        workout_log_id: logId,
-        exercise_id: exercise.id,
-        set_number: setNumber,
-        weight,
-        record: String(repL),
-        side: 'L',
-        memo: getMemoForSet(index, 'L'),
-        created_at: timestamp,
-        updated_at: timestamp,
-      });
-
-      // Right side
-      const repR = generateRepsForSet(index, 'R');
-      records.push({
-        id: generateUUID(),
-        workout_log_id: logId,
-        exercise_id: exercise.id,
-        set_number: setNumber,
-        weight,
-        record: String(repR),
-        side: 'R',
-        memo: getMemoForSet(index, 'R'),
-        created_at: timestamp,
-        updated_at: timestamp,
+      ['L', 'R'].forEach((side) => {
+        const recordValue = getSetRecordValue({ exercise, link, setIndex: index, side, daysAgo, condition, logIndex });
+        const memo = shouldWriteSetMemo({ exercise, setNumber, side, condition, logIndex })
+          ? createUniqueSetMemo({
+            exercise,
+            setNumber,
+            side,
+            weight,
+            record: recordValue,
+            condition,
+            logIndex,
+            usedMemos,
+          })
+          : null;
+        records.push({
+          id: generateUUID(),
+          workout_log_id: logId,
+          exercise_id: exercise.id,
+          set_number: setNumber,
+          weight,
+          record: String(recordValue),
+          side,
+          memo,
+          created_at: timestamp,
+          updated_at: timestamp,
+        });
       });
     } else {
-      const repBoth = generateRepsForSet(index, 'both');
+      const recordValue = getSetRecordValue({ exercise, link, setIndex: index, side: 'both', daysAgo, condition, logIndex });
+      const memo = shouldWriteSetMemo({ exercise, setNumber, side: 'both', condition, logIndex })
+        ? createUniqueSetMemo({
+          exercise,
+          setNumber,
+          side: 'both',
+          weight,
+          record: recordValue,
+          condition,
+          logIndex,
+          usedMemos,
+        })
+        : null;
       records.push({
         id: generateUUID(),
         workout_log_id: logId,
         exercise_id: exercise.id,
         set_number: setNumber,
         weight,
-        record: String(repBoth),
+        record: String(recordValue),
         side: 'both',
-        memo: getMemoForSet(index, 'both'),
+        memo,
         created_at: timestamp,
         updated_at: timestamp,
       });
@@ -463,17 +648,19 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
   const nowIso = new Date().toISOString();
   const { exercises, exercisesByName } = ensureDummyExercises(existingExercises, nowIso);
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
-  
+
   const routines = [];
   const sessions = [];
   const sessionExercises = [];
   const workoutLogs = [];
   const setRecords = [];
   const sessionEntriesByKey = new Map();
+  const usedMemos = new Set();
 
-  // 1. 루틴 & 세션 & 운동 매핑 템플릿 생성
   DUMMY_ROUTINE_BLUEPRINTS.forEach((routineBlueprint, routineIndex) => {
-    const routineCreatedAt = getPastDate(72 - routineIndex * 6, 9, 0).toISOString();
+    const phase = ROUTINE_PHASES.find((candidate) => candidate.routineIndex === routineIndex);
+    const phaseCreatedDaysAgo = phase?.createdDaysAgo ?? 56;
+    const routineCreatedAt = getPastDate(phaseCreatedDaysAgo, 9, 0).toISOString();
     const routineId = generateUUID();
     routines.push({
       id: routineId,
@@ -484,7 +671,11 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
     });
 
     routineBlueprint.sessions.forEach((sessionBlueprint, sessionIndex) => {
-      const sessionCreatedAt = getPastDate(71 - routineIndex * 6 - sessionIndex, 10, 0).toISOString();
+      const sessionCreatedAt = getPastDate(
+        Math.max(0, phaseCreatedDaysAgo - Math.floor(sessionIndex / 2)),
+        10 + sessionIndex,
+        0,
+      ).toISOString();
       const sessionId = generateUUID();
       const session = {
         id: sessionId,
@@ -496,7 +687,7 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
         updated_at: nowIso,
       };
       sessions.push(session);
-      sessionEntriesByKey.set(`${routineBlueprint.name}:${sessionBlueprint.name}`, {
+      sessionEntriesByKey.set(`${routineIndex}:${sessionIndex}`, {
         session,
         blueprint: sessionBlueprint,
       });
@@ -519,18 +710,28 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
     });
   });
 
-  // 세션 운동 로그 추가 헬퍼
-  const addSessionWorkoutLog = ({ routineName, sessionName, daysAgo, startHour, durationMin, condition, inProgress = false }) => {
-    const entry = sessionEntriesByKey.get(`${routineName}:${sessionName}`);
+  const addSessionWorkoutLog = ({
+    routineIndex,
+    sessionIndex,
+    daysAgo,
+    startHour,
+    startMinute,
+    condition,
+    logIndex,
+    sessionDayIndex,
+    inProgress = false,
+  }) => {
+    const entry = sessionEntriesByKey.get(`${routineIndex}:${sessionIndex}`);
     if (!entry) return;
 
-    const start = getPastDate(daysAgo, startHour, 0);
-    const end = inProgress ? null : addMinutes(start, durationMin);
-    const timestamp = start.toISOString();
-    const logId = generateUUID();
     const links = sessionExercises
       .filter((link) => link.session_id === entry.session.id)
       .sort((a, b) => a.order - b.order);
+    const durationMin = estimateDurationMinutes(links, exercisesById, condition, sessionDayIndex);
+    const start = inProgress ? addMinutes(new Date(), -Math.min(durationMin, 35)) : getPastDate(daysAgo, startHour, startMinute);
+    const end = inProgress ? null : addMinutes(start, durationMin);
+    const timestamp = start.toISOString();
+    const logId = generateUUID();
 
     workoutLogs.push({
       id: logId,
@@ -553,80 +754,45 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
           timestamp,
           daysAgo,
           condition,
+          logIndex,
+          usedMemos,
         }),
       );
     });
   };
 
-  // 2. 70일 타임트래블 시뮬레이터 구동
-  let r1SessionIdx = 0;
-  let r2SessionIdx = 0;
-  let r3SessionIdx = 0;
+  let logIndex = 0;
+  const sessionCountByRoutine = new Map();
 
-  for (let daysAgo = 70; daysAgo >= 0; daysAgo--) {
-    const currentDate = getPastDate(daysAgo);
-    const dayOfWeek = currentDate.getDay(); // 0: 일, 1: 월, 2: 화, 3: 수, 4: 목, 5: 금, 6: 토
+  for (let weekIndex = 0; weekIndex < DUMMY_WEEK_COUNT; weekIndex++) {
+    const phase = getRoutinePhaseForWeek(weekIndex);
+    const routine = DUMMY_ROUTINE_BLUEPRINTS[phase.routineIndex];
+    const completedInRoutine = sessionCountByRoutine.get(phase.routineIndex) || 0;
+    const weekSchedule = WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK[weekIndex] || WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK[0];
 
-    // 월(1), 수(3), 금(5), 토(6)에만 운동을 수행하여 주 4회 분산
-    if ([1, 3, 5, 6].includes(dayOfWeek)) {
-      // 15% 확률로 바쁜 하루여서 운동을 건너뜀 (현실적인 공백 부여 및 데이터 다이어트)
-      // 단, daysAgo가 0인 오늘은 테스트 통과(in-progress 세션의 확실한 생성)를 위해 건너뛰지 않음
-      if (daysAgo !== 0 && Math.random() < 0.15) {
-        continue;
-      }
-
-      // 날짜 범위에 따른 3가지 루틴 배정
-      let routineName;
-      let sessionBlueprint;
-
-      if (daysAgo >= 49) {
-        // 루틴 1: 기초 체력 확립 루틴 (70일 전 ~ 49일 전, 22일간)
-        const routine = DUMMY_ROUTINE_BLUEPRINTS[0];
-        routineName = routine.name;
-        sessionBlueprint = routine.sessions[r1SessionIdx % routine.sessions.length];
-        r1SessionIdx++;
-      } else if (daysAgo >= 25) {
-        // 루틴 2: 근비대 성장 루틴 (48일 전 ~ 25일 전, 24일간)
-        const routine = DUMMY_ROUTINE_BLUEPRINTS[1];
-        routineName = routine.name;
-        sessionBlueprint = routine.sessions[r2SessionIdx % routine.sessions.length];
-        r2SessionIdx++;
-      } else {
-        // 루틴 3: 피크 스트렝스 루틴 (24일 전 ~ 오늘, 25일간)
-        const routine = DUMMY_ROUTINE_BLUEPRINTS[2];
-        routineName = routine.name;
-        sessionBlueprint = routine.sessions[r3SessionIdx % routine.sessions.length];
-        r3SessionIdx++;
-      }
-
-      // 컨디션 요인 시뮬레이션
-      const rand = Math.random();
-      let condition = 'normal';
-      if (rand < 0.10) {
-        condition = 'bad'; // 10% 확률로 난조
-      } else if (rand > 0.90) {
-        condition = 'good'; // 10% 확률로 최상
-      }
-
-      const durationMin = 40 + sessionBlueprint.exercises.length * 8;
-      const startHour = 18 + Math.floor(Math.random() * 3); // 18시 ~ 20시 사이 유동적 시작 시간
-
-      // 오늘(daysAgo === 0)은 end_time이 null인 in-progress 운동 로그로 만들어 테스트 통과 유도
-      const inProgress = (daysAgo === 0);
+    weekSchedule.forEach((dayOffset, sessionDayIndex) => {
+      const daysAgo = ((DUMMY_WEEK_COUNT - 1 - weekIndex) * 7) + dayOffset;
+      const sessionIndex = (completedInRoutine + sessionDayIndex) % routine.sessions.length;
+      const { hour, minute } = getStartClock(weekIndex, sessionDayIndex);
+      const condition = getLogCondition(logIndex);
 
       addSessionWorkoutLog({
-        routineName,
-        sessionName: sessionBlueprint.name,
+        routineIndex: phase.routineIndex,
+        sessionIndex,
         daysAgo,
-        startHour,
-        durationMin,
+        startHour: hour,
+        startMinute: minute,
         condition,
-        inProgress,
+        logIndex,
+        sessionDayIndex,
+        inProgress: daysAgo === 0,
       });
-    }
+
+      logIndex += 1;
+    });
+
+    sessionCountByRoutine.set(phase.routineIndex, completedInRoutine + weekSchedule.length);
   }
-
-
 
   return {
     exercises,

@@ -1,7 +1,8 @@
 import { formatSetCellValue } from '../../utils/logFormatters';
 
 export default function SetRecordTable({ records, exercise, compact = false }) {
-  const hasMemo = records.some((record) => record.memo && record.memo.trim());
+  const hasMemo = true;
+
 
   return (
     <div className={`log-set-grid-wrap ${compact ? 'log-set-grid-wrap--compact' : ''}`}>

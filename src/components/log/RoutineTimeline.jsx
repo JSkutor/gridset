@@ -25,7 +25,7 @@ function getBranchPath(sourceX, targetX) {
 
 // ─── Branch Card Data Builder ────────────────────────────────
 
-function buildBranches(selectedEvent, selectedSessions, selectedExercises) {
+function buildBranches(selectedEvent, selectedSessions) {
 
   if (selectedSessions.length > 0) {
     return selectedSessions.map((session) => ({
@@ -171,8 +171,7 @@ export default function RoutineTimeline({ routineSummaries }) {
   const latestEventId = timelineEvents[timelineEvents.length - 1]?.id || null;
   const selectedEvent = timelineEvents.find((event) => event.id === selectedEventId) || timelineEvents[timelineEvents.length - 1] || null;
   const selectedSessions = selectedEvent?.type === 'routine' ? selectedEvent.sessions : [];
-  const selectedExercises = selectedEvent?.exercises || [];
-  const selectedBranches = buildBranches(selectedEvent, selectedSessions, selectedExercises);
+  const selectedBranches = buildBranches(selectedEvent, selectedSessions);
   const branchCount = Math.max(1, selectedBranches.length);
 
   useScrollIntoView(selectedEvent, latestEventId, activeCommitRef, updateBranchSource);
