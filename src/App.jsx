@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import Navigation from './components/Navigation'
 import ExerciseInfo from './components/ExerciseInfo'
 import WorkoutGrid from './components/WorkoutGrid'
@@ -7,6 +7,8 @@ import RoutineDetail from './components/RoutineDetail'
 import LogPage from './components/LogPage'
 import RestTimer from './components/RestTimer'
 import AccountMenu from './components/AccountMenu'
+import HelpModal from './components/HelpModal'
+import { HelpCircle } from 'lucide-react'
 import { useWorkoutStore } from './store/useWorkoutStore'
 import { useTabNavigation } from './hooks/useTabNavigation'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
@@ -23,11 +25,30 @@ const NAV_SHORTCUTS = {
 const NAV_FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="main"]';
 const getNavFocusTargetSelector = (tabId) =>
   `${NAV_FOCUS_SCOPE_SELECTOR} [data-tab-id="${tabId}"]`;
+const subscribeToWorkoutStoreHydration = (callback) => {
+  const unsubscribeHydrate = useWorkoutStore.persist.onHydrate(callback);
+  const unsubscribeFinishHydration = useWorkoutStore.persist.onFinishHydration(callback);
+
+  return () => {
+    unsubscribeHydrate();
+    unsubscribeFinishHydration();
+  };
+};
+const getWorkoutStoreHydrationSnapshot = () => useWorkoutStore.persist.hasHydrated();
 
 function App() {
   const [activeTab, setActiveTab] = useState('S')
   const [activeExerciseId, setActiveExerciseId] = useState(null)
   const [restTimer, setRestTimer] = useState(null)
+
+  const routines = useWorkoutStore(state => state.routines);
+  const hasHydratedWorkoutStore = useSyncExternalStore(
+    subscribeToWorkoutStoreHydration,
+    getWorkoutStoreHydrationSnapshot,
+    () => true,
+  );
+
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   // Ref for WorkoutGrid imperative focus methods (C-key toggle)
   const workoutGridRef = useRef(null);
@@ -182,7 +203,18 @@ function App() {
 
   return (
     <div className="app-container">
-      <AccountMenu onDataReset={handleDataReset} />
+      <div className="top-right-header-actions">
+        <button 
+          className="help-trigger-btn"
+          onClick={() => setIsHelpOpen(true)}
+          title="도움말 및 데이터 관리"
+          aria-label="도움말 열기"
+        >
+          <HelpCircle size={14} />
+          <span>도움말</span>
+        </button>
+        <AccountMenu onDataReset={handleDataReset} />
+      </div>
       
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       <RestTimer
@@ -222,6 +254,8 @@ function App() {
           </main>
         )}
       </div>
+
+      <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} onDataReset={handleDataReset} />
     </div>
   )
 }

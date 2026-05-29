@@ -17,17 +17,19 @@ const runRemoteSync = (label, task) => {
     });
 };
 
+const initialSeed = createDummyWorkoutData({ userId: GUEST_USER.id, existingExercises: DEFAULT_EXERCISES });
+
 export const useWorkoutStore = create(
   persist(
     (set, get) => ({
       // --- State ---
       currentUser: GUEST_USER, 
-      exercises: DEFAULT_EXERCISES,
-      routines: [],
-      sessions: [],
-      sessionExercises: [],
-      workoutLogs: [],
-      setRecords: [],
+      exercises: initialSeed.exercises,
+      routines: initialSeed.routines,
+      sessions: initialSeed.sessions,
+      sessionExercises: initialSeed.sessionExercises,
+      workoutLogs: initialSeed.workoutLogs,
+      setRecords: initialSeed.setRecords,
       
       // Supabase specific states
       isSyncing: false,
@@ -53,10 +55,19 @@ export const useWorkoutStore = create(
       },
 
       setAuthSession: async (session) => {
-        const previousUser = get().currentUser;
+        const previousState = get();
+        const previousUser = previousState.currentUser;
         
         if (session) {
           const user = session.user;
+          if (
+            previousState.authSession?.user?.id === user.id &&
+            previousState.authSession?.access_token === session.access_token &&
+            previousUser.id === user.id
+          ) {
+            return;
+          }
+
           const currentUser = {
             id: user.id,
             name: user.user_metadata?.name || user.email?.split('@')[0] || '회원',
@@ -76,6 +87,10 @@ export const useWorkoutStore = create(
           // Hydrate data from server
           await get().fetchUserData();
         } else {
+          if (!previousState.authSession && previousUser.isGuest) {
+            return;
+          }
+
           // Clear session and reset to guest defaults
           set({
             authSession: null,
@@ -105,6 +120,8 @@ export const useWorkoutStore = create(
           set({ isSyncing: false });
         }
       },
+
+
 
       migrateLocalDataToSupabase: async (authUserId) => {
         const { exercises, routines, sessions, sessionExercises, workoutLogs, setRecords } = get();

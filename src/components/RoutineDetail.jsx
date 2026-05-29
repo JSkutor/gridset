@@ -31,7 +31,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
   const [isAddingExerciseRow, setIsAddingExerciseRow] = useState(false);
-  const [focusedRoutinePanel, setFocusedRoutinePanel] = useState('sessions');
+  const [focusedRoutinePanel, setFocusedRoutinePanel] = useState(null);
 
   const [isEditingRoutineName, setIsEditingRoutineName] = useState(false);
   const [editingRoutineNameVal, setEditingRoutineNameVal] = useState('');
@@ -311,9 +311,17 @@ const RoutineDetail = forwardRef((props, ref) => {
       setTimeout(() => addExerciseBtnRef.current?.focus(), 50);
     }
   };
+  const handleBlur = (event) => {
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setFocusedRoutinePanel(null);
+    }
+  };
 
   return (
-    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', flex: 1, minHeight: 0, gap: 0 }}>
+    <div
+      onBlur={handleBlur}
+      style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', flex: 1, minHeight: 0, gap: 0 }}
+    >
       <RoutineTabs
         routines={routines}
         activeRoutineId={effectiveRoutineId}
@@ -322,7 +330,7 @@ const RoutineDetail = forwardRef((props, ref) => {
         onDuplicateRoutine={handleDuplicateRoutine}
       />
 
-      <div style={{
+      <div className="routine-grid" style={{
         flex: 1,
         display: 'grid',
         gridTemplateColumns: '1fr 1.8fr 1fr',

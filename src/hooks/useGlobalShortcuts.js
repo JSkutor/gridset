@@ -46,6 +46,14 @@ export function useGlobalShortcuts({
 }) {
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
+      // Ignore all shortcuts if a help or auth modal is open.
+      if (
+        document.querySelector('.help-backdrop') || 
+        document.querySelector('.auth-modal-backdrop')
+      ) {
+        return;
+      }
+
       // ESC: blur any focused element so shortcuts become available again.
       if (event.key === 'Escape') {
         if (document.activeElement && document.activeElement !== document.body) {

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-const baseDir = '/Users/kutor/Documents/Projects_Kutor/gridset';
+const baseDir = path.resolve(import.meta.dirname, '..');
 const jsonPath = path.join(baseDir, 'scratch/extracted_exercises.json');
 const sqlOutputPath = path.join(baseDir, 'scratch/supabase_seed_default_exercises.sql');
 const schemaPath = path.join(baseDir, 'scratch/supabase_schema.sql');
@@ -15,7 +15,7 @@ if (!fs.existsSync(jsonPath)) {
 }
 
 // 1. JSON 로드
-const exercises = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+const exercises = JSON.parse(fs.readFileSync(jsonPath, 'utf8')).filter((item) => !item.NOTE);
 console.log(`성공적으로 ${exercises.length}개의 정제된 운동 데이터를 로드했습니다.`);
 
 // 결정론적 UUID 생성 함수 (기존 프로젝트 설계와 100% 일치)
@@ -66,7 +66,7 @@ const rows = exercises.map((exercise) => {
 
 // 4. SQL 템플릿 작성
 const seedSql = `-- Run this once in the Supabase SQL Editor to populate the exercises table.
--- 이 SQL 스크립트는 정제된 873개의 운동 마스터 데이터를 Supabase DB에 반영/업데이트합니다.
+-- 이 SQL 스크립트는 정제된 ${exercises.length}개의 운동 마스터 데이터를 Supabase DB에 반영/업데이트합니다.
 
 INSERT INTO public.exercises (
   id,

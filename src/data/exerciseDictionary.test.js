@@ -21,11 +21,40 @@ test('exercise dictionary stays in sync with extracted exercise data', () => {
   // Filter out warning note in JSON
   extractedExercises = extractedExercises.filter(item => !item.NOTE);
 
-  // Strip is_unilateral for comparison since JSON is intentionally not updated
+  // Strip runtime-only fields before comparison.
   const cleanDict = EXERCISE_DICTIONARY.map(stripRuntimeFields);
   const cleanExtracted = extractedExercises.map(stripRuntimeFields);
 
-  assert.deepEqual(cleanDict, cleanExtracted);
+  assert.equal(
+    cleanDict.length,
+    cleanExtracted.length,
+    `exercise count mismatch: dictionary=${cleanDict.length}, extracted=${cleanExtracted.length}`,
+  );
+
+  const dictIds = cleanDict.map((exercise) => exercise.id);
+  const extractedIds = cleanExtracted.map((exercise) => exercise.id);
+  const dictIdSet = new Set(dictIds);
+  const extractedIdSet = new Set(extractedIds);
+  const onlyInDictionary = dictIds.filter((id) => !extractedIdSet.has(id));
+  const onlyInExtracted = extractedIds.filter((id) => !dictIdSet.has(id));
+  const orderMismatches = dictIds
+    .map((id, index) => (id === extractedIds[index] ? null : {
+      index,
+      dictionary: id,
+      extracted: extractedIds[index],
+    }))
+    .filter(Boolean)
+    .slice(0, 10);
+
+  assert.deepEqual({ onlyInDictionary, onlyInExtracted, orderMismatches }, {
+    onlyInDictionary: [],
+    onlyInExtracted: [],
+    orderMismatches: [],
+  });
+
+  cleanDict.forEach((exercise, index) => {
+    assert.deepEqual(exercise, cleanExtracted[index], `exercise mismatch at index ${index}: ${exercise.id}`);
+  });
 });
 
 test('exercise dictionary uses normalized muscle labels', () => {

@@ -132,8 +132,63 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
 
   if (!session) {
     return (
-      <div className="glass-panel--strong workout-grid-empty">
-        세션을 선택해주세요
+      <div className="glass-panel--strong workout-grid-container workout-grid-empty-state">
+        {/* Header */}
+        <div className="workout-grid-header">
+          <div className="workout-grid-header-title-row">
+            <div className="workout-grid-header-selector-group">
+              <h2 className="workout-grid-session-title" style={{ color: 'var(--text-muted)' }}>
+                세션 없음
+              </h2>
+              
+              {latestRoutineSessions && latestRoutineSessions.length > 0 && (
+                <div className="session-dropdown-wrapper">
+                  <select
+                    value=""
+                    onChange={(e) => onSessionChange?.(e.target.value)}
+                    className="session-inline-select"
+                  >
+                    <option value="" disabled className="session-inline-option">
+                      세션 선택...
+                    </option>
+                    {latestRoutineSessions.map(s => {
+                      const dayLetter = String.fromCharCode(65 + (latestRoutineSessions.indexOf(s) % 26));
+                      return (
+                        <option key={s.id} value={s.id} className="session-inline-option">
+                          Day {dayLetter} : {s.name}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="session-dropdown-arrow">
+                    <ChevronDown size={13} />
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Unified fixed handwriting header bar */}
+          <div className="workout-grid-header-bar">
+            <div className="workout-grid-header-col-set">
+              <span className="grid-header-badge">Set</span>
+            </div>
+            {COLUMNS.map(({ field, header }) => (
+              <div key={field} className="workout-grid-header-col-metric">
+                <span className="grid-header-badge grid-header-badge--accent">
+                  {header}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Empty scroll area placeholder */}
+        <div className="workout-grid-scroll-area empty-state-scroll">
+          <div className="workout-grid-empty-placeholder">
+            <p>세션을 선택해주세요</p>
+          </div>
+        </div>
       </div>
     );
   }

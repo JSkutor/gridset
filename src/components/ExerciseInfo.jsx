@@ -1,5 +1,5 @@
 import { useMemo, useState, useRef, useEffect } from 'react'
-import { Activity, Target, TrendingUp } from 'lucide-react'
+import { Activity, TrendingUp } from 'lucide-react'
 import { useWorkoutStore } from '../store/useWorkoutStore'
 import {
   buildExerciseHistoryStats,
@@ -10,7 +10,7 @@ import {
 // A premium responsive SVG-based line chart component matching the project design
 function SimpleLineChart({ data, unit, displayUnit }) {
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [containerWidth, setContainerWidth] = useState(316);
+  const [containerWidth, setContainerWidth] = useState(296);
   const containerRef = useRef(null);
 
   // Measure the width of the container dynamically to maintain perfect aspect ratios and circular dots
@@ -108,33 +108,8 @@ function SimpleLineChart({ data, unit, displayUnit }) {
     return { points, linePath, areaPath, yLabels, xLabels };
   }, [data, containerWidth]);
 
-  if (!data || data.length === 0) {
-    return (
-      <div>
-        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '500' }}>
-          <TrendingUp size={14} /> Progress Chart
-        </div>
-        <div style={{
-          height: '145px',
-          background: 'rgba(0, 0, 0, 0.12)',
-          borderRadius: 'var(--radius-md)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px solid var(--border)',
-          gap: '6px',
-          color: 'var(--text-muted)'
-        }}>
-          <Target size={28} style={{ opacity: 0.4 }} strokeWidth={1.5} />
-          <div style={{ fontSize: '13px', fontWeight: '500', color: 'var(--text-main)' }}>기록 그래프</div>
-          <div style={{ fontSize: '11px', opacity: 0.7 }}>완료된 운동 기록이 없습니다.</div>
-        </div>
-      </div>
-    );
-  }
-
-  const activePoint = hoveredIndex !== null ? points[hoveredIndex] : null;
+  const activePoint = hoveredIndex !== null && points.length > 0 ? points[hoveredIndex] : null;
+  const hasData = data && data.length > 0;
 
   return (
     <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -175,122 +150,133 @@ function SimpleLineChart({ data, unit, displayUnit }) {
         </div>
       )}
 
-      {/* SVG Plot Container */}
+      {/* SVG Plot/Empty Container */}
       <div ref={containerRef} style={{
         height: '145px',
-        background: 'rgba(0, 0, 0, 0.15)',
+        background: hasData ? 'rgba(0, 0, 0, 0.15)' : 'rgba(0, 0, 0, 0.12)',
         borderRadius: 'var(--radius-md)',
         border: '1px solid var(--border)',
         overflow: 'visible',
-        position: 'relative'
+        position: 'relative',
+        display: hasData ? 'block' : 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'var(--text-muted)'
       }}>
-        <svg
-          width="100%"
-          height="100%"
-          style={{ overflow: 'visible' }}
-        >
-          <defs>
-            <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
-              <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.00" />
-            </linearGradient>
-          </defs>
+        {hasData ? (
+          <svg
+            width="100%"
+            height="100%"
+            style={{ overflow: 'visible' }}
+          >
+            <defs>
+              <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.22" />
+                <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.00" />
+              </linearGradient>
+            </defs>
 
-          {/* Grid lines */}
-          {yLabels.map((lbl, idx) => (
-            <line
-              key={idx}
-              x1="36"
-              y1={lbl.y}
-              x2={containerWidth - 12}
-              y2={lbl.y}
-              stroke="var(--border)"
-              strokeWidth="0.75"
-              strokeDasharray="3 3"
-            />
-          ))}
+            {/* Grid lines */}
+            {yLabels.map((lbl, idx) => (
+              <line
+                key={idx}
+                x1="36"
+                y1={lbl.y}
+                x2={containerWidth - 12}
+                y2={lbl.y}
+                stroke="var(--border)"
+                strokeWidth="0.75"
+                strokeDasharray="3 3"
+              />
+            ))}
 
-          {/* Y Axis Labels */}
-          {yLabels.map((lbl, idx) => (
-            <text
-              key={idx}
-              x="28"
-              y={lbl.y + 3.5}
-              fill="var(--text-muted)"
-              fontSize="9"
-              textAnchor="end"
-              fontFamily="inherit"
-              fontWeight="500"
-            >
-              {lbl.value.toLocaleString()}
-            </text>
-          ))}
+            {/* Y Axis Labels */}
+            {yLabels.map((lbl, idx) => (
+              <text
+                key={idx}
+                x="28"
+                y={lbl.y + 3.5}
+                fill="var(--text-muted)"
+                fontSize="9"
+                textAnchor="end"
+                fontFamily="inherit"
+                fontWeight="500"
+              >
+                {lbl.value.toLocaleString()}
+              </text>
+            ))}
 
-          {/* X Axis Labels */}
-          {xLabels.map((lbl, idx) => (
-            <text
-              key={idx}
-              x={lbl.x}
-              y="134"
-              fill="var(--text-muted)"
-              fontSize="9"
-              textAnchor={lbl.anchor}
-              fontFamily="inherit"
-              fontWeight="500"
-            >
-              {lbl.label}
-            </text>
-          ))}
+            {/* X Axis Labels */}
+            {xLabels.map((lbl, idx) => (
+              <text
+                key={idx}
+                x={lbl.x}
+                y="134"
+                fill="var(--text-muted)"
+                fontSize="9"
+                textAnchor={lbl.anchor}
+                fontFamily="inherit"
+                fontWeight="500"
+              >
+                {lbl.label}
+              </text>
+            ))}
 
-          {/* Area Under the Line */}
-          {areaPath && (
-            <path
-              d={areaPath}
-              fill="url(#chartGrad)"
-            />
-          )}
+            {/* Area Under the Line */}
+            {areaPath && (
+              <path
+                d={areaPath}
+                fill="url(#chartGrad)"
+              />
+            )}
 
-          {/* main line */}
-          {linePath && (
-            <path
-              d={linePath}
-              fill="none"
-              stroke="var(--accent)"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          )}
+            {/* main line */}
+            {linePath && (
+              <path
+                d={linePath}
+                fill="none"
+                stroke="var(--accent)"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
 
-          {/* Dots & hover targets */}
-          {points.map((pt) => {
-            const isHovered = hoveredIndex === pt.index;
-            return (
-              <g key={pt.index}>
-                {/* Wider invisible hover target for easier mouse interactions */}
-                <circle
-                  cx={pt.x}
-                  cy={pt.y}
-                  r="14"
-                  fill="transparent"
-                  style={{ cursor: 'pointer' }}
-                  onMouseEnter={() => setHoveredIndex(pt.index)}
-                  onMouseLeave={() => setHoveredIndex(null)}
-                />
-                {/* Inner dot */}
-                <circle
-                  cx={pt.x}
-                  cy={pt.y}
-                  r={isHovered ? 5 : 3}
-                  fill="var(--bg-deep)"
-                  stroke="var(--accent)"
-                  strokeWidth={isHovered ? 2.5 : 1.5}
-                  style={{ transition: 'r 0.15s ease, stroke-width 0.15s ease', pointerEvents: 'none' }}
-                />
-              </g>
-            );
-          })}
-        </svg>
+            {/* Dots & hover targets */}
+            {points.map((pt) => {
+              const isHovered = hoveredIndex === pt.index;
+              return (
+                <g key={pt.index}>
+                  {/* Wider invisible hover target for easier mouse interactions */}
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r="14"
+                    fill="transparent"
+                    style={{ cursor: 'pointer' }}
+                    onMouseEnter={() => setHoveredIndex(pt.index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
+                  />
+                  {/* Inner dot */}
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={isHovered ? 5 : 3}
+                    fill="var(--bg-deep)"
+                    stroke="var(--accent)"
+                    strokeWidth={isHovered ? 2.5 : 1.5}
+                    style={{ transition: 'r 0.15s ease, stroke-width 0.15s ease', pointerEvents: 'none' }}
+                  />
+                </g>
+              );
+            })}
+          </svg>
+        ) : (
+          <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            기록 없음
+          </div>
+        )}
       </div>
     </div>
   );
@@ -301,10 +287,11 @@ export default function ExerciseInfo({ activeExerciseId }) {
   const setRecords = useWorkoutStore(state => state.setRecords);
   const workoutLogs = useWorkoutStore(state => state.workoutLogs);
 
-  const activeExercise = exercises.find(ex => ex.id === activeExerciseId);
+  const activeExercise = useMemo(() => (
+    exercises.find(ex => ex.id === activeExerciseId) || { name: '운동 없음', unit: 'kg' }
+  ), [activeExerciseId, exercises]);
 
   const unit = useMemo(() => {
-    if (!activeExercise) return 'kg';
     return activeExercise.unit || 'kg';
   }, [activeExercise]);
 
@@ -327,19 +314,15 @@ export default function ExerciseInfo({ activeExerciseId }) {
     'rgba(122, 162, 247, 0.95)'
   ];
 
-  if (!activeExercise) {
-    return (
-      <div className="glass-panel" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
-        운동을 선택해주세요
-      </div>
-    );
-  }
+  const hasActiveExercise = Boolean(activeExerciseId);
 
   return (
     <div className="glass-panel" style={{ display: 'flex', flexDirection: 'column', height: '100%', overflow: 'auto' }}>
       {/* Header */}
       <div className="section-header">
-        <h2>{activeExercise.name}</h2>
+        <h2 style={{ color: hasActiveExercise ? 'var(--text-bright)' : 'var(--text-muted)' }}>
+          {activeExercise.name}
+        </h2>
       </div>
 
       <div style={{ padding: '22px', display: 'flex', flexDirection: 'column', gap: '26px' }}>

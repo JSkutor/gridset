@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
-const baseDir = '/Users/kutor/Documents/Projects_Kutor/gridset';
+const baseDir = path.resolve(import.meta.dirname, '..');
 const envPath = path.join(baseDir, '.env.local');
 const jsonPath = path.join(baseDir, 'scratch/extracted_exercises.json');
 
@@ -55,7 +55,7 @@ if (!fs.existsSync(jsonPath)) {
   console.error(`Error: ${jsonPath} 파일이 존재하지 않습니다.`);
   process.exit(1);
 }
-const exercises = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
+const exercises = JSON.parse(fs.readFileSync(jsonPath, 'utf8')).filter((item) => !item.NOTE);
 console.log(`✓ 로컬 정제 파일 로드 완료. 총 운동 개수: ${exercises.length}개`);
 
 // 3. 결정론적 UUID 매핑 및 데이터 DB 스펙에 맞게 포맷팅
@@ -107,7 +107,7 @@ async function syncDatabase() {
     });
 
     if (response.ok) {
-      console.log('🎉 [동기화 성공] 875개의 최신 운동 데이터가 Supabase Cloud DB에 실시간 저장되었습니다!');
+      console.log(`🎉 [동기화 성공] ${payload.length}개의 최신 운동 데이터가 Supabase Cloud DB에 실시간 저장되었습니다!`);
     } else {
       const errText = await response.text();
       console.error(`❌ [동기화 실패] HTTP 상태 코드: ${response.status}`);

@@ -70,20 +70,14 @@ export default function ExercisePastLogs({ activeExerciseId }) {
     return logs;
   }, [activeExerciseId, workoutLogs, setRecords, isBodyweight]);
 
-  if (!activeExerciseId) {
-    return (
-      <div className="past-logs-empty">
-        운동을 선택해주세요
-      </div>
-    );
-  }
-
   return (
     <div className="past-logs-container">
       <div className="past-logs-scroll-area">
         <div className="past-logs-list">
-          {pastLogs.length === 0 ? (
-            <div className="past-logs-empty-message">기록이 없습니다.</div>
+          {!activeExerciseId ? (
+            <div className="past-logs-empty-message">기록 없음</div>
+          ) : pastLogs.length === 0 ? (
+            <div className="past-logs-empty-message">기록 없음</div>
           ) : pastLogs.map((log) => (
             <div key={log.id} className="glass-card past-logs-card">
               <div className="past-logs-card-header">

@@ -1,5 +1,5 @@
 -- Run this once in the Supabase SQL Editor to populate the exercises table.
--- 이 SQL 스크립트는 정제된 873개의 운동 마스터 데이터를 Supabase DB에 반영/업데이트합니다.
+-- 이 SQL 스크립트는 정제된 875개의 운동 마스터 데이터를 Supabase DB에 반영/업데이트합니다.
 
 INSERT INTO public.exercises (
   id,

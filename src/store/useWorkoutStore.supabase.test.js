@@ -48,6 +48,29 @@ beforeEach(() => {
 });
 
 describe('Workout Store: Supabase exercise master sync', () => {
+  test('setAuthSession keeps existing guest data when initial auth check has no session', async () => {
+    const guestRoutine = {
+      id: 'guest-routine',
+      name: '게스트 루틴',
+      user_id: guestUser.id,
+      created_at: '2026-05-29T00:00:00.000Z',
+      updated_at: '2026-05-29T00:00:00.000Z',
+    };
+
+    useWorkoutStore.setState({
+      currentUser: guestUser,
+      authSession: null,
+      routines: [guestRoutine],
+      workoutLogs: [{ id: 'guest-log', user_id: guestUser.id }],
+    });
+
+    await useWorkoutStore.getState().setAuthSession(null);
+
+    assert.deepEqual(useWorkoutStore.getState().routines, [guestRoutine]);
+    assert.equal(useWorkoutStore.getState().workoutLogs.length, 1);
+    assert.equal(supabaseMock.from.mock.calls.length, 0);
+  });
+
   test('fetchPublicExercises hydrates public DB rows into app exercise shape', async () => {
     const publicRows = [
       {

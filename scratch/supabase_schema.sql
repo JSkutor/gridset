@@ -158,7 +158,7 @@ CREATE INDEX IF NOT EXISTS idx_set_records_log ON public.set_records(workout_log
 -- ----------------------------------------------------
 -- These rows are shared by every user and are referenced by templates and workout logs.
 -- Run this once in the Supabase SQL Editor to populate the exercises table.
--- 이 SQL 스크립트는 정제된 873개의 운동 마스터 데이터를 Supabase DB에 반영/업데이트합니다.
+-- 이 SQL 스크립트는 정제된 875개의 운동 마스터 데이터를 Supabase DB에 반영/업데이트합니다.
 
 INSERT INTO public.exercises (
   id,
@@ -1066,13 +1066,13 @@ ON CONFLICT (id) DO UPDATE SET
 -- ----------------------------------------------------
 -- Supabase PostgREST requires both table privileges and passing RLS policies.
 -- Without these grants the client receives "permission denied for table ..." before RLS is evaluated.
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
 
 GRANT SELECT ON public.exercises TO anon;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.routines TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.exercises TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_exercises TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.workout_logs TO authenticated;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.set_records TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.routines TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.exercises TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_exercises TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.workout_logs TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.set_records TO authenticated, service_role;
