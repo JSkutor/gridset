@@ -228,9 +228,10 @@ const RoutineDetail = forwardRef((props, ref) => {
     if (!storeExercise) {
       storeExercise = addExercise(
         dictExercise.name,
-        dictExercise.primaryMuscle,
+        dictExercise.primaryMuscle || dictExercise.primary_muscle,
         dictExercise.equipment,
-        dictExercise.category === 'cardio' ? 'reps' : 'kg',
+        dictExercise.unit || (dictExercise.category === 'cardio' ? 'reps' : 'kg'),
+        dictExercise.is_unilateral ?? false,
       );
     }
 

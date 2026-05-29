@@ -81,12 +81,14 @@ const uniqueById = (items) => {
   });
 };
 
-const isPublicDefaultExercise = (exercise) => DEFAULT_EXERCISE_ID_SET.has(exercise?.id);
-
 const throwIfSupabaseError = (result) => {
   if (result.error) throw result.error;
   return result;
 };
+
+const isPublicMasterExercise = (exercise) => (
+  exercise?.user_id === null || DEFAULT_EXERCISE_ID_SET.has(exercise?.id)
+);
 
 export const useWorkoutStore = create(
   persist(
@@ -105,6 +107,21 @@ export const useWorkoutStore = create(
       authSession: null,
 
       // --- Supabase Actions ---
+      fetchPublicExercises: async () => {
+        const { data, error } = await supabase
+          .from('exercises')
+          .select('*')
+          .is('user_id', null)
+          .order('name', { ascending: true });
+
+        if (error) {
+          console.error('Failed to fetch public exercises from Supabase:', error);
+          return;
+        }
+
+        set({ exercises: mergeDefaultAndServerExercises(data || []) });
+      },
+
       syncExercisesForReferences: async (exerciseIds, userId) => {
         if (!userId || userId === GUEST_USER.id) return;
 
@@ -113,7 +130,7 @@ export const useWorkoutStore = create(
 
         const exercisesById = new Map(get().exercises.map(exercise => [exercise.id, exercise]));
         const rows = uniqueById(ids.map(id => exercisesById.get(id)))
-          .filter(exercise => !isPublicDefaultExercise(exercise))
+          .filter(exercise => !isPublicMasterExercise(exercise))
           .map(exercise => exerciseForSupabase(exercise, userId));
 
         if (rows.length === 0) return;
@@ -157,6 +174,7 @@ export const useWorkoutStore = create(
             workoutLogs: [],
             setRecords: []
           });
+          await get().fetchPublicExercises();
         }
       },
 
@@ -241,7 +259,7 @@ export const useWorkoutStore = create(
           set({ isSyncing: true });
           
           // 1. Bulk upsert exercises first so FK references in templates/logs are valid.
-          const customExercises = uniqueById(exercises).filter(exercise => !isPublicDefaultExercise(exercise));
+          const customExercises = uniqueById(exercises).filter(exercise => !isPublicMasterExercise(exercise));
           if (customExercises.length > 0) {
             const mappedExercises = customExercises.map(ex => exerciseForSupabase(ex, authUserId));
             const { error } = await supabase.from('exercises').upsert(mappedExercises);
@@ -952,7 +970,7 @@ export const useWorkoutStore = create(
               throwIfSupabaseError(await supabase.from('routines').delete().eq('user_id', currentUser.id));
               throwIfSupabaseError(await supabase.from('workout_logs').delete().eq('user_id', currentUser.id));
               
-              const customExercises = uniqueById(seedData.exercises).filter(exercise => !isPublicDefaultExercise(exercise));
+              const customExercises = uniqueById(seedData.exercises).filter(exercise => !isPublicMasterExercise(exercise));
               if (customExercises.length > 0) {
                 const exerciseRows = customExercises.map(exercise => exerciseForSupabase(exercise, currentUser.id));
                 throwIfSupabaseError(await supabase.from('exercises').upsert(exerciseRows));

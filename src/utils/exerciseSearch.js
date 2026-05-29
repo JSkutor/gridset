@@ -10,14 +10,16 @@ export function getExerciseSuggestions(query, exercises = EXERCISE_DICTIONARY, l
 
   return exercises
     .filter((exercise) => {
+      const englishName = exercise.englishName || exercise.english_name || '';
       if (matchHangul(exercise.name, query)) return true;
-      if (exercise.englishName && matchHangul(exercise.englishName, query)) return true;
+      if (englishName && matchHangul(englishName, query)) return true;
       if (exercise.synonyms?.some((syn) => matchHangul(syn, query))) return true;
       return false;
     })
     .map((exercise) => {
       const name = exercise.name.toLowerCase();
-      const engName = exercise.englishName ? exercise.englishName.toLowerCase() : '';
+      const englishName = exercise.englishName || exercise.english_name || '';
+      const engName = englishName ? englishName.toLowerCase() : '';
       const nameDisassembled = disassembleHangul(name);
       let score = 0;
 

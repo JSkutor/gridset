@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { Search, Dumbbell, Tag, Sparkles, Plus } from 'lucide-react';
 import { MUSCLE_GROUPS } from '../data/muscleGroups.js';
+import { useWorkoutStore } from '../store/useWorkoutStore.js';
 import { getExerciseSuggestions } from '../utils/exerciseSearch.js';
 
 const EQUIPMENTS = ['바벨', '덤벨', '머신', '맨몸', '케이블', '기타'];
@@ -17,7 +18,8 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
 
   const containerRef = useRef(null);
   const inputRef = useRef(null);
-  const suggestions = useMemo(() => getExerciseSuggestions(query), [query]);
+  const exercises = useWorkoutStore(state => state.exercises);
+  const suggestions = useMemo(() => getExerciseSuggestions(query, exercises), [query, exercises]);
 
   const handleCustomSelect = () => {
     if (!query.trim()) return;
@@ -233,7 +235,7 @@ export default function ExerciseAutocomplete({ onSelect, placeholder = '운동 �
                     border: '1px solid rgba(122, 162, 247, 0.15)'
                   }}>
                     <Dumbbell size={10} />
-                    {exercise.primaryMuscle}
+                    {exercise.primaryMuscle || exercise.primary_muscle}
                   </span>
                   
                   {/* 장비 태그 */}
