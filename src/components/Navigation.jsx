@@ -9,6 +9,8 @@ export default function Navigation({ activeTab, setActiveTab }) {
   ];
 
   const handleTabClick = (tabId) => {
+    if (tabId === activeTab) return;
+
     const currentIdx = tabs.findIndex((t) => t.id === activeTab);
     const targetIdx = tabs.findIndex((t) => t.id === tabId);
     const direction = targetIdx > currentIdx ? "forward" : "backward";

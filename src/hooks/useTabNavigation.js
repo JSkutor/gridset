@@ -113,6 +113,8 @@ export function useTabNavigation({
       event.preventDefault();
       event.stopImmediatePropagation();
 
+      if (targetTab === activeTab) return;
+
       // Determine direction from tab index order.
       const currentIdx = tabIds.indexOf(activeTab);
       const targetIdx = tabIds.indexOf(targetTab);

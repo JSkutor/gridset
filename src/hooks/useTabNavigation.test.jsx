@@ -85,4 +85,29 @@ describe('useTabNavigation', () => {
     expect(screen.getByTestId('active-tab').textContent).toBe('R');
     expect(stopImmediatePropagation).not.toHaveBeenCalled();
   });
+
+  test('ignores shortcut when the target tab is already active', () => {
+    const stopImmediatePropagationSpy = vi.spyOn(Event.prototype, 'stopImmediatePropagation');
+    const preventDefaultSpy = vi.spyOn(Event.prototype, 'preventDefault');
+    
+    render(React.createElement(TabNavigationMock));
+
+    const routineTab = screen.getByRole('button', { name: 'R' });
+    routineTab.focus();
+
+    fireEvent.keyDown(routineTab, {
+      code: 'KeyQ',
+      key: 'q',
+    });
+
+    // The tab should remain 'R'
+    expect(screen.getByTestId('active-tab').textContent).toBe('R');
+    
+    // The event should be captured, prevented, and stopped from propagation
+    expect(stopImmediatePropagationSpy).toHaveBeenCalled();
+    expect(preventDefaultSpy).toHaveBeenCalled();
+
+    stopImmediatePropagationSpy.mockRestore();
+    preventDefaultSpy.mockRestore();
+  });
 });
