@@ -64,4 +64,19 @@ describe('exerciseSearch: Exercise Search & Suggestions', () => {
   test('returns no results for empty queries', () => {
     assert.deepEqual(getExerciseSuggestions('   ', fixtures), []);
   });
+
+  test('supports Supabase snake_case exercise rows', () => {
+    const suggestions = getExerciseSuggestions('cable', [
+      {
+        id: 'cable-row',
+        name: '케이블 로우',
+        english_name: 'Cable Row',
+        primary_muscle: '광배근',
+        equipment: '케이블',
+        synonyms: [],
+      },
+    ]);
+
+    assert.equal(suggestions[0].id, 'cable-row');
+  });
 });
