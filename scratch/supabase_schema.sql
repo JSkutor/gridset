@@ -67,7 +67,7 @@ CREATE TABLE public.session_exercises (
 CREATE TABLE public.workout_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    session_id UUID REFERENCES public.sessions(id) ON DELETE SET NULL,
+    session_id UUID NOT NULL REFERENCES public.sessions(id) ON DELETE CASCADE,
     start_time TIMESTAMP WITH TIME ZONE NOT NULL,
     end_time TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,

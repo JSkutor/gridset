@@ -166,8 +166,10 @@ describe('Workout Store: Routine & Session Templates', () => {
 
 describe('Workout Store: Workout Log Persistence & Flow Integration', () => {
   test('deleteWorkoutLog removes its set records', () => {
+    const routine = useWorkoutStore.getState().addRoutine('테스트 루틴');
+    const session = useWorkoutStore.getState().addSession(routine.id, '테스트 세션');
     const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
-    const log = useWorkoutStore.getState().startWorkoutLog();
+    const log = useWorkoutStore.getState().startWorkoutLog(session.id);
     const setRecord = useWorkoutStore.getState().addSetRecord(log.id, bench.id, 1, 80, '8', 'both');
 
     useWorkoutStore.getState().deleteWorkoutLog(log.id);
@@ -312,7 +314,6 @@ describe('Workout Store: Seed Data & Resets', () => {
     assert.ok(state.routines.length >= 3);
     assert.equal(sessionsByRoutine.every((sessions) => sessions.length >= 4), true);
     assert.ok(state.sessionExercises.length > state.sessions.length);
-    assert.ok(state.workoutLogs.some((log) => log.session_id === null));
     assert.ok(state.workoutLogs.some((log) => log.end_time === null));
 
     const unilateralExerciseIds = new Set(

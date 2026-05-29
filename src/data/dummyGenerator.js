@@ -155,25 +155,7 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
   },
 ];
 
-const DUMMY_FREE_WORKOUTS = [
-  {
-    daysAgo: 45,
-    startHour: 21,
-    durationMin: 15,
-    groups: [
-      { name: '플랭크', sets: [{ record: 50, memo: '출장지 호텔방 코어 자극' }, { record: 45 }] },
-    ],
-  },
-  {
-    daysAgo: 15,
-    startHour: 6,
-    durationMin: 20,
-    groups: [
-      { name: '덤벨 숄더 프레스', sets: [{ weight: 10, record: 12 }, { weight: 10, record: 10, memo: '아침 가볍게 펌핑' }] },
-      { name: '플랭크', sets: [{ record: 60 }] },
-    ],
-  },
-];
+
 
 // MEMO PUZZLE
 const MEMOS_GOOD = [
@@ -230,7 +212,6 @@ function getDummyRequiredExerciseNames() {
       ...DUMMY_ROUTINE_BLUEPRINTS.flatMap((routine) =>
         routine.sessions.flatMap((session) => session.exercises.map((exercise) => exercise.name)),
       ),
-      ...DUMMY_FREE_WORKOUTS.flatMap((workout) => workout.groups.map((group) => group.name)),
     ]),
   ];
 }
@@ -645,43 +626,7 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
     }
   }
 
-  // 3. 자유 운동 추가
-  DUMMY_FREE_WORKOUTS.forEach((workout) => {
-    const start = getPastDate(workout.daysAgo, workout.startHour, 10);
-    const end = addMinutes(start, workout.durationMin);
-    const timestamp = start.toISOString();
-    const logId = generateUUID();
 
-    workoutLogs.push({
-      id: logId,
-      user_id: userId,
-      session_id: null,
-      start_time: timestamp,
-      end_time: end.toISOString(),
-      created_at: timestamp,
-      updated_at: end.toISOString(),
-    });
-
-    workout.groups.forEach((group) => {
-      const exercise = exercisesByName.get(normalizeExerciseName(group.name));
-      if (!exercise) return;
-
-      group.sets.forEach((set, index) => {
-        setRecords.push({
-          id: generateUUID(),
-          workout_log_id: logId,
-          exercise_id: exercise.id,
-          set_number: index + 1,
-          weight: set.weight ?? 0,
-          record: String(set.record),
-          side: 'both',
-          memo: set.memo || null,
-          created_at: timestamp,
-          updated_at: end.toISOString(),
-        });
-      });
-    });
-  });
 
   return {
     exercises,

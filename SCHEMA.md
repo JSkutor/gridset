@@ -120,13 +120,13 @@ workout_logs (실제 수행 기록, 세션 참조)
 
 ## 5. `workout_logs` (일일 운동 수행 기록)
 
-유저가 실제로 운동을 수행한 날의 기록입니다. 어떤 세션을 기반으로 운동했는지 참조하며, 자유 운동(세션 미지정)도 지원합니다.
+유저가 실제로 운동을 수행한 날의 기록입니다. 어떤 세션을 기반으로 운동했는지 참조합니다. (세션 필수 지정)
 
 일일 로그가 필요한 이유: 같은 세션 템플릿을 여러 날에 반복 수행하므로, 수행 시점(날짜/시간)과 세션 템플릿을 분리해서 저장해야 히스토리 추적이 가능합니다.
 
 - `id` (UUID, PK)
 - `user_id` (String)
-- `session_id` (UUID, Nullable, FK → `sessions.id`): 기반 세션 (자유 운동 시 Null)
+- `session_id` (UUID, FK → `sessions.id`): 기반 세션 (NOT NULL)
 - `start_time` (Timestamp): 운동 시작 시간
 - `end_time` (Timestamp, Nullable): 운동 종료 시간 (진행 중 Null)
 - `created_at` / `updated_at`

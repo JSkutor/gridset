@@ -537,7 +537,10 @@ export const useWorkoutStore = create(
       },
 
       // --- Actions: Workout Logs ---
-      startWorkoutLog: (session_id = null) => {
+      startWorkoutLog: (session_id) => {
+        if (!session_id) {
+          throw new Error('session_id is required to start a workout log.');
+        }
         const { currentUser } = get();
         const newLog = {
           id: generateUUID(),
@@ -586,6 +589,9 @@ export const useWorkoutStore = create(
         }
       },
       saveWorkoutLog: (session_id, blocks, start_time) => {
+        if (!session_id) {
+          throw new Error('session_id is required to save a workout log.');
+        }
         const { currentUser } = get();
         const logId = generateUUID();
         const endTime = new Date().toISOString();

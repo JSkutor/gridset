@@ -5,7 +5,6 @@ import { useTabNavigation } from '../hooks/useTabNavigation';
 import { getMonthStart, groupByDate } from '../utils/logFormatters';
 import {
   buildExerciseSummaries,
-  buildFreeWorkoutSummary,
   buildLogSummaries,
   buildRoutineSummaries,
 } from '../utils/logSummaries';
@@ -90,7 +89,6 @@ export default function LogPage({ isActive = true }) {
   const logsByDate = useMemo(() => groupByDate(logSummaries, (log) => log.startDate), [logSummaries]);
   const exerciseSummaries = useMemo(() => buildExerciseSummaries(logSummaries, exercisesById), [logSummaries, exercisesById]);
   const routineSummaries = useMemo(() => buildRoutineSummaries(routines, sessions, sessionExercises, exercisesById, logSummaries), [routines, sessions, sessionExercises, exercisesById, logSummaries]);
-  const freeWorkoutSummary = useMemo(() => buildFreeWorkoutSummary(logSummaries, exercisesById), [logSummaries, exercisesById]);
 
   // ── Date Navigation State ──
   const initialDate = logSummaries[0]?.startDate || new Date();
@@ -130,7 +128,6 @@ export default function LogPage({ isActive = true }) {
         {activeView === 'routine' && (
           <RoutineTimeline
             routineSummaries={routineSummaries}
-            freeWorkoutSummary={freeWorkoutSummary}
           />
         )}
       </div>

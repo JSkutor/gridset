@@ -130,23 +130,4 @@ export function buildRoutineSummaries(routines, sessions, sessionExercises, exer
   });
 }
 
-export function buildFreeWorkoutSummary(logSummaries, exercisesById) {
-  const freeLogs = logSummaries.filter((log) => !log.session_id);
-  if (freeLogs.length === 0) return null;
 
-  const sortedLogs = freeLogs.slice().sort((a, b) => a.startDate.getTime() - b.startDate.getTime());
-  const exerciseMap = new Map();
-  freeLogs.forEach((log) => {
-    log.records.forEach((record) => {
-      const exercise = exercisesById.get(record.exercise_id);
-      if (exercise) exerciseMap.set(exercise.id, exercise);
-    });
-  });
-
-  return {
-    firstDate: sortedLogs[0].startDate,
-    lastDate: sortedLogs[sortedLogs.length - 1].startDate,
-    logCount: freeLogs.length,
-    exercises: [...exerciseMap.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
-  };
-}

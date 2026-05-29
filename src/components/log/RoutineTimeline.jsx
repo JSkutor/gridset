@@ -26,19 +26,6 @@ function getBranchPath(sourceX, targetX) {
 // ─── Branch Card Data Builder ────────────────────────────────
 
 function buildBranches(selectedEvent, selectedSessions, selectedExercises) {
-  if (selectedEvent?.type === 'free') {
-    return [{
-      id: 'free-workout-branch',
-      title: '자유 운동',
-      detail: selectedEvent.lastDate
-        ? `${formatDate(selectedEvent.lastDate, { month: 'short', day: 'numeric' })} 최근`
-        : '루틴 없이 기록',
-      meta: `${selectedEvent.logCount}회`,
-      exercises: selectedExercises,
-      color: '#9AA4BC',
-      type: 'free',
-    }];
-  }
 
   if (selectedSessions.length > 0) {
     return selectedSessions.map((session) => ({
@@ -153,7 +140,7 @@ function useHorizontalScroll(timelineScrollRef, updateBranchSource) {
 
 // ─── Main Component ──────────────────────────────────────────
 
-export default function RoutineTimeline({ routineSummaries, freeWorkoutSummary }) {
+export default function RoutineTimeline({ routineSummaries }) {
   const [selectedEventId, setSelectedEventId] = useState(null);
   const timelineScrollRef = useRef(null);
   const activeCommitRef = useRef(null);
@@ -162,7 +149,7 @@ export default function RoutineTimeline({ routineSummaries, freeWorkoutSummary }
   const { branchSourceX, updateBranchSource } = useBranchSourceTracking(activeCommitRef, branchStageRef);
 
   const timelineEvents = useMemo(() => {
-    const routineEvents = routineSummaries.map((routine) => {
+    return routineSummaries.map((routine) => {
       const uniqueExercises = new Map();
       routine.sessions.forEach((session) => {
         session.exercises.forEach((exercise) => uniqueExercises.set(exercise.id, exercise));
@@ -174,25 +161,12 @@ export default function RoutineTimeline({ routineSummaries, freeWorkoutSummary }
         title: routine.name,
         exercises: [...uniqueExercises.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
       };
-    });
-
-    const freeEvent = freeWorkoutSummary
-      ? [{
-          ...freeWorkoutSummary,
-          id: 'free-workout',
-          type: 'free',
-          title: '자유 운동',
-          sessions: [],
-          exerciseCount: freeWorkoutSummary.exercises.length,
-        }]
-      : [];
-
-    return [...routineEvents, ...freeEvent].sort((a, b) => {
+    }).sort((a, b) => {
       const dateA = a.firstDate?.getTime() || 0;
       const dateB = b.firstDate?.getTime() || 0;
       return dateA - dateB;
     });
-  }, [routineSummaries, freeWorkoutSummary]);
+  }, [routineSummaries]);
 
   const latestEventId = timelineEvents[timelineEvents.length - 1]?.id || null;
   const selectedEvent = timelineEvents.find((event) => event.id === selectedEventId) || timelineEvents[timelineEvents.length - 1] || null;
