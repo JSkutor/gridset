@@ -9,31 +9,16 @@ export function useWorkoutSessionRotation() {
 
   const [selectedSessionId, setSelectedSessionId] = useState(null);
 
-  // 1. 최신 루틴 (완료된 수행 로그의 세션 기준 -> 없으면 수정일/생성일 최신 루틴)
+  // 1. 최신 루틴 (생성일이 가장 최신인 루틴)
   const latestRoutine = useMemo(() => {
     if (routines.length === 0) return null;
 
-    // session_id가 매핑된 운동 로그를 수행 시작 최신순으로 정렬
-    const completedLogs = [...workoutLogs]
-      .filter(log => log.session_id)
-      .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
-
-    if (completedLogs.length > 0) {
-      const latestSessionId = completedLogs[0].session_id;
-      const latestSession = sessions.find(s => s.id === latestSessionId);
-      if (latestSession) {
-        const routineOfLatestSession = routines.find(r => r.id === latestSession.routine_id);
-        if (routineOfLatestSession) return routineOfLatestSession;
-      }
-    }
-
-    // 수행 로그가 없는 경우: 생성/수정일이 가장 최신인 루틴
     return [...routines].sort((a, b) => {
-      const timeA = new Date(a.updated_at || a.created_at).getTime();
-      const timeB = new Date(b.updated_at || b.created_at).getTime();
+      const timeA = new Date(a.created_at || 0).getTime();
+      const timeB = new Date(b.created_at || 0).getTime();
       return timeB - timeA;
     })[0];
-  }, [routines, sessions, workoutLogs]);
+  }, [routines]);
 
   // 2. 최신 루틴에 포함된 정규 세션들 (session_order 기준 순서 정렬)
   const latestRoutineRegularSessions = useMemo(() => {

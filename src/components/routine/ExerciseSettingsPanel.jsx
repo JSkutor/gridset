@@ -14,6 +14,7 @@ export default function ExerciseSettingsPanel({
   onSettingValueKeyDown,
   onUpdateTarget,
   onPanelFocus,
+  isReadOnly,
 }) {
   return (
     <div
@@ -46,6 +47,7 @@ export default function ExerciseSettingsPanel({
             onSettingControlRef={onSettingControlRef}
             onSettingValueKeyDown={onSettingValueKeyDown}
             onUpdateTarget={onUpdateTarget}
+            isReadOnly={isReadOnly}
           />
         ) : (
           <div
@@ -74,6 +76,7 @@ function ExerciseSettings({
   onSettingControlRef,
   onSettingValueKeyDown,
   onUpdateTarget,
+  isReadOnly,
 }) {
   const reps = Number.parseInt(selectedExerciseLink.target_record, 10) || 10;
   const restBetweenSets = selectedExerciseLink.rest_between_sets ?? 90;
@@ -156,6 +159,7 @@ function ExerciseSettings({
             )
           }
           unit="세트"
+          disabled={isReadOnly}
         />
       </SettingRow>
 
@@ -191,6 +195,7 @@ function ExerciseSettings({
             );
           }}
           unit="회"
+          disabled={isReadOnly}
         />
       </SettingRow>
 
@@ -219,6 +224,7 @@ function ExerciseSettings({
                 ),
             );
           }}
+          disabled={isReadOnly}
         />
       </SettingRow>
 
@@ -251,6 +257,7 @@ function ExerciseSettings({
                 ),
             );
           }}
+          disabled={isReadOnly}
         />
       </SettingRow>
 
@@ -277,7 +284,7 @@ function ExerciseSettings({
                   }),
               );
             }}
-            disabled={!isCustom}
+            disabled={!isCustom || isReadOnly}
           />
         </div>
       </SettingRow>

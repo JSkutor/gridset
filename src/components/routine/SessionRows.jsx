@@ -25,6 +25,7 @@ export function SessionEditRow({ session, editingName, onEditingNameChange, onFi
         type="text"
         value={editingName}
         onChange={(event) => onEditingNameChange(event.target.value)}
+        maxLength={100}
         autoFocus
         placeholder="세션 이름"
         onFocus={(event) => event.currentTarget.select()}
@@ -94,6 +95,7 @@ export function SessionRow({
   onSelect,
   onStartEdit,
   onDelete,
+  isReadOnly,
 }) {
   const isTemporary = isTemporarySession(session);
   const sessionDayLetter = getSessionDayLetter(session, sessions);
@@ -158,7 +160,7 @@ export function SessionRow({
         </div>
       </div>
 
-      {isHighlighted && (
+      {isHighlighted && !isReadOnly && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} onClick={event => event.stopPropagation()}>
           <SmallRowButton
             color="var(--accent)"

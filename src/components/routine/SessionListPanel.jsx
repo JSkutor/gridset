@@ -33,12 +33,12 @@ export default function SessionListPanel({
   onCreateTemporarySession,
   onSelectSession,
   onSessionKeyDown,
-  onTemporarySessionKeyDown,
   onAddSessionButtonKeyDown,
   onSessionRef,
   addSessionBtnRef,
   onPanelFocus,
   onAddButtonFocus,
+  isReadOnly,
 }) {
   const scrollContainerRef = useRef(null);
 
@@ -75,6 +75,7 @@ export default function SessionListPanel({
           onSave={onSaveRoutineName}
           onCancel={onCancelRoutineNameEdit}
           onDelete={onDeleteRoutine}
+          isReadOnly={isReadOnly}
         />
       )}
 
@@ -97,59 +98,12 @@ export default function SessionListPanel({
         )}
       </div>
 
-      {routine && (
-        <div className="routine-temporary-session-zone">
-          <div className="routine-temporary-session-heading">
-            <span>
-              <Clock size={12} />
-              임시 세션
-            </span>
-            <b>순서 제외 · 최대 1개</b>
-          </div>
-
-          {!temporarySession ? (
-            <button
-              type="button"
-              className="routine-temporary-session-create"
-              onClick={onCreateTemporarySession}
-              onFocus={onPanelFocus}
-            >
-              <Plus size={14} />
-              임시 세션 설정
-            </button>
-          ) : isTemporarySessionEditing ? (
-            <SessionEditRow
-              session={temporarySession}
-              editingName={editingSessionName}
-              onEditingNameChange={onEditingSessionNameChange}
-              onFinish={onFinishSessionEdit}
-              onCancel={onCancelSessionEdit}
-            />
-          ) : (
-            <SessionRow
-              refCallback={element => onSessionRef(temporarySession.id, element)}
-              session={temporarySession}
-              index={-1}
-              sessions={sessions}
-              exerciseCount={temporaryExerciseCount}
-              isActive={isTemporarySessionActive}
-              isHighlighted={isTemporarySessionActive && isPanelFocused}
-              onKeyDown={onTemporarySessionKeyDown}
-              onFocus={onPanelFocus}
-              onSelect={onSelectSession}
-              onStartEdit={onStartSessionEdit}
-              onDelete={onDeleteSession}
-            />
-          )}
-        </div>
-      )}
-
       <div ref={scrollContainerRef} className="session-scroll-container" style={{ flex: 1, overflowY: 'auto', padding: '0 8px 16px' }}>
         {!routine ? (
           <EmptyPanelText>루틴을 선택하거나 추가해주세요</EmptyPanelText>
         ) : (
           <>
-            {routineSessions.length === 0 ? (
+            {routineSessions.length === 0 && !temporarySession ? (
               <EmptyPanelText>세션이 없습니다</EmptyPanelText>
             ) : (
               <LayoutGroup id={`routine-sessions-${routine.id}`}>
@@ -187,24 +141,71 @@ export default function SessionListPanel({
                         onSelect={onSelectSession}
                         onStartEdit={onStartSessionEdit}
                         onDelete={onDeleteSession}
+                        isReadOnly={isReadOnly}
                       />
                     );
                   })}
+
+                  {temporarySession && (
+                    isTemporarySessionEditing ? (
+                      <SessionEditRow
+                        key={temporarySession.id}
+                        session={temporarySession}
+                        editingName={editingSessionName}
+                        onEditingNameChange={onEditingSessionNameChange}
+                        onFinish={onFinishSessionEdit}
+                        onCancel={onCancelSessionEdit}
+                      />
+                    ) : (
+                      <SessionRow
+                        key={temporarySession.id}
+                        refCallback={element => onSessionRef(temporarySession.id, element)}
+                        session={temporarySession}
+                        index={routineSessions.length}
+                        sessions={sessions}
+                        exerciseCount={temporaryExerciseCount}
+                        isActive={isTemporarySessionActive}
+                        isHighlighted={isTemporarySessionActive && isPanelFocused}
+                        onKeyDown={onSessionKeyDown}
+                        onFocus={onPanelFocus}
+                        onSelect={onSelectSession}
+                        onStartEdit={onStartSessionEdit}
+                        onDelete={onDeleteSession}
+                        isReadOnly={isReadOnly}
+                      />
+                    )
+                  )}
                 </div>
               </LayoutGroup>
             )}
 
-            {canAddSession && !isAddingSessionRow && (
-              <RoutineAddButton
-                ref={addSessionBtnRef}
-                label="세션 추가"
-                onFocus={onAddButtonFocus}
-                onClick={() => {
-                  onAddSession();
-                  scrollToBottom();
-                }}
-                onKeyDown={onAddSessionButtonKeyDown}
-              />
+            {!isReadOnly && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '8px', padding: '0 4px' }}>
+                {canAddSession && !isAddingSessionRow && (
+                  <RoutineAddButton
+                    ref={addSessionBtnRef}
+                    label="세션 추가"
+                    onFocus={onAddButtonFocus}
+                    onClick={() => {
+                      onAddSession();
+                      scrollToBottom();
+                    }}
+                    onKeyDown={onAddSessionButtonKeyDown}
+                  />
+                )}
+
+                {!temporarySession && (
+                  <button
+                    type="button"
+                    className="routine-temporary-session-create-condensed"
+                    onClick={onCreateTemporarySession}
+                    onFocus={onAddButtonFocus}
+                  >
+                    <Clock size={11} />
+                    임시 세션 추가
+                  </button>
+                )}
+              </div>
             )}
           </>
         )}

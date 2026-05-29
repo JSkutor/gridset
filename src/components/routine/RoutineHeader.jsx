@@ -1,4 +1,4 @@
-import { Check, Pencil, Trash2, X } from 'lucide-react';
+import { Check, Pencil, Trash2, X, Lock } from 'lucide-react';
 
 export default function RoutineHeader({
   routine,
@@ -9,6 +9,7 @@ export default function RoutineHeader({
   onSave,
   onCancel,
   onDelete,
+  isReadOnly,
 }) {
   return (
     <div style={{
@@ -32,6 +33,7 @@ export default function RoutineHeader({
             type="text"
             value={editingName}
             onChange={(event) => onEditingNameChange(event.target.value)}
+            maxLength={100}
             autoFocus
             onKeyDown={(event) => {
               if (event.key === 'Enter') {
@@ -85,38 +87,58 @@ export default function RoutineHeader({
         </div>
       ) : (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
-          <div style={{
-            fontSize: '20px',
-            fontWeight: '700',
-            color: 'var(--text-bright)',
-            letterSpacing: '-0.02em',
-            wordBreak: 'break-all',
-            flex: 1,
-          }}>
-            {routine.name}
+          <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '8px', flex: 1 }}>
+            <div style={{
+              fontSize: '20px',
+              fontWeight: '700',
+              color: 'var(--text-bright)',
+              letterSpacing: '-0.02em',
+              wordBreak: 'break-all',
+            }}>
+              {routine.name}
+            </div>
+            {isReadOnly && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                fontSize: '10px',
+                fontWeight: '600',
+                padding: '3px 8px',
+                borderRadius: '20px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                color: 'var(--text-muted)',
+              }}>
+                <Lock size={10} />
+                보관됨
+              </div>
+            )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <IconButton
-              color="var(--accent)"
-              hoverBackground="rgba(122,162,247,0.08)"
-              onClick={(event) => {
-                event.stopPropagation();
-                onStartEdit();
-              }}
-            >
-              <Pencil size={13} />
-            </IconButton>
-            <IconButton
-              color="#f77a7a"
-              hoverBackground="rgba(247,122,122,0.08)"
-              onClick={(event) => {
-                event.stopPropagation();
-                onDelete();
-              }}
-            >
-              <Trash2 size={13} />
-            </IconButton>
-          </div>
+          {!isReadOnly && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <IconButton
+                color="var(--accent)"
+                hoverBackground="rgba(122,162,247,0.08)"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onStartEdit();
+                }}
+              >
+                <Pencil size={13} />
+              </IconButton>
+              <IconButton
+                color="#f77a7a"
+                hoverBackground="rgba(247,122,122,0.08)"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onDelete();
+                }}
+              >
+                <Trash2 size={13} />
+              </IconButton>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -152,7 +152,7 @@ export default function RoutineTabs({
                     flexDirection: 'column',
                     gap: '2px',
                   }}>
-                    {[...routines].reverse().map(routine => (
+                    {routines.map(routine => (
                       <button
                         key={routine.id}
                         onClick={() => {
@@ -195,7 +195,7 @@ export default function RoutineTabs({
         )}
       </div>
 
-      {[...routines].reverse().map(routine => {
+      {routines.map(routine => {
         const isActive = routine.id === activeRoutineId;
         return (
           <div key={routine.id} style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>

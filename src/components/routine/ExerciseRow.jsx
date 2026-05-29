@@ -17,6 +17,7 @@ export default function ExerciseRow({
   onFocus,
   onSelect,
   onDelete,
+  isReadOnly,
 }) {
   return (
     <motion.div
@@ -93,34 +94,36 @@ export default function ExerciseRow({
       </span>
 
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-        <button
-          onClick={(event) => {
-            event.stopPropagation();
-            onDelete(sessionExercise.id);
-          }}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            padding: '4px',
-            opacity: 0,
-            borderRadius: '4px',
-            flexShrink: 0,
-            transition: 'opacity 0.15s, color 0.15s',
-          }}
-          className="exercise-delete-btn"
-          onMouseEnter={event => {
-            event.currentTarget.style.color = '#f77a7a';
-            event.currentTarget.style.opacity = '1';
-          }}
-          onMouseLeave={event => {
-            event.currentTarget.style.color = 'var(--text-muted)';
-            event.currentTarget.style.opacity = '0';
-          }}
-        >
-          <Trash2 size={13} />
-        </button>
+        {!isReadOnly && (
+          <button
+            onClick={(event) => {
+              event.stopPropagation();
+              onDelete(sessionExercise.id);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--text-muted)',
+              cursor: 'pointer',
+              padding: '4px',
+              opacity: 0,
+              borderRadius: '4px',
+              flexShrink: 0,
+              transition: 'opacity 0.15s, color 0.15s',
+            }}
+            className="exercise-delete-btn"
+            onMouseEnter={event => {
+              event.currentTarget.style.color = '#f77a7a';
+              event.currentTarget.style.opacity = '1';
+            }}
+            onMouseLeave={event => {
+              event.currentTarget.style.color = 'var(--text-muted)';
+              event.currentTarget.style.opacity = '0';
+            }}
+          >
+            <Trash2 size={13} />
+          </button>
+        )}
       </div>
     </motion.div>
   );

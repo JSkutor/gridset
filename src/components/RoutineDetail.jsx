@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useRoutineKeyboardNavigation } from '../hooks/useRoutineKeyboardNavigation';
 import {
@@ -15,6 +15,13 @@ import SessionListPanel from './routine/SessionListPanel';
 
 const RoutineDetail = forwardRef((props, ref) => {
   const routines = useWorkoutStore(state => state.routines);
+  const sortedRoutines = useMemo(() => {
+    return [...routines].sort((a, b) => {
+      const timeA = new Date(a.created_at || 0).getTime();
+      const timeB = new Date(b.created_at || 0).getTime();
+      return timeB - timeA;
+    });
+  }, [routines]);
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
   const exercises = useWorkoutStore(state => state.exercises);
@@ -34,7 +41,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   const reorderSessions = useWorkoutStore(state => state.reorderSessions);
   const reorderSessionExercises = useWorkoutStore(state => state.reorderSessionExercises);
 
-  const [selectedRoutineId, setSelectedRoutineId] = useState(routines[0]?.id || null);
+  const [selectedRoutineId, setSelectedRoutineId] = useState(null);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
   const [isAddingExerciseRow, setIsAddingExerciseRow] = useState(false);
@@ -108,8 +115,10 @@ const RoutineDetail = forwardRef((props, ref) => {
     setFocusedRoutinePanel('sessions');
   };
 
-  const effectiveRoutineId = selectedRoutineId || routines[0]?.id || null;
-  const effectiveRoutine = routines.find(routine => routine.id === effectiveRoutineId) || null;
+  const effectiveRoutineId = selectedRoutineId || sortedRoutines[0]?.id || null;
+  const effectiveRoutine = sortedRoutines.find(routine => routine.id === effectiveRoutineId) || null;
+  const isReadOnly = Boolean(effectiveRoutineId && sortedRoutines[0] && effectiveRoutineId !== sortedRoutines[0].id);
+
   const effectiveRoutineSessions = getRegularRoutineSessions(sessions, effectiveRoutineId);
   const effectiveTemporarySession = getRoutineTemporarySession(sessions, effectiveRoutineId);
   const effectiveSessionOptions = effectiveTemporarySession
@@ -159,6 +168,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     setSelectedExerciseId,
     setIsAddingExerciseRow,
     setFocusedRoutinePanel,
+    isReadOnly,
   });
 
   useImperativeHandle(ref, () => ({
@@ -176,13 +186,13 @@ const RoutineDetail = forwardRef((props, ref) => {
   };
 
   const handleStartRoutineNameEdit = () => {
-    if (!effectiveRoutine) return;
+    if (!effectiveRoutine || isReadOnly) return;
     setIsEditingRoutineName(true);
     setEditingRoutineNameVal(effectiveRoutine.name);
   };
 
   const handleSaveRoutineName = () => {
-    if (effectiveRoutine && editingRoutineNameVal.trim()) {
+    if (effectiveRoutine && editingRoutineNameVal.trim() && !isReadOnly) {
       updateRoutine(effectiveRoutine.id, editingRoutineNameVal.trim());
     }
     setIsEditingRoutineName(false);
@@ -193,17 +203,17 @@ const RoutineDetail = forwardRef((props, ref) => {
   };
 
   const handleDeleteRoutine = () => {
-    if (!effectiveRoutine) return;
+    if (!effectiveRoutine || isReadOnly) return;
     if (confirm('이 루틴을 완전히 삭제하시겠습니까? 모든 세션과 설정이 함께 제거됩니다.')) {
       deleteRoutine(effectiveRoutine.id);
-      const remainingRoutines = routines.filter(routine => routine.id !== effectiveRoutine.id);
-      const nextRoutine = remainingRoutines[remainingRoutines.length - 1] || null;
+      const remainingRoutines = sortedRoutines.filter(routine => routine.id !== effectiveRoutine.id);
+      const nextRoutine = remainingRoutines[0] || null;
       handleSelectRoutine(nextRoutine ? nextRoutine.id : null);
     }
   };
 
   const handleAddSession = () => {
-    if (!effectiveRoutineId || !canAddSession) return;
+    if (!effectiveRoutineId || !canAddSession || isReadOnly) return;
     const newSession = addSession(effectiveRoutineId, `새 세션 ${effectiveRoutineSessions.length + 1}`);
     if (!newSession) return;
 
@@ -218,7 +228,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   };
 
   const handleCreateTemporarySession = () => {
-    if (!effectiveRoutineId || effectiveTemporarySession) return;
+    if (!effectiveRoutineId || effectiveTemporarySession || isReadOnly) return;
     const newSession = createTemporarySession(effectiveRoutineId, '임시 세션');
     if (!newSession) return;
 
@@ -233,11 +243,13 @@ const RoutineDetail = forwardRef((props, ref) => {
   };
 
   const handleStartSessionEdit = (session) => {
+    if (isReadOnly) return;
     setEditingSessionId(session.id);
     setEditingSessionNameVal(session.name);
   };
 
   const finishSessionEdit = (session) => {
+    if (isReadOnly) return;
     if (editingSessionNameVal.trim()) {
       updateSession(session.id, editingSessionNameVal.trim());
     }
@@ -279,6 +291,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   };
 
   const handleDeleteSession = (session) => {
+    if (isReadOnly) return;
     const confirmMessage = isTemporarySession(session)
       ? '임시 세션을 삭제하시겠습니까? 등록한 운동 구성도 함께 제거됩니다.'
       : '이 세션을 삭제하시겠습니까?';
@@ -290,43 +303,8 @@ const RoutineDetail = forwardRef((props, ref) => {
     }
   };
 
-  const handleTemporarySessionKeyDown = (event) => {
-    switch (event.key) {
-      case 'ArrowDown': {
-        event.preventDefault();
-        if (effectiveRoutineSessions.length > 0) {
-          handleSelectSession(effectiveRoutineSessions[0].id);
-          focusSessionRow(effectiveRoutineSessions[0].id, 0);
-        } else if (canAddSession) {
-          focusSessionAddButton(0);
-        }
-        break;
-      }
-      case 'ArrowRight': {
-        event.preventDefault();
-        if (!effectiveTemporarySession) return;
-        handleSelectSession(effectiveTemporarySession.id);
-        if (effectiveSessionId !== effectiveTemporarySession.id) return;
-        if (activeSessionExercises.length > 0) {
-          setSelectedExerciseId(activeSessionExercises[0].id);
-        } else if (!isAddingExerciseRow) {
-          setTimeout(() => addExerciseBtnRef.current?.focus(), 20);
-        }
-        break;
-      }
-      case 'Enter':
-      case ' ': {
-        event.preventDefault();
-        if (effectiveTemporarySession) handleSelectSession(effectiveTemporarySession.id);
-        break;
-      }
-      default:
-        break;
-    }
-  };
-
   const handleAddExerciseToSession = (dictExercise) => {
-    if (!effectiveSession?.id) return;
+    if (!effectiveSession?.id || isReadOnly) return;
 
     let storeExercise = exercises.find(exercise => exercise.name.toLowerCase() === dictExercise.name.toLowerCase());
     if (!storeExercise) {
@@ -359,15 +337,18 @@ const RoutineDetail = forwardRef((props, ref) => {
   }, [activeSessionExercises.length]);
 
   const handleDeleteExercise = (id) => {
+    if (isReadOnly) return;
     deleteSessionExercise(id);
     if (selectedExerciseId === id) setSelectedExerciseId(null);
   };
 
   const handleUpdateTarget = (id, field, value) => {
+    if (isReadOnly) return;
     updateSessionExercise(id, { [field]: value });
   };
 
   const handleStartAddingExercise = () => {
+    if (isReadOnly) return;
     setSelectedExerciseId(null);
     setIsAddingExerciseRow(true);
     setFocusedRoutinePanel('exercises');
@@ -391,7 +372,7 @@ const RoutineDetail = forwardRef((props, ref) => {
       style={{ position: 'relative', display: 'flex', flexDirection: 'column', height: '100%', flex: 1, minHeight: 0, gap: 0 }}
     >
       <RoutineTabs
-        routines={routines}
+        routines={sortedRoutines}
         activeRoutineId={effectiveRoutineId}
         onSelectRoutine={handleSelectRoutine}
         onCreateRoutine={handleCreateRoutine}
@@ -433,12 +414,12 @@ const RoutineDetail = forwardRef((props, ref) => {
           onCreateTemporarySession={handleCreateTemporarySession}
           onSelectSession={handleSelectSession}
           onSessionKeyDown={handleSessionKeyDown}
-          onTemporarySessionKeyDown={handleTemporarySessionKeyDown}
           onAddSessionButtonKeyDown={handleAddSessionButtonKeyDown}
           onSessionRef={setSessionRef}
           addSessionBtnRef={addSessionBtnRef}
           onPanelFocus={() => setFocusedRoutinePanel('sessions')}
           onAddButtonFocus={() => setFocusedRoutinePanel('session-add')}
+          isReadOnly={isReadOnly}
         />
 
         <SessionExerciseListPanel
@@ -459,6 +440,7 @@ const RoutineDetail = forwardRef((props, ref) => {
           onStartAddingExercise={handleStartAddingExercise}
           onCancelAddingExercise={handleCancelAddingExercise}
           onPanelFocus={() => setFocusedRoutinePanel('exercises')}
+          isReadOnly={isReadOnly}
         />
 
         <ExerciseSettingsPanel
@@ -468,6 +450,7 @@ const RoutineDetail = forwardRef((props, ref) => {
           onSettingValueKeyDown={handleSettingValueKeyDown}
           onUpdateTarget={handleUpdateTarget}
           onPanelFocus={() => setFocusedRoutinePanel('settings')}
+          isReadOnly={isReadOnly}
         />
       </div>
     </div>

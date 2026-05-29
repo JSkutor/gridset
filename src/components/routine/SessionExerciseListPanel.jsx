@@ -24,6 +24,7 @@ export default function SessionExerciseListPanel({
   onStartAddingExercise,
   onCancelAddingExercise,
   onPanelFocus,
+  isReadOnly,
 }) {
   const scrollContainerRef = useRef(null);
   const isTemporary = isTemporarySession(session);
@@ -107,6 +108,7 @@ export default function SessionExerciseListPanel({
                         onFocus={onPanelFocus}
                         onSelect={onSelectExercise}
                         onDelete={onDeleteExercise}
+                        isReadOnly={isReadOnly}
                       />
                     );
                   })}
@@ -132,7 +134,7 @@ export default function SessionExerciseListPanel({
               />
             )}
 
-            {!isAddingExerciseRow && (
+            {!isAddingExerciseRow && !isReadOnly && (
               <RoutineAddButton
                 ref={addExerciseBtnRef}
                 label="운동 추가"

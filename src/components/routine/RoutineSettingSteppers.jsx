@@ -10,26 +10,27 @@ export function SettingRow({ label, icon, children }) {
   );
 }
 
-export function NumberStepper({ value, min, max, onChange, unit, valueRef, onValueKeyDown }) {
+export function NumberStepper({ value, min, max, onChange, unit, valueRef, onValueKeyDown, disabled }) {
   return (
-    <div className="setting-stepper-container">
+    <div className="setting-stepper-container" style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
       <button
         onClick={() => onChange(Math.max(min, value - 1))}
         className="setting-stepper-btn"
         aria-label={`${unit} 줄이기`}
+        disabled={disabled}
       >
         −
       </button>
       <span
-        ref={valueRef}
+        ref={disabled ? null : valueRef}
         className="setting-stepper-value setting-stepper-display-value"
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
         role="spinbutton"
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
         aria-label={`${unit} 값`}
-        onKeyDown={onValueKeyDown}
+        onKeyDown={disabled ? null : onValueKeyDown}
       >
         {value}
       </span>
@@ -37,6 +38,7 @@ export function NumberStepper({ value, min, max, onChange, unit, valueRef, onVal
         onClick={() => onChange(Math.min(max, value + 1))}
         className="setting-stepper-btn"
         aria-label={`${unit} 늘리기`}
+        disabled={disabled}
       >
         +
       </button>
@@ -45,7 +47,7 @@ export function NumberStepper({ value, min, max, onChange, unit, valueRef, onVal
   );
 }
 
-export function RestTimeStepper({ value, onChange, valueRef, onValueKeyDown }) {
+export function RestTimeStepper({ value, onChange, valueRef, onValueKeyDown, disabled }) {
   const step = 15;
   const min = 0;
   const max = 600;
@@ -58,24 +60,25 @@ export function RestTimeStepper({ value, onChange, valueRef, onValueKeyDown }) {
   };
 
   return (
-    <div className="setting-stepper-container">
+    <div className="setting-stepper-container" style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
       <button
         onClick={() => onChange(Math.max(min, value - step))}
         className="setting-stepper-btn"
         aria-label="휴식시간 줄이기"
+        disabled={disabled}
       >
         −
       </button>
       <span
-        ref={valueRef}
+        ref={disabled ? null : valueRef}
         className="setting-stepper-value setting-stepper-display-value rest-time"
-        tabIndex={0}
+        tabIndex={disabled ? -1 : 0}
         role="spinbutton"
         aria-valuemin={min}
         aria-valuemax={max}
         aria-valuenow={value}
         aria-label="휴식시간 값"
-        onKeyDown={onValueKeyDown}
+        onKeyDown={disabled ? null : onValueKeyDown}
       >
         {formatTime(value)}
       </span>
@@ -83,6 +86,7 @@ export function RestTimeStepper({ value, onChange, valueRef, onValueKeyDown }) {
         onClick={() => onChange(Math.min(max, value + step))}
         className="setting-stepper-btn"
         aria-label="휴식시간 늘리기"
+        disabled={disabled}
       >
         +
       </button>
@@ -99,7 +103,7 @@ export function UnilateralStepper({ value, onChange, valueRef, onValueKeyDown, d
   };
 
   return (
-    <div className="setting-stepper-container">
+    <div className="setting-stepper-container" style={{ opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? 'none' : 'auto' }}>
       <button
         onClick={handleToggle}
         disabled={disabled}
