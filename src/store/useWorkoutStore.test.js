@@ -440,6 +440,9 @@ describe('Workout Store: Seed Data & Resets', () => {
     assert.equal(state.routines.length, 3);
     assert.equal(sessionsByRoutine.every((sessions) => sessions.length === 4), true);
     assert.ok(state.sessionExercises.length > state.sessions.length);
+    assert.ok(state.sessionExerciseGroups.length > 0);
+    assert.ok(state.sessionExerciseGroups.some((group) => group.name.includes('파워세트')));
+    assert.ok(state.sessionExerciseGroups.some((group) => group.name.includes('라운드')));
     assert.equal(state.workoutLogs.length, 30);
     assert.ok(state.workoutLogs.some((log) => log.end_time === null));
 
@@ -472,7 +475,7 @@ describe('Workout Store: Seed Data & Resets', () => {
 
     const linkedExerciseIds = new Set(state.sessionExercises.map((link) => link.exercise_id));
     const linkedExercises = state.exercises.filter((exercise) => linkedExerciseIds.has(exercise.id));
-    assert.equal(linkedExercises.length, 12);
+    assert.equal(linkedExercises.length, 21);
     assert.equal(
       linkedExercises.every((exercise) => ['덤벨', '맨몸', '밴드'].includes(exercise.equipment)),
       true,

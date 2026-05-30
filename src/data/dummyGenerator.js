@@ -30,12 +30,14 @@ const DEFAULT_EXERCISE_UNITS = {
   '밴드 풀 어파트': 'reps',
   '마운틴 클라이머': 'reps',
   '인버티드 로우': 'reps',
+  '사이드 레그 레이즈': 'reps',
 };
 
 const EXERCISE_UNIT_OVERRIDES = new Map(Object.entries(DEFAULT_EXERCISE_UNITS));
 const EXERCISE_EQUIPMENT_OVERRIDES = {
   '마운틴 클라이머': '맨몸',
   '인버티드 로우': '맨몸',
+  '밴드 스쿼트': '밴드',
 };
 
 export const getDefaultExerciseUnit = (name) => EXERCISE_UNIT_OVERRIDES.get(name) || 'kg';
@@ -71,31 +73,52 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
         exercises: [
           targetExercise('푸시업', 3, 8, 75, 90),
           targetExercise('덤벨 플로어 프레스', 3, 10, 90, 120),
-          targetExercise('데드버그', 2, 8, 45, 60),
+          targetExercise('덤벨 킥백', 3, 10, 75, 90),
+          targetExercise('데드버그', 3, 8, 45, 60),
+          targetExercise('플랭크', 2, 35, 45, 60),
+        ],
+        groups: [
+          { name: '푸시 파워세트', start_order: 1, size: 2 },
+          { name: '팔-코어 라운드', start_order: 3, size: 2 },
         ],
       },
       {
         name: '하체 균형 잡기',
         exercises: [
           targetExercise('덤벨 스쿼트', 3, 10, 90, 120),
+          targetExercise('밴드 풀스루', 3, 12, 60, 75),
           targetExercise('힙 브릿지', 3, 12, 60, 75),
+          targetExercise('덤벨 스텝업', 2, 8, 90, 120),
           targetExercise('플랭크', 2, 35, 45, 60),
+        ],
+        groups: [
+          { name: '둔근 라운드', start_order: 2, size: 2 },
         ],
       },
       {
         name: '등과 자세 보강',
         exercises: [
           targetExercise('덤벨 로우', 3, 10, 90, 120),
-          targetExercise('밴드 풀 어파트', 2, 15, 45, 60),
+          targetExercise('밴드 리어 델트 플라이', 3, 15, 45, 60),
+          targetExercise('밴드 풀 어파트', 3, 15, 45, 60),
+          targetExercise('덤벨 컬', 2, 10, 60, 75),
           targetExercise('사이드 플랭크', 2, 25, 45, 60),
+        ],
+        groups: [
+          { name: '등 자세 파워세트', start_order: 1, size: 3 },
         ],
       },
       {
         name: '전신 가볍게 연결',
         exercises: [
           targetExercise('덤벨 리버스 런지', 3, 8, 90, 120),
-          targetExercise('덤벨 숄더 프레스', 2, 8, 90, 105),
-          targetExercise('데드버그', 2, 8, 45, 60),
+          targetExercise('덤벨 숄더 프레스', 3, 8, 90, 105),
+          targetExercise('마운틴 클라이머', 3, 28, 45, 60),
+          targetExercise('데드버그', 3, 8, 45, 60),
+          targetExercise('사이드 레그 레이즈', 2, 12, 45, 60),
+        ],
+        groups: [
+          { name: '전신 라운드', start_order: 1, size: 4 },
         ],
       },
     ],
@@ -109,22 +132,38 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
           targetExercise('푸시업', 3, 12, 75, 90),
           targetExercise('덤벨 플로어 프레스', 3, 10, 90, 120),
           targetExercise('덤벨 로우', 3, 12, 90, 120),
+          targetExercise('밴드 리어 델트 플라이', 3, 16, 45, 60),
+          targetExercise('덤벨 컬', 2, 12, 60, 75),
+        ],
+        groups: [
+          { name: '밀고 당기기 파워세트', start_order: 2, size: 2 },
         ],
       },
       {
         name: '하체와 둔근',
         exercises: [
           targetExercise('덤벨 스쿼트', 4, 10, 90, 120),
+          targetExercise('밴드 스쿼트', 4, 12, 75, 90),
           targetExercise('덤벨 리버스 런지', 3, 10, 90, 120),
+          targetExercise('밴드 풀스루', 3, 14, 60, 75),
           targetExercise('힙 브릿지', 3, 15, 60, 75),
+        ],
+        groups: [
+          { name: '하체 볼륨 라운드', start_order: 1, size: 2 },
+          { name: '마무리 둔근세트', start_order: 4, size: 2 },
         ],
       },
       {
         name: '어깨와 등 자세',
         exercises: [
           targetExercise('덤벨 숄더 프레스', 3, 10, 90, 105),
+          targetExercise('덤벨 레이즈', 3, 12, 60, 75),
+          targetExercise('밴드 사이드 레터럴 레이즈', 3, 15, 45, 60),
           targetExercise('밴드 풀 어파트', 3, 18, 45, 60),
           targetExercise('사이드 플랭크', 2, 30, 45, 60),
+        ],
+        groups: [
+          { name: '어깨 펌프 라운드', start_order: 2, size: 3 },
         ],
       },
       {
@@ -133,6 +172,11 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
           targetExercise('마운틴 클라이머', 3, 30, 45, 60),
           targetExercise('플랭크', 2, 45, 45, 60),
           targetExercise('데드버그', 3, 10, 45, 60),
+          targetExercise('사이드 레그 레이즈', 2, 14, 45, 60),
+          targetExercise('푸시업', 2, 10, 60, 75),
+        ],
+        groups: [
+          { name: '코어 라운드', start_order: 1, size: 4 },
         ],
       },
     ],
@@ -145,15 +189,26 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
         exercises: [
           targetExercise('덤벨 플로어 프레스', 4, 8, 105, 135),
           targetExercise('덤벨 로우', 4, 10, 90, 120),
-          targetExercise('푸시업', 2, 12, 75, 90),
+          targetExercise('푸시업', 4, 12, 75, 90),
+          targetExercise('덤벨 킥백', 3, 10, 75, 90),
+          targetExercise('덤벨 컬', 3, 10, 60, 75),
+        ],
+        groups: [
+          { name: '상체 파워세트', start_order: 1, size: 3 },
+          { name: '팔 마무리', start_order: 4, size: 2 },
         ],
       },
       {
         name: '하체 단단히',
         exercises: [
           targetExercise('덤벨 스쿼트', 4, 8, 105, 135),
+          targetExercise('덤벨 스텝업', 4, 8, 90, 120),
           targetExercise('덤벨 리버스 런지', 3, 8, 90, 120),
-          targetExercise('힙 브릿지', 2, 18, 60, 75),
+          targetExercise('밴드 풀스루', 3, 14, 60, 75),
+          targetExercise('힙 브릿지', 3, 18, 60, 75),
+        ],
+        groups: [
+          { name: '한쪽씩 하체 라운드', start_order: 2, size: 2 },
         ],
       },
       {
@@ -162,6 +217,11 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
           targetExercise('덤벨 숄더 프레스', 3, 8, 105, 120),
           targetExercise('덤벨 로우', 3, 10, 90, 120),
           targetExercise('밴드 풀 어파트', 2, 20, 45, 60),
+          targetExercise('밴드 리어 델트 플라이', 2, 18, 45, 60),
+          targetExercise('덤벨 레이즈', 2, 12, 60, 75),
+        ],
+        groups: [
+          { name: '후면 라운드', start_order: 3, size: 3 },
         ],
       },
       {
@@ -170,11 +230,18 @@ const DUMMY_ROUTINE_BLUEPRINTS = [
           targetExercise('플랭크', 3, 50, 45, 60),
           targetExercise('사이드 플랭크', 2, 35, 45, 60),
           targetExercise('데드버그', 2, 12, 45, 60),
+          targetExercise('힙 브릿지', 2, 16, 60, 75),
+          targetExercise('밴드 풀 어파트', 2, 18, 45, 60),
+        ],
+        groups: [
+          { name: '회복 라운드', start_order: 1, size: 3 },
         ],
       },
     ],
   },
 ];
+
+const DUMMY_GROUP_COLORS = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
 
 const DUMMY_WEEK_COUNT = 8;
 const WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK = [
@@ -204,8 +271,16 @@ const EXERCISE_PROGRESS_PROFILES = {
   '덤벨 플로어 프레스': { weightStart: 8, weightEnd: 14, weightStep: 1, recordStart: 8, recordEnd: 11 },
   '덤벨 로우': { weightStart: 10, weightEnd: 18, weightStep: 1, recordStart: 9, recordEnd: 12 },
   '덤벨 숄더 프레스': { weightStart: 5, weightEnd: 9, weightStep: 1, recordStart: 7, recordEnd: 10 },
+  '덤벨 킥백': { weightStart: 3, weightEnd: 6, weightStep: 1, recordStart: 9, recordEnd: 12 },
+  '덤벨 컬': { weightStart: 4, weightEnd: 8, weightStep: 1, recordStart: 9, recordEnd: 12 },
+  '덤벨 레이즈': { weightStart: 3, weightEnd: 6, weightStep: 1, recordStart: 10, recordEnd: 14 },
   '덤벨 스쿼트': { weightStart: 10, weightEnd: 16, weightStep: 1, recordStart: 9, recordEnd: 12 },
   '덤벨 리버스 런지': { weightStart: 5, weightEnd: 9, weightStep: 1, recordStart: 7, recordEnd: 10 },
+  '덤벨 스텝업': { weightStart: 4, weightEnd: 8, weightStep: 1, recordStart: 7, recordEnd: 10 },
+  '밴드 스쿼트': { weightStart: 0, weightEnd: 0, recordStart: 10, recordEnd: 15 },
+  '밴드 풀스루': { weightStart: 0, weightEnd: 0, recordStart: 12, recordEnd: 18 },
+  '밴드 리어 델트 플라이': { weightStart: 0, weightEnd: 0, recordStart: 13, recordEnd: 20 },
+  '밴드 사이드 레터럴 레이즈': { weightStart: 0, weightEnd: 0, recordStart: 12, recordEnd: 18 },
   '푸시업': { recordStart: 7, recordEnd: 15 },
   '힙 브릿지': { recordStart: 12, recordEnd: 20 },
   '데드버그': { recordStart: 8, recordEnd: 13 },
@@ -213,91 +288,101 @@ const EXERCISE_PROGRESS_PROFILES = {
   '마운틴 클라이머': { recordStart: 24, recordEnd: 40 },
   '플랭크': { recordStart: 30, recordEnd: 62 },
   '사이드 플랭크': { recordStart: 22, recordEnd: 45 },
+  '사이드 레그 레이즈': { recordStart: 10, recordEnd: 18 },
 };
 
 const EXERCISE_MEMO_DETAILS = {
   '푸시업': [
-    '손목 수건 괜찮음',
-    '발끝 고정',
-    '팔꿈치 붙이기',
-    '가슴 깊이 체크',
+    '손목이 살짝 싫어함',
+    '가슴 깊이는 오늘 괜찮음',
+    '막판은 그냥 버팀',
+    '팔꿈치 벌어짐',
   ],
   '덤벨 플로어 프레스': [
-    '팔꿈치 위치 좋음',
-    '내릴 때 조용히',
-    '오른팔 벌어짐',
-    '바닥 멈춤 좋음',
+    '오른팔이 먼저 도망감',
+    '바닥에서 튕기지 말기',
+    '생각보다 잘 밀림',
+    '한 세트 더는 싫음',
   ],
   '덤벨 로우': [
-    '의자 짚고 안정',
-    '무릎 안 스치게',
-    '목 힘 빼기',
-    '끝에서 잠깐 멈춤',
+    '허리보다 등이 먼저 와야 함',
+    '목에 힘 너무 들어감',
+    '왼쪽 느낌이 흐림',
+    '당기는 길은 좋았음',
   ],
   '덤벨 숄더 프레스': [
-    '위에서 부딪힘 주의',
-    '갈비뼈 내리기',
-    '삼두 먼저 탐',
-    '등받이 없이 진행',
+    '갈비뼈 자꾸 뜸',
+    '삼두가 먼저 털림',
+    '위에서 덤벨 부딪힘',
+    '오늘은 무게 욕심 아님',
   ],
   '덤벨 스쿼트': [
-    '매트 살짝 밀림',
-    '무릎 안쪽 주의',
-    '덤벨 가슴에 붙임',
-    '바닥 전체로 밀기',
+    '무릎이 안쪽으로 말림',
+    '발바닥은 안정적',
+    '깊이는 이 정도가 맞음',
+    '허벅지보다 숨이 힘듦',
   ],
   '덤벨 리버스 런지': [
-    '보폭 다시 맞춤',
-    '고관절 뻣뻣',
-    '앞발 엄지 힘',
-    '덤벨 몸 옆 고정',
+    '보폭 다시 잡기',
+    '고관절이 뻣뻣함',
+    '왼쪽 균형 별로',
+    '앞발에 힘 실림',
   ],
   '힙 브릿지': [
-    '발 가까이',
-    '상단 1초 멈춤',
-    '뒤꿈치 압력',
-    '무릎 간격 유지',
+    '둔근 느낌 확실함',
+    '허리로 받지 말기',
+    '상단 멈춤 좋았음',
+    '발 위치 한 뼘 줄임',
   ],
   '플랭크': [
-    '호흡 숫자 세기',
-    '골반 안 떨구기',
-    '팔꿈치 수건 추가',
-    '복부 먼저 흔들림',
+    '복부보다 멘탈이 먼저 흔들림',
+    '골반 떨어짐',
+    '팔꿈치 바닥 아픔',
+    '호흡 세면 버틸 만함',
   ],
   '사이드 플랭크': [
-    '아래 어깨 체크',
-    '골반 위로',
-    '시선 정면',
-    '발날 압력',
+    '아래 어깨가 불편함',
+    '골반 계속 내려감',
+    '오른쪽이 훨씬 낫다',
+    '짧게 해도 충분히 힘듦',
   ],
   '데드버그': [
-    '허리 뜨지 않게',
-    '호흡 먼저',
-    '갈비뼈 내리기',
-    '끝 범위 멈춤',
+    '허리 뜨면 바로 멈춤',
+    '천천히 하니 더 힘듦',
+    '쉬워 보이는데 아님',
+    '호흡 놓치면 망함',
   ],
   '밴드 풀 어파트': [
-    '장력 적당함',
-    '엄지 방향 수정',
-    '견갑 느낌 좋음',
-    '반동 줄이기',
+    '밴드 장력 딱 좋음',
+    '어깨 뒤쪽 잘 옴',
+    '반동 쓰려다 참음',
+    '마지막은 대충 될 뻔',
   ],
   '마운틴 클라이머': [
-    '발 조용히',
-    '골반 흔들림 줄임',
-    '템포 낮춤',
-    '손바닥 땀',
+    '손바닥 땀 때문에 미끄러움',
+    '템포 낮춰야 폼 산다',
+    '숨이 너무 빨리 참',
+    '골반 흔들림',
   ],
+  '덤벨 킥백': ['팔꿈치 고정 안 됨', '가벼운데 타는 느낌', '오른쪽이 더 성급함', '반동 쓰지 말기'],
+  '덤벨 컬': ['손목 꺾임', '마지막 두 개는 못생김', '팔꿈치 앞으로 나감', '무게는 아직 이 정도'],
+  '덤벨 레이즈': ['승모근 개입 심함', '낮게 올려도 충분함', '팔꿈치 살짝 굽힘', '가벼운 척 힘듦'],
+  '덤벨 스텝업': ['발 올릴 때 흔들림', '왼쪽이 확실히 약함', '무릎은 괜찮음', '박스 높이 이게 맞음'],
+  '밴드 스쿼트': ['밴드 위치 귀찮음', '깊이는 괜찮음', '무릎 밖으로 밀기', '가볍게 보기 금지'],
+  '밴드 풀스루': ['햄스트링 느낌 좋음', '허리로 당기지 말기', '엉덩이 뒤로 더', '밴드 고정 다시 확인'],
+  '밴드 리어 델트 플라이': ['어깨 뒤쪽 잘 잡힘', '팔보다 견갑 생각', '범위 줄이니 낫다', '반동 바로 티남'],
+  '밴드 사이드 레터럴 레이즈': ['불타는데 무게는 없음', '어깨 올라감', '천천히가 답', '끝까지 예쁘게 안 됨'],
+  '사이드 레그 레이즈': ['골반 고정 어렵다', '생각보다 옆구리도 탐', '오른쪽이 더 잘 올라감', '허리 꺾지 말기'],
 };
 
 const MEMO_CONTEXTS = {
-  normal: ['폼 괜찮음', '템포 유지', '무리 없음', '다음도 동일'],
-  fresh: ['조금 여유', '리듬 좋음', '호흡 안정', '다음 증량 고민'],
-  tired: ['폼 우선', '무리 안 함', '쉬는 시간 필요', '욕심 줄임'],
-  pressed: ['짧게 마무리', '휴식 줄임', '기록만 체크', '시간 빠듯'],
+  normal: ['그냥 이대로 가자', '나쁘지 않음', '다음에도 확인', '욕심낼 정도는 아님'],
+  fresh: ['오늘 몸 가볍다', '조금 더 해도 됐을 듯', '괜히 신남', '다음에 올려볼 만함'],
+  tired: ['오늘은 여기까지', '폼만 챙기자', '억지로 밀지 말기', '컨디션 별로'],
+  pressed: ['시간 없어서 짧게', '대충 넘기지 말기', '휴식 줄였더니 빡셈', '기록만 남김'],
 };
 
-const MEMO_UNIQUE_TAILS = ['다음 비교용', '오늘 기준', '마무리 체크', '느낌 저장'];
+const MEMO_UNIQUE_TAILS = ['다음엔 천천히', '오늘 기준', '괜히 무리하지 말기', '이건 기억'];
 
 function getDummyRequiredExerciseNames() {
   return [
@@ -400,11 +485,6 @@ function interpolate(start, end, ratio) {
 
 function roundToStep(value, step = 1) {
   return Math.round(value / step) * step;
-}
-
-function formatWeightForMemo(weight) {
-  if (!weight) return '';
-  return Number.isInteger(weight) ? String(weight) : String(Math.round(weight * 10) / 10);
 }
 
 function getRoutinePhaseForWeek(weekIndex) {
@@ -523,28 +603,32 @@ function shouldWriteSetMemo({ exercise, setNumber, side, condition, logIndex }) 
   const sideScore = side === 'L' ? 1 : side === 'R' ? 2 : 0;
   const score = exercise.name.length + setNumber + sideScore + logIndex;
 
-  if (condition === 'tired' && setNumber === 1) return true;
+  if (condition === 'tired' && setNumber === 1) return score % 2 === 0;
   if (condition === 'pressed' && setNumber > 1) return false;
-  return score % 3 === 0;
+  return score % 6 === 0;
 }
 
-function createUniqueSetMemo({ exercise, setNumber, side, weight, record, condition, logIndex, usedMemos }) {
+function createUniqueSetMemo({ exercise, setNumber, side, condition, logIndex, usedMemos }) {
   const details = EXERCISE_MEMO_DETAILS[exercise.name] || getMemoFallbackDetails(exercise);
   const memoIndex = usedMemos.size;
   const detail = details[(memoIndex + setNumber + logIndex) % details.length];
   const contexts = MEMO_CONTEXTS[condition] || MEMO_CONTEXTS.normal;
   const context = contexts[(memoIndex + logIndex + setNumber) % contexts.length];
-  const sideLabel = side === 'L' ? '왼쪽 ' : side === 'R' ? '오른쪽 ' : '';
-  const recordUnit = exercise.unit === 'sec' ? '초' : '회';
-  const recordPhrase = weight > 0 ? `${formatWeightForMemo(weight)}kg ${record}${recordUnit}` : `${record}${recordUnit}`;
-  const baseMemo = `${sideLabel}${detail}, ${recordPhrase}. ${context}.`;
+  const sideLabel = /왼쪽|오른쪽/.test(detail)
+    ? ''
+    : side === 'L' ? '왼쪽: ' : side === 'R' ? '오른쪽: ' : '';
+  const patterns = [
+    `${sideLabel}${detail}.`,
+    `${sideLabel}${context}. ${detail}.`,
+    `${sideLabel}${detail}. ${context}.`,
+    `${sideLabel}${detail} - 다음에 다시 봄.`,
+  ];
+  const baseMemo = patterns[(memoIndex + logIndex) % patterns.length];
   let memo = baseMemo;
   let attempt = 0;
 
   while (usedMemos.has(memo)) {
-    const cycle = Math.floor(attempt / MEMO_UNIQUE_TAILS.length);
-    const tieBreaker = cycle > 0 ? ` ${cycle + 1}` : '';
-    memo = `${baseMemo} ${MEMO_UNIQUE_TAILS[attempt % MEMO_UNIQUE_TAILS.length]}${tieBreaker}.`;
+    memo = `${baseMemo.replace(/\.$/, '')}. ${MEMO_UNIQUE_TAILS[attempt % MEMO_UNIQUE_TAILS.length]}.`;
     attempt += 1;
   }
 
@@ -693,9 +777,10 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
         blueprint: sessionBlueprint,
       });
 
+      const sessionLinks = [];
       sessionBlueprint.exercises.forEach((exerciseTarget, exerciseIndex) => {
         const exercise = exercisesByName.get(normalizeExerciseName(exerciseTarget.name));
-        sessionExercises.push({
+        const link = {
           id: generateUUID(),
           session_id: sessionId,
           exercise_id: exercise.id,
@@ -704,6 +789,35 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
           target_record: exerciseTarget.target_record,
           rest_between_sets: exerciseTarget.rest_between_sets,
           rest_after_exercise: exerciseTarget.rest_after_exercise,
+          created_at: sessionCreatedAt,
+          updated_at: nowIso,
+        };
+        sessionLinks.push(link);
+        sessionExercises.push(link);
+      });
+
+      (sessionBlueprint.groups || []).forEach((groupBlueprint, groupIndex) => {
+        const startOrder = Number(groupBlueprint.start_order) || 1;
+        const size = Number(groupBlueprint.size) || 2;
+        const coveredLinks = sessionLinks.slice(startOrder - 1, startOrder - 1 + size);
+        const firstLink = coveredLinks[0];
+
+        if (coveredLinks.length < 2 || !firstLink) return;
+
+        coveredLinks.forEach((link) => {
+          link.target_sets = firstLink.target_sets;
+          link.rest_between_sets = firstLink.rest_between_sets;
+          link.rest_after_exercise = firstLink.rest_after_exercise;
+          link.updated_at = nowIso;
+        });
+
+        sessionExerciseGroups.push({
+          id: generateUUID(),
+          session_id: sessionId,
+          name: groupBlueprint.name,
+          start_order: startOrder,
+          size: coveredLinks.length,
+          color: DUMMY_GROUP_COLORS[groupIndex % DUMMY_GROUP_COLORS.length],
           created_at: sessionCreatedAt,
           updated_at: nowIso,
         });
