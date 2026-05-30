@@ -18,9 +18,17 @@ export function isCompletedRepsValue(value) {
 export function fillExerciseWeightsFromFirstSet(blocks, blockIndex, rowIndex, weight) {
   const normalizedWeight = String(weight ?? '').trim();
 
-  if (rowIndex !== 0 || !isCommittedNumericGridValue(normalizedWeight)) {
+  const targetBlock = blocks[blockIndex];
+  if (!targetBlock) return blocks;
+
+  const targetSet = targetBlock.sets[rowIndex];
+  if (!targetSet) return blocks;
+
+  if (targetSet.set_number !== 1 || !isCommittedNumericGridValue(normalizedWeight)) {
     return blocks;
   }
+
+  const targetExerciseId = targetSet.exercise_id;
 
   return blocks.map((block, currentBlockIndex) => {
     if (currentBlockIndex !== blockIndex) return block;
@@ -28,6 +36,10 @@ export function fillExerciseWeightsFromFirstSet(blocks, blockIndex, rowIndex, we
     return {
       ...block,
       sets: block.sets.map((set, setIndex) => {
+        if (targetExerciseId && set.exercise_id && set.exercise_id !== targetExerciseId) {
+          return set;
+        }
+
         const hasWeight = String(set.weight ?? '').trim() !== '';
         if (setIndex !== rowIndex && hasWeight) return set;
         return { ...set, weight: normalizedWeight };
@@ -258,7 +270,8 @@ export function computeNewGlobalIndex(blocks, blockIndex) {
 
 export function getSetCompletionKey(block, set) {
   if (!block || !set) return '';
-  return `${block.id}:${set.set_number}:${set.side || 'both'}`;
+  const exercisePart = set.exercise_id ? `:${set.exercise_id}` : '';
+  return `${block.id}:${set.set_number}:${set.side || 'both'}${exercisePart}`;
 }
 
 function normalizeRestDuration(value, fallbackSeconds) {

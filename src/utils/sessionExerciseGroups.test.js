@@ -22,6 +22,8 @@ function makeLinks(count) {
     order: index + 1,
     target_sets: index === 0 ? 4 : 3,
     target_record: '10',
+    rest_between_sets: index === 0 ? 100 : 90,
+    rest_after_exercise: index === 0 ? 150 : 120,
   }));
 }
 
@@ -97,7 +99,7 @@ describe('sessionExerciseGroups', () => {
     ).toBe(GROUP_COLOR_PALETTE[2]);
   });
 
-  test('returns covered links and unifies target sets inside a group', () => {
+  test('returns covered links and unifies target sets and rest times inside a group', () => {
     const links = makeLinks(4);
     const group = { id: 'group-1', session_id: sessionId, start_order: 1, size: 3 };
 
@@ -107,5 +109,7 @@ describe('sessionExerciseGroups', () => {
 
     expect(result.touchedLinks.map(link => link.id)).toEqual(['link-1', 'link-2', 'link-3']);
     expect(result.sessionExercises.map(link => link.target_sets)).toEqual([4, 4, 4, 3]);
+    expect(result.sessionExercises.map(link => link.rest_between_sets)).toEqual([100, 100, 100, 90]);
+    expect(result.sessionExercises.map(link => link.rest_after_exercise)).toEqual([150, 150, 150, 120]);
   });
 });

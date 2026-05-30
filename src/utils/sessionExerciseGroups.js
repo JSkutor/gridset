@@ -176,11 +176,20 @@ export function applyGroupTargetSets(sessionExercises, group, updatedAt) {
   }
 
   const targetSets = Number(coveredLinks[0].target_sets) || 3;
+  const restBetweenSets = coveredLinks[0].rest_between_sets !== undefined ? coveredLinks[0].rest_between_sets : 90;
+  const restAfterExercise = coveredLinks[0].rest_after_exercise !== undefined ? coveredLinks[0].rest_after_exercise : 120;
+
   const coveredIds = new Set(coveredLinks.map((link) => link.id));
   const touchedLinks = [];
   const nextSessionExercises = sessionExercises.map((sessionExercise) => {
     if (!coveredIds.has(sessionExercise.id)) return sessionExercise;
-    const nextLink = { ...sessionExercise, target_sets: targetSets, updated_at: updatedAt };
+    const nextLink = {
+      ...sessionExercise,
+      target_sets: targetSets,
+      rest_between_sets: restBetweenSets,
+      rest_after_exercise: restAfterExercise,
+      updated_at: updatedAt,
+    };
     touchedLinks.push(nextLink);
     return nextLink;
   });

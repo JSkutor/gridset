@@ -414,7 +414,8 @@ export const createRoutineSlice = (set, get) => ({
     const { currentUser, sessionExercises, sessionExerciseGroups } = get();
     const updatedAt = new Date().toISOString();
     const currentLink = sessionExercises.find(se => se.id === id);
-    const targetGroup = 'target_sets' in updates
+    const hasGroupConstrainedField = 'target_sets' in updates || 'rest_between_sets' in updates || 'rest_after_exercise' in updates;
+    const targetGroup = hasGroupConstrainedField
       ? findGroupForSessionExercise(sessionExerciseGroups, currentLink)
       : null;
     let changedLinks = [];
@@ -431,6 +432,8 @@ export const createRoutineSlice = (set, get) => ({
         const nextLink = {
           ...se,
           ...(isGroupedLink && 'target_sets' in updates ? { target_sets: updates.target_sets } : {}),
+          ...(isGroupedLink && 'rest_between_sets' in updates ? { rest_between_sets: updates.rest_between_sets } : {}),
+          ...(isGroupedLink && 'rest_after_exercise' in updates ? { rest_after_exercise: updates.rest_after_exercise } : {}),
           ...(isCurrentLink ? updates : {}),
           updated_at: updatedAt,
         };

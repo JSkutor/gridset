@@ -163,7 +163,7 @@ describe('Workout Store: Routine & Session Templates', () => {
     assert.equal(useWorkoutStore.getState().sessionExercises.some((item) => item.session_id === session.id), false);
   });
 
-  test('session exercise groups persist position and keep target sets unified', () => {
+  test('session exercise groups persist position and keep target sets and rest times unified', () => {
     const routine = useWorkoutStore.getState().addRoutine('Superset Base');
     const session = useWorkoutStore.getState().addSession(routine.id, 'Day A');
     const [bench, squat, deadlift] = ['벤치프레스', '스쿼트', '데드리프트'].map((name) =>
@@ -172,6 +172,8 @@ describe('Workout Store: Routine & Session Templates', () => {
     const first = useWorkoutStore.getState().addSessionExercise(session.id, bench.id, 1, 4, '8');
     const second = useWorkoutStore.getState().addSessionExercise(session.id, squat.id, 2, 3, '10');
     const third = useWorkoutStore.getState().addSessionExercise(session.id, deadlift.id, 3, 2, '5');
+
+    useWorkoutStore.getState().updateSessionExercise(first.id, { rest_between_sets: 60, rest_after_exercise: 150 });
 
     const group = useWorkoutStore.getState().addSessionExerciseGroup(session.id, '슈퍼세트 A', 2);
 
@@ -184,13 +186,37 @@ describe('Workout Store: Routine & Session Templates', () => {
         .map(({ target_sets }) => target_sets),
       [4, 4],
     );
+    assert.deepEqual(
+      useWorkoutStore.getState().sessionExercises
+        .filter((item) => [first.id, second.id].includes(item.id))
+        .map(({ rest_between_sets }) => rest_between_sets),
+      [60, 60],
+    );
+    assert.deepEqual(
+      useWorkoutStore.getState().sessionExercises
+        .filter((item) => [first.id, second.id].includes(item.id))
+        .map(({ rest_after_exercise }) => rest_after_exercise),
+      [150, 150],
+    );
 
-    useWorkoutStore.getState().updateSessionExercise(second.id, { target_sets: 6 });
+    useWorkoutStore.getState().updateSessionExercise(second.id, { target_sets: 6, rest_between_sets: 75, rest_after_exercise: 180 });
     assert.deepEqual(
       useWorkoutStore.getState().sessionExercises
         .filter((item) => [first.id, second.id].includes(item.id))
         .map(({ target_sets }) => target_sets),
       [6, 6],
+    );
+    assert.deepEqual(
+      useWorkoutStore.getState().sessionExercises
+        .filter((item) => [first.id, second.id].includes(item.id))
+        .map(({ rest_between_sets }) => rest_between_sets),
+      [75, 75],
+    );
+    assert.deepEqual(
+      useWorkoutStore.getState().sessionExercises
+        .filter((item) => [first.id, second.id].includes(item.id))
+        .map(({ rest_after_exercise }) => rest_after_exercise),
+      [180, 180],
     );
 
     useWorkoutStore.getState().updateSessionExerciseGroup(group.id, { start_order: 2 });
@@ -198,6 +224,8 @@ describe('Workout Store: Routine & Session Templates', () => {
     assert.equal(useWorkoutStore.getState().sessionExerciseGroups.find((item) => item.id === group.id).start_order, 2);
     assert.equal(afterMove.find((item) => item.id === second.id).target_sets, 6);
     assert.equal(afterMove.find((item) => item.id === third.id).target_sets, 6);
+    assert.equal(afterMove.find((item) => item.id === second.id).rest_between_sets, 75);
+    assert.equal(afterMove.find((item) => item.id === third.id).rest_between_sets, 75);
   });
 
   test('session exercise groups get unique colors, avoid overlap, and cap at four', () => {
