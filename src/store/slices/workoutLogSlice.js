@@ -94,7 +94,7 @@ export const createWorkoutLogSlice = (set, get) => ({
           newSetRecords.push({
             id: generateUUID(),
             workout_log_id: logId,
-            exercise_id: block.exercise_id,
+            exercise_id: set.exercise_id || block.exercise_id,
             set_number: set.set_number,
             weight: safeWeight,
             record: safeRecord,

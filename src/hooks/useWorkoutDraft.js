@@ -23,12 +23,13 @@ export function useWorkoutDraft({
   session,
   sessionExercises,
   exercises,
+  sessionExerciseGroups = [],
   saveWorkoutLog,
   onRestStart,
   onSaveSuccess,
 }) {
   const [startTime, setStartTime] = useState(null);
-  const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises));
+  const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises, sessionExerciseGroups));
   const [focusedSet, setFocusedSet] = useState({ blockIndex: 0, rowIndex: 0 });
   const completedSetSignaturesRef = useRef(new Map());
 
@@ -113,27 +114,74 @@ export function useWorkoutDraft({
   const addRow = useCallback((blockIndex, requestFocus) => {
     const newGlobalIndex = computeNewGlobalIndex(blocks, blockIndex);
     const newRowIndex = blocks[blockIndex].sets.length;
-    const isUnilateral = blocks[blockIndex].is_unilateral;
+    const block = blocks[blockIndex];
 
     setBlocks((prev) =>
-      prev.map((block, currentBlockIndex) => {
-        if (currentBlockIndex !== blockIndex) return block;
+      prev.map((b, currentBlockIndex) => {
+        if (currentBlockIndex !== blockIndex) return b;
 
-        const maxSetNumber = block.sets.length > 0 ? Math.max(...block.sets.map((set) => set.set_number)) : 0;
+        const maxSetNumber = b.sets.length > 0 ? Math.max(...b.sets.map((set) => set.set_number)) : 0;
         const nextSetNumber = maxSetNumber + 1;
 
-        const newSets = isUnilateral
-          ? [
-              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'L', weight: '', reps: '', memo: '' },
-              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'R', weight: '', reps: '', memo: '' },
-            ]
-          : [
-              { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'both', weight: '', reps: '', memo: '' },
-            ];
+        let newSets = [];
+        if (b.is_group) {
+          b.group_exercises.forEach((exInfo) => {
+            if (exInfo.is_unilateral) {
+              newSets.push({
+                id: crypto.randomUUID(),
+                set_number: nextSetNumber,
+                side: 'L',
+                weight: '',
+                reps: '',
+                memo: '',
+                exercise_id: exInfo.exercise_id,
+                exercise_name: exInfo.name,
+                session_exercise_id: exInfo.linkId,
+              });
+              newSets.push({
+                id: crypto.randomUUID(),
+                set_number: nextSetNumber,
+                side: 'R',
+                weight: '',
+                reps: '',
+                memo: '',
+                exercise_id: exInfo.exercise_id,
+                exercise_name: exInfo.name,
+                session_exercise_id: exInfo.linkId,
+              });
+            } else {
+              newSets.push({
+                id: crypto.randomUUID(),
+                set_number: nextSetNumber,
+                side: 'both',
+                weight: '',
+                reps: '',
+                memo: '',
+                exercise_id: exInfo.exercise_id,
+                exercise_name: exInfo.name,
+                session_exercise_id: exInfo.linkId,
+              });
+            }
+          });
+        } else {
+          const isUnilateral = b.is_unilateral;
+          const exId = b.exercise_id;
+          const exName = b.exercise_name;
+          const seId = b.sets[0]?.session_exercise_id || b.id;
+
+          newSets = isUnilateral
+            ? [
+                { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'L', weight: '', reps: '', memo: '', exercise_id: exId, exercise_name: exName, session_exercise_id: seId },
+                { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'R', weight: '', reps: '', memo: '', exercise_id: exId, exercise_name: exName, session_exercise_id: seId },
+              ]
+            : [
+                { id: crypto.randomUUID(), set_number: nextSetNumber, side: 'both', weight: '', reps: '', memo: '', exercise_id: exId, exercise_name: exName, session_exercise_id: seId },
+              ];
+        }
 
         return {
-          ...block,
-          sets: [...block.sets, ...newSets],
+          ...b,
+          sets: [...b.sets, ...newSets],
         };
       }),
     );

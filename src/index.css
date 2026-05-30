@@ -4286,3 +4286,8 @@ body.keyboard-navigating * {
     filter: brightness(1.08);
   }
 }
+
+/* ─── Workout Grid Group Subheader Color Accent ─── */
+.workout-grid-group-name-highlight {
+  color: var(--group-color, #7aa2f7) !important;
+}
