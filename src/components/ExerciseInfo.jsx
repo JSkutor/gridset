@@ -197,7 +197,7 @@ function SimpleLineChart({ data, unit, displayUnit }) {
                 key={idx}
                 x="28"
                 y={lbl.y + 3.5}
-                fill="var(--text-muted)"
+                fill="#6b7394"
                 fontSize="9"
                 textAnchor="end"
                 fontFamily="inherit"
@@ -213,7 +213,7 @@ function SimpleLineChart({ data, unit, displayUnit }) {
                 key={idx}
                 x={lbl.x}
                 y="134"
-                fill="var(--text-muted)"
+                fill="#6b7394"
                 fontSize="9"
                 textAnchor={lbl.anchor}
                 fontFamily="inherit"

@@ -8,7 +8,7 @@
 
   --text-main: #c8cdd8;
   --text-bright: #e4e8f0;
-  --text-muted: #6b7394;
+  --text-muted: #8e98be;
 
   --accent: #7aa2f7;
   --accent-dim: rgba(122, 162, 247, 0.35);
@@ -376,7 +376,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 
 /* ─── Panels ─── */
 .glass-panel {
-  background: rgba(10, 12, 22, 0.20);
+  background: rgba(10, 12, 22, 0.42);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
@@ -385,7 +385,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .glass-panel--strong {
-  background: rgba(10, 12, 22, 0.20);
+  background: rgba(10, 12, 22, 0.42);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
@@ -394,7 +394,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .glass-card {
-  background: rgba(10, 12, 22, 0.20);
+  background: rgba(10, 12, 22, 0.42);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--border);
@@ -430,8 +430,8 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .spreadsheet thead th {
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--text-muted);
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -447,8 +447,8 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   align-items: center;
   justify-content: center;
   font-family: 'Caveat', 'Nanum Pen Script', cursive;
-  font-size: 21px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 700;
   color: var(--text-muted);
   background: transparent;
   border: none;
@@ -513,7 +513,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .spreadsheet td.cell-input input::placeholder {
-  color: rgba(107, 115, 148, 0.4);
+  color: rgba(142, 152, 190, 0.42);
   font-weight: 400;
 }
 
@@ -688,7 +688,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   flex-direction: column;
   gap: 6px;
   padding: 8px;
-  background: rgba(10, 12, 22, 0.20);
+  background: rgba(10, 12, 22, 0.42);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(16px);
@@ -807,7 +807,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 
 .log-panel {
   min-width: 0;
-  background: rgba(10, 12, 22, 0.20);
+  background: rgba(10, 12, 22, 0.42);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   backdrop-filter: blur(16px);
@@ -875,7 +875,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .log-calendar-weekdays span {
-  color: var(--text-muted);
+  color: #6b7394;
   font-size: 11px;
   font-weight: 700;
   text-align: center;
@@ -1208,8 +1208,8 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   justify-content: center;
   color: var(--text-muted);
   font-family: 'Caveat', 'Nanum Pen Script', cursive;
-  font-size: 21px;
-  font-weight: 500;
+  font-size: 24px;
+  font-weight: 700;
   letter-spacing: 0;
   line-height: 1;
   pointer-events: none;
@@ -1405,7 +1405,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .log-chart-axis-label {
-  fill: var(--text-muted);
+  fill: #6b7394;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
 }
@@ -3208,8 +3208,8 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  font-size: 12px;
-  line-height: 1.4;
+  font-size: 13px;
+  line-height: 1.45;
   color: var(--text-main);
 }
 
@@ -3241,8 +3241,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .past-logs-memo-text {
-  color: var(--text-muted);
-  font-style: italic;
+  color: var(--text-main);
   word-break: break-all;
 }
 
