@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { LogOut, RefreshCw, Sparkles, Trash2, User, UserCheck } from 'lucide-react';
+import { LogOut, RefreshCw, Trash2, User, UserCheck } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { supabase } from '../utils/supabaseClient';
@@ -14,7 +14,6 @@ export default function AccountMenu({ onDataReset }) {
   const currentUser = useWorkoutStore(state => state.currentUser);
   const isSyncing = useWorkoutStore(state => state.isSyncing);
   const fetchUserData = useWorkoutStore(state => state.fetchUserData);
-  const generateDummyData = useWorkoutStore(state => state.generateDummyData);
   const clearAllData = useWorkoutStore(state => state.clearAllData);
 
   useEffect(() => {
@@ -31,11 +30,6 @@ export default function AccountMenu({ onDataReset }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
-
-  const handleGenerateDummyData = () => {
-    generateDummyData();
-    onDataReset?.();
-  };
 
   const handleClearAllData = () => {
     clearAllData();
@@ -110,17 +104,6 @@ export default function AccountMenu({ onDataReset }) {
           {SHOW_DEV_UTILITIES && (
             <>
               <div className="dropdown-divider" />
-
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleGenerateDummyData();
-                  setIsProfileDropdownOpen(false);
-                }}
-              >
-                <Sparkles size={14} />
-                더미 데이터 생성
-              </button>
 
               <button
                 className="dropdown-item"

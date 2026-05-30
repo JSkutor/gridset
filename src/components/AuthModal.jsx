@@ -14,6 +14,17 @@ export default function AuthModal({ isOpen, onClose }) {
   const [successMsg, setSuccessMsg] = useState('');
 
   const setAuthSession = useWorkoutStore(state => state.setAuthSession);
+  const currentUser = useWorkoutStore(state => state.currentUser);
+  const hasClearedDemoData = useWorkoutStore(state => state.hasClearedDemoData);
+  const routines = useWorkoutStore(state => state.routines);
+  const workoutLogs = useWorkoutStore(state => state.workoutLogs);
+  const discardGuestLocalDataForSignUp = useWorkoutStore(state => state.discardGuestLocalDataForSignUp);
+
+  const shouldDiscardGuestDataForSignUp = (
+    currentUser.isGuest &&
+    !hasClearedDemoData &&
+    (routines.length > 0 || workoutLogs.length > 0)
+  );
 
   if (!isOpen) return null;
 
@@ -45,6 +56,10 @@ export default function AuthModal({ isOpen, onClose }) {
 
     try {
       if (isSignUp) {
+        if (shouldDiscardGuestDataForSignUp) {
+          discardGuestLocalDataForSignUp();
+        }
+
         // Sign Up
         const { data, error } = await supabase.auth.signUp({
           email,
@@ -130,6 +145,13 @@ export default function AuthModal({ isOpen, onClose }) {
         {successMsg && (
           <div className="auth-feedback-msg success">
             {successMsg}
+          </div>
+        )}
+
+        {isSignUp && shouldDiscardGuestDataForSignUp && (
+          <div className="auth-feedback-msg warning">
+            회원가입하면 현재 게스트 로컬 데이터는 삭제되고, 빈 계정에서 새로 시작합니다.
+            데모를 삭제한 뒤 만든 기록만 계정으로 가져옵니다.
           </div>
         )}
 

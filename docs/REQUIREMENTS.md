@@ -5,7 +5,7 @@ GridSet is a desktop-first workout logging web app for MacBook users who want a 
 
 ## 2. Current Product Scope
 - **Target platform**: desktop web, optimized for MacBook-sized screens and window resolutions.
-- **Current mode**: local guest mode plus optional Supabase Auth account sync.
+- **Current mode**: local guest mode plus optional Supabase Auth account sync. See [SYNC_POLICY.md](SYNC_POLICY.md) for the guest-to-user data rules.
 - **Current persistence**: Zustand Persist with browser `localStorage`, with Supabase used as the remote database source for signed-in users.
 - **Current data model**: local UUID-based entities that mirror the Supabase database schema.
 - **Initial local experience**: new guest stores are seeded with rich demo workout data so the app opens with populated routines, logs, charts, and calendars.
@@ -150,7 +150,7 @@ Gridset includes a robust demo dataset and an always-available help/data-managem
 - Global app state is managed with Zustand.
 - Signed-in users hydrate and sync their data through Supabase with write-through sync.
 - Guest users can continue using local-only data, which is safely persisted via Zustand Persist in the browser's `localStorage` (Schema versioning is fully maintained).
-- **Guest-to-User Migration**: When a guest user logs in, their existing local routines, sessions, session exercises, logs, and set records are automatically migrated and synchronized up to the Supabase remote database.
+- **Guest-to-User Migration**: Guest-local data is uploaded only when the server account is empty and the guest workspace was created after clearing the bundled demo data. Existing server data always wins over unknown guest-local data. See [SYNC_POLICY.md](SYNC_POLICY.md).
 - **Remote Sync Failure UX**:
   - Local changes are applied immediately before remote writes run.
   - Failed background remote-write tasks are stored in an in-memory retry queue.

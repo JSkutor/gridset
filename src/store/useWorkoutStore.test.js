@@ -2,6 +2,7 @@ import { test, describe, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
 import { buildInitialBlocks } from '../utils/setGridModel.js';
+import { DEFAULT_EXERCISES } from '../data/dummyGenerator.js';
 
 const { useWorkoutStore } = await import('./useWorkoutStore.js');
 
@@ -479,9 +480,8 @@ describe('Workout Store: Seed Data & Resets', () => {
     assert.ok(state.exercises.length >= initialExerciseCount);
   });
 
-  test('clearAllData clears templates and logs without removing exercise source data', () => {
+  test('clearAllData clears guest demo data and resets the exercise catalog', () => {
     useWorkoutStore.getState().generateDummyData();
-    const exerciseCount = useWorkoutStore.getState().exercises.length;
 
     useWorkoutStore.getState().clearAllData();
 
@@ -492,7 +492,8 @@ describe('Workout Store: Seed Data & Resets', () => {
     assert.equal(state.sessionExerciseGroups.length, 0);
     assert.equal(state.workoutLogs.length, 0);
     assert.equal(state.setRecords.length, 0);
-    assert.equal(state.exercises.length, exerciseCount);
+    assert.equal(state.exercises.length, DEFAULT_EXERCISES.length);
+    assert.equal(state.hasClearedDemoData, true);
   });
 });
 

@@ -57,10 +57,8 @@ const RoutineDetail = forwardRef((props, ref) => {
   });
 
   const {
-    routines,
     sessions,
     sessionExercises,
-    sessionExerciseGroups,
     exercises,
     sortedRoutines,
     effectiveRoutineId,
@@ -68,7 +66,6 @@ const RoutineDetail = forwardRef((props, ref) => {
     isReadOnly,
     effectiveRoutineSessions,
     effectiveTemporarySession,
-    effectiveSessionOptions,
     effectiveSessionId,
     effectiveSession,
     activeSessionExercises,
@@ -79,11 +76,8 @@ const RoutineDetail = forwardRef((props, ref) => {
     selectedExercise,
     selectedExerciseGroup,
     selectedExerciseGroupForSettings,
-    selectedRoutineId,
-    selectedSessionId,
     selectedExerciseId,
     selectedExerciseGroupId,
-    settingsMode,
     isAddingExerciseRow,
     isAddingExerciseGroupRow,
     focusedRoutinePanel,
@@ -103,11 +97,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     setEditingRoutineNameVal,
     setEditingSessionNameVal,
 
-    focusSessionRow,
-    focusExercise,
-    focusExerciseGroupById,
     focusExerciseGroupRowById,
-    focusSettingControl,
 
     // CRUD Handlers
     handleSelectRoutine,

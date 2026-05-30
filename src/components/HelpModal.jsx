@@ -5,8 +5,10 @@ import { useWorkoutStore } from '../store/useWorkoutStore';
 export default function HelpModal({ isOpen, onClose, onDataReset }) {
   const [pendingAction, setPendingAction] = useState(null); // 'demo' | 'clear' | 'tour' | null
   
+  const currentUser = useWorkoutStore(state => state.currentUser);
   const generateDummyData = useWorkoutStore(state => state.generateDummyData);
   const clearAllData = useWorkoutStore(state => state.clearAllData);
+  const canLoadDemoData = currentUser.isGuest;
 
   if (!isOpen) return null;
 
@@ -178,13 +180,15 @@ export default function HelpModal({ isOpen, onClose, onDataReset }) {
             </p>
 
             <div className="help-data-buttons">
-              <button 
-                className="help-action-btn btn-demo"
-                onClick={() => setPendingAction('demo')}
-              >
-                <Sparkles size={14} />
-                <span>데모 데이터 로드</span>
-              </button>
+              {canLoadDemoData && (
+                <button 
+                  className="help-action-btn btn-demo"
+                  onClick={() => setPendingAction('demo')}
+                >
+                  <Sparkles size={14} />
+                  <span>데모 데이터 로드</span>
+                </button>
+              )}
 
 
 

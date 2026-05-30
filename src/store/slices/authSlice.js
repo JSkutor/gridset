@@ -3,7 +3,51 @@ import { DEFAULT_EXERCISES, createDummyWorkoutData } from '../../data/dummyGener
 
 export const GUEST_USER = { id: '00000000-0000-0000-0000-000000000000', name: '게스트', isGuest: true };
 
-export const initialSeed = createDummyWorkoutData({ userId: GUEST_USER.id, existingExercises: DEFAULT_EXERCISES });
+export const initialSeed = {
+  ...createDummyWorkoutData({ userId: GUEST_USER.id, existingExercises: DEFAULT_EXERCISES }),
+  hasClearedDemoData: false,
+};
+
+const createEmptyWorkoutState = ({ exercises = DEFAULT_EXERCISES, hasClearedDemoData = false } = {}) => ({
+  exercises,
+  routines: [],
+  sessions: [],
+  sessionExercises: [],
+  sessionExerciseGroups: [],
+  workoutLogs: [],
+  setRecords: [],
+  hasClearedDemoData,
+});
+
+const hasLocalWorkoutData = (state) => (
+  state.routines.length > 0 ||
+  state.sessions.length > 0 ||
+  state.sessionExercises.length > 0 ||
+  (state.sessionExerciseGroups || []).length > 0 ||
+  state.workoutLogs.length > 0 ||
+  state.setRecords.length > 0
+);
+
+const hasServerWorkoutData = (data, userId) => (
+  data.routines.length > 0 ||
+  data.sessions.length > 0 ||
+  data.sessionExercises.length > 0 ||
+  (data.sessionExerciseGroups || []).length > 0 ||
+  data.workoutLogs.length > 0 ||
+  data.setRecords.length > 0 ||
+  data.exercises.some((exercise) => exercise.user_id === userId)
+);
+
+const createGuestDataSnapshot = (state) => ({
+  exercises: state.exercises,
+  routines: state.routines,
+  sessions: state.sessions,
+  sessionExercises: state.sessionExercises,
+  sessionExerciseGroups: state.sessionExerciseGroups,
+  workoutLogs: state.workoutLogs,
+  setRecords: state.setRecords,
+  hasClearedDemoData: state.hasClearedDemoData,
+});
 
 export const createAuthSlice = (set, get) => {
   const failedRemoteSyncTasks = new Map();
@@ -90,6 +134,7 @@ export const createAuthSlice = (set, get) => {
     isSyncing: false,
     authSession: null,
     remoteSyncError: null,
+    hasClearedDemoData: initialSeed.hasClearedDemoData,
 
     // --- Actions ---
     runRemoteSync,
@@ -105,6 +150,7 @@ export const createAuthSlice = (set, get) => {
     setAuthSession: async (session) => {
       const previousState = get();
       const previousUser = previousState.currentUser;
+      const guestDataSnapshot = previousUser.isGuest ? createGuestDataSnapshot(previousState) : null;
       
       if (session) {
         const user = session.user;
@@ -123,14 +169,43 @@ export const createAuthSlice = (set, get) => {
           isGuest: false
         };
         
-        set({ authSession: session, currentUser });
-        
-        // If we transitioned from Guest to Logged-in, and have local data, migrate it!
-        const hasLocalData = get().routines.length > 0 || get().workoutLogs.length > 0;
-        if (previousUser.isGuest && hasLocalData) {
-          console.log('Transitioning Guest -> Logged-in. Migrating local data...');
-          await get().migrateLocalDataToSupabase(user.id);
+        if (previousUser.isGuest) {
+          set({
+            authSession: session,
+            currentUser,
+            ...createEmptyWorkoutState(),
+          });
+          set({ isSyncing: true });
+          try {
+            const serverData = await workoutRepository.fetchUserWorkoutData(user.id);
+            const shouldUploadGuestData = (
+              guestDataSnapshot.hasClearedDemoData &&
+              hasLocalWorkoutData(guestDataSnapshot) &&
+              !hasServerWorkoutData(serverData, user.id)
+            );
+
+            if (shouldUploadGuestData) {
+              console.log('Server is empty. Migrating guest local data...');
+              await workoutRepository.migrateLocalDataToSupabase({
+                authUserId: user.id,
+                ...guestDataSnapshot,
+              });
+              set({
+                ...(await workoutRepository.fetchUserWorkoutData(user.id)),
+                hasClearedDemoData: false,
+              });
+            } else {
+              set({ ...serverData, hasClearedDemoData: false });
+            }
+          } catch (error) {
+            console.error('Failed to fetch user data from Supabase:', error);
+          } finally {
+            set({ isSyncing: false });
+          }
+          return;
         }
+
+        set({ authSession: session, currentUser });
         
         // Hydrate data from server
         await get().fetchUserData();
@@ -145,14 +220,8 @@ export const createAuthSlice = (set, get) => {
         set({
           authSession: null,
           currentUser: GUEST_USER,
-          exercises: DEFAULT_EXERCISES,
-          routines: [],
-          sessions: [],
-          sessionExercises: [],
-          sessionExerciseGroups: [],
-          workoutLogs: [],
-          setRecords: [],
-          remoteSyncError: null
+          remoteSyncError: null,
+          ...createEmptyWorkoutState(),
         });
         await get().fetchPublicExercises();
       }
@@ -173,27 +242,11 @@ export const createAuthSlice = (set, get) => {
       }
     },
 
-    migrateLocalDataToSupabase: async (authUserId) => {
-      const { exercises, routines, sessions, sessionExercises, sessionExerciseGroups, workoutLogs, setRecords } = get();
-      
-      try {
-        set({ isSyncing: true });
-        await workoutRepository.migrateLocalDataToSupabase({
-          authUserId,
-          exercises,
-          routines,
-          sessions,
-          sessionExercises,
-          sessionExerciseGroups,
-          workoutLogs,
-          setRecords,
-        });
-        console.log('Successfully migrated guest data to Supabase!');
-      } catch (err) {
-        console.error('Migration failed:', err);
-      } finally {
-        set({ isSyncing: false });
-      }
+    discardGuestLocalDataForSignUp: () => {
+      const { currentUser } = get();
+      if (!currentUser.isGuest) return;
+
+      set(createEmptyWorkoutState({ hasClearedDemoData: true }));
     },
   };
 };

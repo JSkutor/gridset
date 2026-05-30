@@ -90,6 +90,12 @@
   color: #9ece6a;
 }
 
+.auth-feedback-msg.warning {
+  background: rgba(224, 175, 104, 0.1);
+  border: 1px solid rgba(224, 175, 104, 0.24);
+  color: #e0af68;
+}
+
 .auth-form {
   display: flex;
   flex-direction: column;

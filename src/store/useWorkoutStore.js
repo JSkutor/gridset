@@ -16,7 +16,7 @@ export const useWorkoutStore = create(
     }),
     {
       name: 'workout-tracker-storage',
-      version: 9,
+      version: 11,
       migrate: migrateWorkoutPersistState,
       partialize: (state) => Object.fromEntries(
         Object.entries(state).filter(([key]) => key !== 'remoteSyncError'),

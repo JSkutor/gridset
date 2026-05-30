@@ -114,7 +114,6 @@ export function useWorkoutDraft({
   const addRow = useCallback((blockIndex, requestFocus) => {
     const newGlobalIndex = computeNewGlobalIndex(blocks, blockIndex);
     const newRowIndex = blocks[blockIndex].sets.length;
-    const block = blocks[blockIndex];
 
     setBlocks((prev) =>
       prev.map((b, currentBlockIndex) => {

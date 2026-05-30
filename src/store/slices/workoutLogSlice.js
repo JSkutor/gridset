@@ -200,13 +200,14 @@ export const createWorkoutLogSlice = (set, get) => ({
   clearAllData: () => {
     const { exercises, currentUser } = get();
     set({
-      exercises: exercises.length > 0 ? exercises : DEFAULT_EXERCISES,
+      exercises: currentUser.isGuest ? DEFAULT_EXERCISES : (exercises.length > 0 ? exercises : DEFAULT_EXERCISES),
       routines: [],
       sessions: [],
       sessionExercises: [],
       sessionExerciseGroups: [],
       workoutLogs: [],
-      setRecords: []
+      setRecords: [],
+      hasClearedDemoData: currentUser.isGuest ? true : false
     });
 
     if (!currentUser.isGuest) {
@@ -217,24 +218,14 @@ export const createWorkoutLogSlice = (set, get) => ({
 
   generateDummyData: () => {
     const { currentUser, exercises } = get();
+    if (!currentUser.isGuest) return;
+
     const seedData = createDummyWorkoutData({
       userId: currentUser?.id || '00000000-0000-0000-0000-000000000000',
       existingExercises: exercises,
     });
 
-    set(seedData);
-
-    if (!currentUser.isGuest) {
-      get().runRemoteSync('generateDummyData', async () => {
-        set({ isSyncing: true });
-        try {
-          await workoutRepository.replaceUserWorkoutDataWithSeed(seedData, currentUser.id);
-          console.log('Dummy data successfully generated and synced with Supabase!');
-        } finally {
-          set({ isSyncing: false });
-        }
-      });
-    }
+    set({ ...seedData, hasClearedDemoData: false });
   },
 
   // --- Selectors ---

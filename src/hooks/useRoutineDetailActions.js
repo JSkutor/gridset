@@ -601,7 +601,9 @@ export function useRoutineDetailActions({
   useEffect(() => {
     if (!selectedExerciseGroupId) return;
     const stillExists = activeSessionExerciseGroups.some(group => group.id === selectedExerciseGroupId);
-    if (!stillExists) setSelectedExerciseGroupId(null);
+    if (!stillExists) {
+      window.queueMicrotask(() => setSelectedExerciseGroupId(null));
+    }
   }, [activeSessionExerciseGroups, selectedExerciseGroupId]);
 
   useEffect(() => {

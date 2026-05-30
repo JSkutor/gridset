@@ -4,6 +4,22 @@ import { normalizeMuscleLabel } from '../data/muscleGroups.js';
 import { DEFAULT_EXERCISE_BY_NAME, normalizeExerciseForApp } from '../api/supabaseWorkoutRepository.js';
 
 const GROUP_COLOR_PALETTE = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
+const DEMO_ROUTINE_NAMES = new Set([
+  '퇴근 후 기초 홈트',
+  '덤벨 볼륨 홈트',
+  '짧고 진한 유지 루틴',
+]);
+
+function looksLikeBundledDemoData(state) {
+  const routines = state.routines || [];
+  const workoutLogs = state.workoutLogs || [];
+  return (
+    state.currentUser?.isGuest &&
+    routines.length === DEMO_ROUTINE_NAMES.size &&
+    routines.every((routine) => DEMO_ROUTINE_NAMES.has(routine.name)) &&
+    workoutLogs.length >= 30
+  );
+}
 
 export function migrateWorkoutPersistState(persistedState, version) {
   let newState = { ...persistedState };
@@ -46,17 +62,18 @@ export function migrateWorkoutPersistState(persistedState, version) {
 
   if (version < 2) {
     const defaultRoutineId = generateUUID();
-    const defaultRoutine = {
-      id: defaultRoutineId,
-      name: '기본 루틴',
-      user_id: newState.currentUser?.id || '00000000-0000-0000-0000-000000000000',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    };
-
+    const hasMigratedSessions = (newState.sessions || []).length > 0;
     const routines = newState.routines && newState.routines.length > 0
       ? newState.routines
-      : [defaultRoutine];
+      : hasMigratedSessions
+        ? [{
+            id: defaultRoutineId,
+            name: '이전 루틴',
+            user_id: newState.currentUser?.id || '00000000-0000-0000-0000-000000000000',
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }]
+        : [];
 
     const sessions = (newState.sessions || []).map((session) => ({
       ...session,
@@ -181,6 +198,21 @@ export function migrateWorkoutPersistState(persistedState, version) {
         };
       }),
     };
+  }
+
+  if (version < 10) {
+    newState = {
+      ...newState,
+      isDemoDataLoaded: Boolean(newState.isDemoDataLoaded || looksLikeBundledDemoData(newState)),
+    };
+  }
+
+  if (version < 11) {
+    newState = {
+      ...newState,
+      hasClearedDemoData: !(newState.isDemoDataLoaded || looksLikeBundledDemoData(newState)),
+    };
+    delete newState.isDemoDataLoaded;
   }
 
   return newState;

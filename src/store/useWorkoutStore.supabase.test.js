@@ -39,6 +39,7 @@ function resetStore() {
     sessionExerciseGroups: [],
     workoutLogs: [],
     setRecords: [],
+    hasClearedDemoData: true,
     isSyncing: false,
     authSession: null,
     remoteSyncError: null,
@@ -49,6 +50,35 @@ function waitForRemoteSync() {
   return new Promise((resolve) => {
     window.setTimeout(resolve, 0);
   });
+}
+
+function mockUserDataQueries({
+  exercises = [],
+  routines = [],
+  sessions = [],
+  workoutLogs = [],
+  insert = vi.fn(async () => ({ data: null, error: null })),
+  upsert = vi.fn(async () => ({ data: null, error: null })),
+} = {}) {
+  supabaseMock.from.mockImplementation((table) => {
+    const query = {
+      select: vi.fn(() => query),
+      or: vi.fn(async () => ({ data: exercises, error: null })),
+      eq: vi.fn(() => query),
+      order: vi.fn(async () => {
+        if (table === 'routines') return { data: routines, error: null };
+        if (table === 'sessions') return { data: sessions, error: null };
+        if (table === 'workout_logs') return { data: workoutLogs, error: null };
+        return { data: [], error: null };
+      }),
+      in: vi.fn(async () => ({ data: [], error: null })),
+      insert,
+      upsert,
+    };
+    return query;
+  });
+
+  return { insert, upsert };
 }
 
 beforeEach(() => {
@@ -78,6 +108,129 @@ describe('Workout Store: Supabase exercise master sync', () => {
     assert.deepEqual(useWorkoutStore.getState().routines, [guestRoutine]);
     assert.equal(useWorkoutStore.getState().workoutLogs.length, 1);
     assert.equal(supabaseMock.from.mock.calls.length, 0);
+  });
+
+  test('setAuthSession migrates guest local data after the demo has been cleared', async () => {
+    const { insert, upsert } = mockUserDataQueries();
+
+    useWorkoutStore.setState({
+      currentUser: guestUser,
+      authSession: null,
+      routines: [{ id: 'local-routine', name: '내 루틴', user_id: guestUser.id }],
+      workoutLogs: [{ id: 'local-log', user_id: guestUser.id }],
+      hasClearedDemoData: true,
+    });
+
+    await useWorkoutStore.getState().setAuthSession({
+      user: {
+        id: memberUser.id,
+        email: memberUser.email,
+        user_metadata: { name: memberUser.name },
+      },
+      access_token: 'token-1',
+    });
+
+    assert.equal(insert.mock.calls.length > 0, true);
+    assert.deepEqual(insert.mock.calls[0][0], [
+      { id: 'local-routine', name: '내 루틴', user_id: memberUser.id },
+    ]);
+    assert.equal(upsert.mock.calls.length, 0);
+    assert.equal(useWorkoutStore.getState().routines.length, 0);
+    assert.equal(useWorkoutStore.getState().workoutLogs.length, 0);
+  });
+
+  test('setAuthSession keeps server data and does not upload guest data when the account is not empty', async () => {
+    const serverRoutine = {
+      id: 'server-routine',
+      name: '서버 루틴',
+      user_id: memberUser.id,
+      created_at: '2026-05-29T00:00:00.000Z',
+      updated_at: '2026-05-29T00:00:00.000Z',
+    };
+    const { insert, upsert } = mockUserDataQueries({ routines: [serverRoutine] });
+
+    useWorkoutStore.setState({
+      currentUser: guestUser,
+      authSession: null,
+      routines: [{ id: 'local-routine', name: '로컬 루틴', user_id: guestUser.id }],
+      workoutLogs: [{ id: 'local-log', user_id: guestUser.id }],
+      hasClearedDemoData: true,
+    });
+
+    await useWorkoutStore.getState().setAuthSession({
+      user: {
+        id: memberUser.id,
+        email: memberUser.email,
+        user_metadata: { name: memberUser.name },
+      },
+      access_token: 'token-1',
+    });
+
+    assert.equal(insert.mock.calls.length, 0);
+    assert.equal(upsert.mock.calls.length, 0);
+    assert.deepEqual(useWorkoutStore.getState().routines, [serverRoutine]);
+    assert.equal(useWorkoutStore.getState().workoutLogs.length, 0);
+  });
+
+  test('setAuthSession discards guest demo data without upload even when the server is empty', async () => {
+    const { insert, upsert } = mockUserDataQueries();
+
+    useWorkoutStore.setState({
+      currentUser: guestUser,
+      authSession: null,
+      routines: [{ id: 'demo-routine', name: '데모 루틴', user_id: guestUser.id }],
+      workoutLogs: [{ id: 'demo-log', user_id: guestUser.id }],
+      hasClearedDemoData: false,
+    });
+
+    await useWorkoutStore.getState().setAuthSession({
+      user: {
+        id: memberUser.id,
+        email: memberUser.email,
+        user_metadata: { name: memberUser.name },
+      },
+      access_token: 'token-1',
+    });
+
+    assert.equal(insert.mock.calls.length, 0);
+    assert.equal(upsert.mock.calls.length, 0);
+    assert.equal(useWorkoutStore.getState().routines.length, 0);
+    assert.equal(useWorkoutStore.getState().workoutLogs.length, 0);
+  });
+
+  test('setAuthSession treats server custom exercises as existing account data', async () => {
+    const customExercise = {
+      id: 'server-custom-exercise',
+      name: '서버 커스텀 운동',
+      primary_muscle: '기타',
+      equipment: '기타',
+      unit: 'kg',
+      user_id: memberUser.id,
+      created_at: '2026-05-29T00:00:00.000Z',
+      updated_at: '2026-05-29T00:00:00.000Z',
+    };
+    const { insert, upsert } = mockUserDataQueries({ exercises: [customExercise] });
+
+    useWorkoutStore.setState({
+      currentUser: guestUser,
+      authSession: null,
+      routines: [{ id: 'local-routine', name: '로컬 루틴', user_id: guestUser.id }],
+      hasClearedDemoData: true,
+    });
+
+    await useWorkoutStore.getState().setAuthSession({
+      user: {
+        id: memberUser.id,
+        email: memberUser.email,
+        user_metadata: { name: memberUser.name },
+      },
+      access_token: 'token-1',
+    });
+
+    assert.equal(insert.mock.calls.length, 0);
+    assert.equal(upsert.mock.calls.length, 0);
+    assert.equal(useWorkoutStore.getState().exercises.some((exercise) => exercise.id === customExercise.id), true);
+    assert.equal(useWorkoutStore.getState().routines.length, 0);
   });
 
   test('fetchPublicExercises hydrates public DB rows into app exercise shape', async () => {
