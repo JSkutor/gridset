@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Activity, Dumbbell, History } from 'lucide-react';
+import { useWorkoutStore } from '../../store/useWorkoutStore';
 import {
   formatDate,
   formatDateTime,
@@ -14,6 +15,9 @@ import ExerciseProgressChart from './ExerciseProgressChart';
 import SetRecordTable from './SetRecordTable';
 
 export default function ExerciseView({ exerciseSummaries, selectedExerciseId, setSelectedExerciseId, exerciseMonthDate, setExerciseMonthDate, sessionsById }) {
+  const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
+  const sessionExerciseGroups = useWorkoutStore((state) => state.sessionExerciseGroups);
+
   const selectedSummary = exerciseSummaries.find((summary) => summary.exercise.id === selectedExerciseId) || exerciseSummaries[0] || null;
   const selectedExercise = selectedSummary?.exercise || null;
   const activityByDate = useMemo(() => {
@@ -101,21 +105,57 @@ export default function ExerciseView({ exerciseSummaries, selectedExerciseId, se
               </div>
 
               <div className="log-scroll-area">
-                {selectedSummary.logs.map((log) => (
-                  <article key={log.key} className="log-exercise-history-row">
-                    <div className="log-exercise-history-date">
-                      <strong>{formatDate(log.date, { month: 'short', day: 'numeric' })}</strong>
-                      <span>{formatDate(log.date, { weekday: 'short' })}</span>
-                    </div>
-                    <div className="log-exercise-history-body">
-                      <div className="log-exercise-history-summary">
-                        <strong>{formatMetric(log.value, selectedExercise)}</strong>
-                        <span>{log.records.length}세트 · {formatDateTime(log.startTime)}</span>
+                {selectedSummary.logs.map((log) => {
+                  const session = sessionsById.get(log.session_id);
+                  let groupName = null;
+                  let groupColor = null;
+
+                  if (session) {
+                    const links = sessionExercises.filter(se => se.session_id === session.id);
+                    const link = links.find(se => se.exercise_id === selectedExercise.id);
+                    if (link) {
+                      const groups = sessionExerciseGroups.filter(g => g.session_id === session.id);
+                      const matchedGroup = groups.find(g => {
+                        const start = Number(g.start_order) || 1;
+                        const end = start + (Number(g.size) || 2) - 1;
+                        return link.order >= start && link.order <= end;
+                      });
+                      if (matchedGroup) {
+                        groupName = matchedGroup.name;
+                        const palette = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
+                        const groupIdx = groups.findIndex(g => g.id === matchedGroup.id);
+                        groupColor = matchedGroup.color || palette[groupIdx % palette.length] || '#7aa2f7';
+                      }
+                    }
+                  }
+
+                  return (
+                    <article key={log.key} className="log-exercise-history-row">
+                      <div className="log-exercise-history-date">
+                        <strong>{formatDate(log.date, { month: 'short', day: 'numeric' })}</strong>
+                        <span>{formatDate(log.date, { weekday: 'short' })}</span>
                       </div>
-                      <SetRecordTable records={log.records} exercise={selectedExercise} compact />
-                    </div>
-                  </article>
-                ))}
+                      <div className="log-exercise-history-body">
+                        <div className="log-exercise-history-summary">
+                          <strong>{formatMetric(log.value, selectedExercise)}</strong>
+                          <div className="log-exercise-history-meta-wrap">
+                            <span>{log.records.length}세트</span>
+                            {groupName && (
+                              <span 
+                                className="log-history-group-badge"
+                                style={{ '--group-color': groupColor }}
+                              >
+                                {groupName}
+                              </span>
+                            )}
+                            <span>· {formatDateTime(log.startTime)}</span>
+                          </div>
+                        </div>
+                        <SetRecordTable records={log.records} exercise={selectedExercise} compact />
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
             </section>
           </>
