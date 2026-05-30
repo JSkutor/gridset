@@ -1,0 +1,43 @@
+/* ─── Empty Workout Grid State Visual Placeholder Layout ─── */
+.workout-grid-empty-state {
+  height: 100%;
+}
+
+.empty-state-scroll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.workout-grid-empty-placeholder {
+  text-align: center;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  max-width: 340px;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.empty-placeholder-icon {
+  font-size: 32px;
+  margin-bottom: 4px;
+}
+
+.workout-grid-empty-placeholder h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.workout-grid-empty-placeholder p {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  margin: 0;
+}

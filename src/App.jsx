@@ -17,7 +17,6 @@ import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useWorkoutSessionRotation } from './hooks/useWorkoutSessionRotation'
 import { useAuthSessionBridge } from './hooks/useAuthSessionBridge'
 import { APP_NAV_TAB, APP_NAV_TAB_IDS, APP_NAV_SHORTCUTS } from './constants/appNavTabs'
-import './index.css'
 const NAV_FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="main"]';
 const getNavFocusTargetSelector = (tabId) =>
   `${NAV_FOCUS_SCOPE_SELECTOR} [data-tab-id="${tabId}"]`;
@@ -224,7 +223,7 @@ function App() {
         onDismiss={handleDismissRestTimer}
       />
 
-      <div style={{ flex: 1, minHeight: 0, overflow: activeTab === APP_NAV_TAB.ROUTINE ? 'visible' : 'hidden', viewTransitionName: 'page-content' }}>
+      <div className={`page-content-frame ${activeTab === APP_NAV_TAB.ROUTINE ? 'page-content-frame--routine' : ''}`}>
         {activeTab === APP_NAV_TAB.SET && (
           <main className="main-grid">
             <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
@@ -243,13 +242,13 @@ function App() {
         )}
 
         {activeTab === APP_NAV_TAB.ROUTINE && (
-          <main style={{ height: '100%', padding: '24px 32px 32px 32px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
+          <main className="page-main page-main--routine">
             <RoutineDetail ref={routineDetailRef} />
           </main>
         )}
         
         {activeTab === APP_NAV_TAB.LOG && (
-          <main style={{ height: '100%', minHeight: 0, padding: '24px 32px 32px 32px', overflowX: 'hidden', overflowY: 'auto' }}>
+          <main className="page-main page-main--log">
             <LogPage />
           </main>
         )}

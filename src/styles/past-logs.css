@@ -1,0 +1,106 @@
+/* ─── Exercise Past Logs Refactored Classes ─── */
+.past-logs-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.past-logs-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.past-logs-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 0 100px 0;
+}
+
+.past-logs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.past-logs-empty-message {
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.past-logs-card {
+  padding: 16px;
+}
+
+.past-logs-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.past-logs-card-date {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-bright);
+}
+
+.past-logs-card-volume {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+}
+
+.past-logs-memos-wrapper {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.past-logs-memo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-main);
+}
+
+.past-logs-memo-badge {
+  display: inline-flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  font-size: 11px;
+  padding-top: 1px;
+}
+
+.past-logs-memo-badge-side {
+  font-size: 9px;
+  padding: 0 2px;
+  border-radius: 2px;
+  margin-left: 4px;
+}
+
+.past-logs-memo-badge-side.side-l {
+  background: rgba(235, 94, 85, 0.15);
+  color: #eb5e55;
+}
+
+.past-logs-memo-badge-side.side-r {
+  background: rgba(79, 195, 247, 0.15);
+  color: #4fc3f7;
+}
+
+.past-logs-memo-text {
+  color: var(--text-main);
+  word-break: break-all;
+}

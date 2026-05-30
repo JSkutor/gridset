@@ -3,28 +3,12 @@ import ExerciseAutocomplete from '../ExerciseAutocomplete';
 
 export default function AddExerciseRow({ index, onAddExercise, onCancel }) {
   return (
-    <div
-      style={{
-        padding: '8px 12px',
-        borderRadius: '8px',
-        background: 'rgba(228, 232, 240, 0.03)',
-        marginBottom: '8px',
-        display: 'grid',
-        gridTemplateColumns: '24px 1fr 60px 60px 24px',
-        alignItems: 'center',
-        gap: '12px',
-      }}
-    >
-      <span style={{
-        fontSize: '11px',
-        color: 'var(--text-muted)',
-        textAlign: 'right',
-        fontVariantNumeric: 'tabular-nums',
-      }}>
+    <div className="routine-add-row">
+      <span className="routine-row-index">
         {index + 1}
       </span>
 
-      <div style={{ gridColumn: '2 / span 3', minWidth: 0 }}>
+      <div className="routine-add-row-search">
         <ExerciseAutocomplete
           onSelect={onAddExercise}
           onCancel={onCancel}
@@ -33,22 +17,10 @@ export default function AddExerciseRow({ index, onAddExercise, onCancel }) {
         />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gridColumn: '5' }}>
+      <div className="routine-add-row-actions">
         <button
           onClick={onCancel}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: 'var(--text-muted)',
-            cursor: 'pointer',
-            padding: '4px',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            transition: 'color 0.15s',
-          }}
-          onMouseEnter={event => event.currentTarget.style.color = '#f77a7a'}
-          onMouseLeave={event => event.currentTarget.style.color = 'var(--text-muted)'}
+          className="routine-add-row-cancel"
         >
           <X size={13} />
         </button>

@@ -1,0 +1,180 @@
+/* Disable pointer events globally during keyboard navigation to prevent hover styles from getting stuck */
+body.keyboard-navigating * {
+  pointer-events: none !important;
+}
+
+/* ─── Main Navigation ─── */
+.app-nav-shell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.app-nav {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px;
+  border: 1px solid var(--border);
+  border-radius: 9999px;
+  background: rgba(12, 14, 24, 0.6);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  backdrop-filter: var(--blur-popover);
+  -webkit-backdrop-filter: var(--blur-popover);
+}
+
+.app-nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 22px;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition:
+    background 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    font-weight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-nav-tab.is-active {
+  background: rgba(122, 162, 247, 0.12);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ─── Top Right Actions Bar & Help Button ─── */
+.top-right-header-actions {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.top-right-header-actions .account-menu-container {
+  position: static;
+}
+
+.help-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--motion-standard),
+    border-color var(--motion-standard),
+    color var(--motion-standard),
+    transform var(--motion-standard);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.help-trigger-btn:hover {
+  background: rgba(122, 162, 247, 0.08);
+  border-color: rgba(122, 162, 247, 0.3);
+  color: var(--accent);
+  transform: translateY(-0.5px);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.sync-status-banner {
+  position: absolute;
+  top: 52px;
+  right: 10px;
+  z-index: 9998;
+  width: min(380px, calc(100vw - 20px));
+  min-height: 50px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid rgba(247, 118, 142, 0.24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(247, 118, 142, 0.12), rgba(12, 14, 24, 0.86) 42%),
+    rgba(12, 14, 24, 0.9);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+}
+
+.sync-status-banner__icon {
+  color: #f7768e;
+}
+
+.sync-status-banner__copy {
+  min-width: 0;
+}
+
+.sync-status-banner__title {
+  color: var(--text-bright);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.sync-status-banner__detail {
+  overflow: hidden;
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sync-status-banner__retry {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  min-width: 72px;
+  height: 30px;
+  padding: 0 9px;
+  border: 1px solid rgba(247, 118, 142, 0.26);
+  border-radius: 7px;
+  background: rgba(247, 118, 142, 0.08);
+  color: #f7768e;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, transform 0.18s;
+}
+
+.sync-status-banner__retry:hover:not(:disabled) {
+  background: rgba(247, 118, 142, 0.14);
+  border-color: rgba(247, 118, 142, 0.38);
+  transform: translateY(-0.5px);
+}
+
+.sync-status-banner__retry:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.sync-status-banner__retry-icon.is-spinning {
+  animation: spin 0.8s linear infinite;
+}

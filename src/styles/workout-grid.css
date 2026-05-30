@@ -1,0 +1,99 @@
+/* ─── Workout Grid Refactored Classes ─── */
+.workout-grid-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+}
+
+.workout-grid-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.workout-grid-header {
+  padding: 20px 22px 0 22px;
+}
+
+.workout-grid-header-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.workout-grid-header-selector-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.workout-grid-session-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: var(--text-bright);
+}
+
+.workout-grid-header-bar {
+  display: flex;
+  width: 100%;
+  height: 38px;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.workout-grid-header-col-set {
+  width: 60px;
+  display: flex;
+  justify-content: center;
+}
+
+.workout-grid-header-col-metric {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.workout-grid-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 22px 20px 22px;
+}
+
+.workout-grid-table-row-exercise-header td {
+  text-align: left;
+  color: var(--text-bright);
+  font-weight: 600;
+  font-size: 14px;
+  border-bottom: none;
+  letter-spacing: -0.02em;
+}
+
+.workout-grid-table-row-exercise-header--first td {
+  padding: 20px 14px 10px 14px;
+}
+
+.workout-grid-table-row-exercise-header--subsequent td {
+  padding: 40px 14px 10px 14px;
+}
+
+.workout-grid-table-cell-add-row {
+  text-align: center;
+  height: 36px;
+  padding: 0;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+
+.workout-grid-add-set-icon {
+  margin-right: 4px;
+}
+
+.workout-grid-memo-container {
+  padding: 18px 22px;
+  border-top: 1px solid var(--border);
+}

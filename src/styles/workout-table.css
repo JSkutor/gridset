@@ -1,0 +1,203 @@
+/* ─── Spreadsheet Grid ─── */
+.spreadsheet-wrap {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.spreadsheet {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.spreadsheet th,
+.spreadsheet td {
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+  text-align: center;
+  font-size: 14px;
+  height: 48px;
+}
+
+/* Vertical dividers between columns only */
+.spreadsheet td + td {
+  border-left: 1px solid var(--border);
+}
+
+.spreadsheet thead th {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  height: 38px;
+  border: none;
+  border-bottom: none;
+  background: transparent;
+}
+
+/* Beautiful custom floating hand-drawn styles for the table header */
+.grid-header-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Caveat', 'Nanum Pen Script', cursive;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  user-select: none;
+  letter-spacing: normal;
+  text-transform: none;
+  transform: rotate(-4deg);
+  pointer-events: none; /* Disables hover state completely */
+}
+
+.grid-header-badge--accent {
+  color: var(--accent);
+  transform: rotate(2deg);
+  text-shadow: 0 0 10px rgba(122, 162, 247, 0.12);
+}
+
+/* Remove bottom border from last row */
+.spreadsheet tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.spreadsheet .col-set,
+.spreadsheet td.cell-set {
+  width: 60px;
+}
+
+.spreadsheet td.cell-set {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.spreadsheet td.cell-input {
+  padding: 0;
+  position: relative;
+}
+
+.spreadsheet:not(.keyboard-navigating) td.cell-input:hover {
+  background: var(--bg-cell-hover);
+}
+
+.spreadsheet td.cell-input:focus-within {
+  background: var(--bg-cell-focus);
+  box-shadow: inset 0 0 0 1.5px var(--border-focus);
+}
+
+.spreadsheet td.cell-input input {
+  width: 100%;
+  height: 100%;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-bright);
+  font-size: 18px;
+  font-weight: 500;
+  font-family: inherit;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.spreadsheet td.cell-input input::placeholder {
+  color: rgba(142, 152, 190, 0.42);
+  font-weight: 400;
+}
+
+/* Add-row button */
+.add-row-btn {
+  width: 100%;
+  margin-top: 4px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: var(--text-muted);
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: color var(--motion-medium), background var(--motion-medium);
+  font-weight: 500;
+  font-size: 13px;
+  font-family: inherit;
+}
+
+.add-row-btn:hover {
+  color: var(--accent);
+  background: transparent;
+}
+
+/* ─── Read-only Spreadsheet (Past Logs) ─── */
+.spreadsheet--readonly th,
+.spreadsheet--readonly td {
+  height: 34px;
+  font-size: 13px;
+}
+
+.spreadsheet--readonly thead th {
+  height: 28px;
+  font-size: 11px;
+}
+
+.spreadsheet--readonly td.cell-value {
+  font-weight: 500;
+  color: var(--text-main);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Note Textarea ─── */
+.note-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  padding: 14px 16px;
+  min-height: 72px;
+  resize: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 13px;
+  transition: border-color 0.2s ease;
+}
+
+.note-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.note-textarea:focus {
+  border-color: var(--border-focus);
+}
+
+/* ─── Section Header ─── */
+.section-header {
+  padding: 20px 22px 16px 22px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-bright);
+}
+
+.section-header .subtitle {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: 3px;
+  display: block;
+}

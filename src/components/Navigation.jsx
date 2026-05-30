@@ -20,28 +20,10 @@ export default function Navigation({ activeTab, setActiveTab }) {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        width: "100%",
-        flexShrink: 0,
-      }}
-    >
+    <div className="app-nav-shell">
       <nav
         data-tab-navigation="main"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          padding: "5px",
-          gap: "3px",
-          background: "rgba(12, 14, 24, 0.6)",
-          backdropFilter: "blur(24px) saturate(1.3)",
-          WebkitBackdropFilter: "blur(24px) saturate(1.3)",
-          borderRadius: "9999px",
-          boxShadow: "0 4px 24px rgba(0, 0, 0, 0.25)",
-          border: "1px solid var(--border)",
-        }}
+        className="app-nav"
       >
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;
@@ -52,24 +34,7 @@ export default function Navigation({ activeTab, setActiveTab }) {
               onClick={() => handleTabClick(tab.id)}
               title={`${tab.label} (${tab.shortcut})`}
               aria-keyshortcuts={tab.shortcut}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "7px",
-                padding: "9px 22px",
-                borderRadius: "9999px",
-                border: "none",
-                background: isActive
-                  ? "rgba(122, 162, 247, 0.12)"
-                  : "transparent",
-                color: isActive ? "var(--accent)" : "var(--text-muted)",
-                cursor: "pointer",
-                fontWeight: isActive ? "600" : "500",
-                transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-                fontSize: "14px",
-                fontFamily: "inherit",
-                letterSpacing: "0.01em",
-              }}
+              className={`app-nav-tab ${isActive ? "is-active" : ""}`}
             >
               {tab.icon}
               {tab.label}
@@ -80,4 +45,3 @@ export default function Navigation({ activeTab, setActiveTab }) {
     </div>
   );
 }
-
