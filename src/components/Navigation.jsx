@@ -1,11 +1,12 @@
 import { Dumbbell, ListChecks, History } from "lucide-react";
+import { APP_NAV_TAB } from "../constants/appNavTabs";
 import { startViewTransition } from "../hooks/useViewTransition";
 
 export default function Navigation({ activeTab, setActiveTab }) {
   const tabs = [
-    { id: "R", label: "Routine", shortcut: "Q", icon: <ListChecks size={16} /> },
-    { id: "S", label: "Set", shortcut: "W", icon: <Dumbbell size={16} /> },
-    { id: "L", label: "Log", shortcut: "E", icon: <History size={16} /> },
+    { id: APP_NAV_TAB.ROUTINE, label: "Routine", shortcut: "Q", icon: <ListChecks size={16} /> },
+    { id: APP_NAV_TAB.SET, label: "Set", shortcut: "W", icon: <Dumbbell size={16} /> },
+    { id: APP_NAV_TAB.LOG, label: "Log", shortcut: "E", icon: <History size={16} /> },
   ];
 
   const handleTabClick = (tabId) => {

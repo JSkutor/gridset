@@ -60,23 +60,23 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
  * }} options
  *
  * @example
- * // Top-level app navigation: Q → R, W → S, E → L
+ * // Top-level app navigation: Q → routine, W → set, E → log
  * useTabNavigation({
- *   tabIds: ['R', 'S', 'L'],
- *   shortcuts: { KeyQ: 'R', KeyW: 'S', KeyE: 'L' },
+ *   tabIds: APP_NAV_TAB_IDS,
+ *   shortcuts: APP_NAV_SHORTCUTS,
  *   activeTab,
  *   setActiveTab: setActiveTab,
  * });
  *
  * @example
  * // Log page sub-navigation: A → daily, S → exercise, D → routine
- * // Only active while the Log tab is visible.
+ * // Only active while the Log page is visible.
  * useTabNavigation({
  *   tabIds: ['daily', 'exercise', 'routine'],
  *   shortcuts: { KeyA: 'daily', KeyS: 'exercise', KeyD: 'routine' },
  *   activeTab: activeView,
  *   setActiveTab: setActiveView,
- *   isActive: activeTab === 'L',
+ *   isActive: activeTab === APP_NAV_TAB.LOG,
  * });
  */
 export function useTabNavigation({

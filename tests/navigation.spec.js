@@ -18,27 +18,26 @@ test.describe('Gridset Navigation & Rendering E2E Tests', () => {
     const mainNav = page.locator('[data-tab-navigation="main"]');
     await expect(mainNav).toBeVisible();
 
-    // 4. By default, the app active tab is "S" (Set page).
+    // 4. By default, the app active tab is "set" (Set page).
     // Let's assert that the characteristic Set page elements exist and are painted.
     const workoutCompleteButton = page.locator('button:has-text("운동 완료")');
     await expect(workoutCompleteButton).toBeVisible();
 
-    // 5. Navigate to the "Routine" (R) tab by clicking the button.
-    const routineTabButton = page.locator('[data-tab-navigation="main"] [data-tab-id="R"]');
+    // 5. Navigate to the Routine tab by clicking the button.
+    const routineTabButton = page.locator('[data-tab-navigation="main"] [data-tab-id="routine"]');
     await routineTabButton.click();
 
-    // Ensure the tab active style is applied.
-    await expect(routineTabButton).toHaveAttribute('data-tab-id', 'R');
+    await expect(routineTabButton).toHaveAttribute('data-tab-id', 'routine');
     
     // Assert that RoutineDetail's layout grid is visible.
     const routineGrid = page.locator('.routine-grid');
     await expect(routineGrid).toBeVisible();
 
-    // 6. Navigate to the "Log" (L) tab by clicking the button.
-    const logTabButton = page.locator('[data-tab-navigation="main"] [data-tab-id="L"]');
+    // 6. Navigate to the Log tab by clicking the button.
+    const logTabButton = page.locator('[data-tab-navigation="main"] [data-tab-id="log"]');
     await logTabButton.click();
 
-    await expect(logTabButton).toHaveAttribute('data-tab-id', 'L');
+    await expect(logTabButton).toHaveAttribute('data-tab-id', 'log');
 
     // Assert that Log page sidebar/layout is loaded.
     const logSidebar = page.locator('[data-tab-navigation="log"]');

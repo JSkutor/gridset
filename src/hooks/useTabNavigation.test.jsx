@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
+import { APP_NAV_TAB, APP_NAV_SHORTCUTS, APP_NAV_TAB_IDS } from '../constants/appNavTabs';
 import { useTabNavigation } from './useTabNavigation.js';
 
 const FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="mock"]';
@@ -8,11 +9,12 @@ const getFocusTargetSelector = (tabId) =>
   `${FOCUS_SCOPE_SELECTOR} [data-tab-id="${tabId}"]`;
 
 function TabNavigationMock() {
-  const [activeTab, setActiveTab] = useState('R');
+  const [activeTab, setActiveTab] = useState(APP_NAV_TAB.ROUTINE);
 
   useTabNavigation({
-    tabIds: ['R', 'S', 'L'],
-    shortcuts: { KeyQ: 'R', KeyW: 'S', KeyE: 'L' },
+    tabIds: APP_NAV_TAB_IDS,
+    shortcuts: APP_NAV_SHORTCUTS,
+    activeTab,
     setActiveTab,
     focusScopeSelector: FOCUS_SCOPE_SELECTOR,
     focusTargetSelector: getFocusTargetSelector,
@@ -26,7 +28,7 @@ function TabNavigationMock() {
       </button>
       <input data-testid="editable" aria-label="editable" />
       <nav data-tab-navigation="mock">
-        {['R', 'S', 'L'].map((tabId) => (
+        {APP_NAV_TAB_IDS.map((tabId) => (
           <button
             key={tabId}
             type="button"
@@ -45,15 +47,15 @@ describe('useTabNavigation', () => {
   test('moves focus to the shortcut target when focus starts inside the same navigation', () => {
     render(React.createElement(TabNavigationMock));
 
-    const routineTab = screen.getByRole('button', { name: 'R' });
-    const setTab = screen.getByRole('button', { name: 'S' });
+    const routineTab = screen.getByRole('button', { name: APP_NAV_TAB.ROUTINE });
+    const setTab = screen.getByRole('button', { name: APP_NAV_TAB.SET });
 
     routineTab.focus();
     expect(document.activeElement).toBe(routineTab);
 
     fireEvent.keyDown(routineTab, { code: 'KeyW', key: 'w' });
 
-    expect(screen.getByTestId('active-tab').textContent).toBe('S');
+    expect(screen.getByTestId('active-tab').textContent).toBe(APP_NAV_TAB.SET);
     expect(document.activeElement).toBe(setTab);
   });
 
@@ -65,7 +67,7 @@ describe('useTabNavigation', () => {
     outsideButton.focus();
     fireEvent.keyDown(outsideButton, { code: 'KeyE', key: 'e' });
 
-    expect(screen.getByTestId('active-tab').textContent).toBe('L');
+    expect(screen.getByTestId('active-tab').textContent).toBe(APP_NAV_TAB.LOG);
     expect(document.activeElement).toBe(outsideButton);
   });
 
@@ -82,7 +84,7 @@ describe('useTabNavigation', () => {
       stopImmediatePropagation,
     });
 
-    expect(screen.getByTestId('active-tab').textContent).toBe('R');
+    expect(screen.getByTestId('active-tab').textContent).toBe(APP_NAV_TAB.ROUTINE);
     expect(stopImmediatePropagation).not.toHaveBeenCalled();
   });
 
@@ -92,7 +94,7 @@ describe('useTabNavigation', () => {
     
     render(React.createElement(TabNavigationMock));
 
-    const routineTab = screen.getByRole('button', { name: 'R' });
+    const routineTab = screen.getByRole('button', { name: APP_NAV_TAB.ROUTINE });
     routineTab.focus();
 
     fireEvent.keyDown(routineTab, {
@@ -100,10 +102,8 @@ describe('useTabNavigation', () => {
       key: 'q',
     });
 
-    // The tab should remain 'R'
-    expect(screen.getByTestId('active-tab').textContent).toBe('R');
+    expect(screen.getByTestId('active-tab').textContent).toBe(APP_NAV_TAB.ROUTINE);
     
-    // The event should be captured, prevented, and stopped from propagation
     expect(stopImmediatePropagationSpy).toHaveBeenCalled();
     expect(preventDefaultSpy).toHaveBeenCalled();
 

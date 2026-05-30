@@ -16,14 +16,8 @@ import { useTabNavigation } from './hooks/useTabNavigation'
 import { useGlobalShortcuts } from './hooks/useGlobalShortcuts'
 import { useWorkoutSessionRotation } from './hooks/useWorkoutSessionRotation'
 import { useAuthSessionBridge } from './hooks/useAuthSessionBridge'
+import { APP_NAV_TAB, APP_NAV_TAB_IDS, APP_NAV_SHORTCUTS } from './constants/appNavTabs'
 import './index.css'
-
-const NAV_TAB_IDS = ['R', 'S', 'L'];
-const NAV_SHORTCUTS = {
-  KeyQ: 'R',
-  KeyW: 'S',
-  KeyE: 'L',
-};
 const NAV_FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="main"]';
 const getNavFocusTargetSelector = (tabId) =>
   `${NAV_FOCUS_SCOPE_SELECTOR} [data-tab-id="${tabId}"]`;
@@ -39,7 +33,7 @@ const subscribeToWorkoutStoreHydration = (callback) => {
 const getWorkoutStoreHydrationSnapshot = () => useWorkoutStore.persist.hasHydrated();
 
 function App() {
-  const [activeTab, setActiveTab] = useState('S')
+  const [activeTab, setActiveTab] = useState(APP_NAV_TAB.SET)
   const [activeExerciseId, setActiveExerciseId] = useState(null)
   const [restTimer, setRestTimer] = useState(null)
   const [completedWorkoutLog, setCompletedWorkoutLog] = useState(null)
@@ -173,8 +167,8 @@ function App() {
 
   // ── Q / W / E: switch top-level tabs ────────────────────────────────────
   useTabNavigation({
-    tabIds: NAV_TAB_IDS,
-    shortcuts: NAV_SHORTCUTS,
+    tabIds: APP_NAV_TAB_IDS,
+    shortcuts: APP_NAV_SHORTCUTS,
     activeTab,
     setActiveTab,
     focusScopeSelector: NAV_FOCUS_SCOPE_SELECTOR,
@@ -183,7 +177,7 @@ function App() {
 
   // ── Miscellaneous global shortcuts (Escape, Backquote, Cmd+Arrow, retired 1/2/3) ──
   useGlobalShortcuts({
-    NAV_TAB_IDS,
+    NAV_TAB_IDS: APP_NAV_TAB_IDS,
     activeTab,
     setActiveTab,
     workoutGridRef,
@@ -225,13 +219,13 @@ function App() {
       <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
       <RestTimer
         timer={restTimer}
-        isVisible={activeTab === 'S'}
+        isVisible={activeTab === APP_NAV_TAB.SET}
         onTogglePause={handleToggleRestPause}
         onDismiss={handleDismissRestTimer}
       />
 
-      <div style={{ flex: 1, minHeight: 0, overflow: activeTab === 'R' ? 'visible' : 'hidden', viewTransitionName: 'page-content' }}>
-        {activeTab === 'S' && (
+      <div style={{ flex: 1, minHeight: 0, overflow: activeTab === APP_NAV_TAB.ROUTINE ? 'visible' : 'hidden', viewTransitionName: 'page-content' }}>
+        {activeTab === APP_NAV_TAB.SET && (
           <main className="main-grid">
             <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
             <WorkoutGrid 
@@ -248,13 +242,13 @@ function App() {
           </main>
         )}
 
-        {activeTab === 'R' && (
+        {activeTab === APP_NAV_TAB.ROUTINE && (
           <main style={{ height: '100%', padding: '24px 32px 32px 32px', overflow: 'visible', display: 'flex', flexDirection: 'column' }}>
             <RoutineDetail ref={routineDetailRef} />
           </main>
         )}
         
-        {activeTab === 'L' && (
+        {activeTab === APP_NAV_TAB.LOG && (
           <main style={{ height: '100%', minHeight: 0, padding: '24px 32px 32px 32px', overflowX: 'hidden', overflowY: 'auto' }}>
             <LogPage />
           </main>
@@ -269,7 +263,7 @@ function App() {
           setCompletedWorkoutLog(null);
           setSelectedSessionId(null);
           setActiveExerciseId(null);
-          setActiveTab('L');
+          setActiveTab(APP_NAV_TAB.LOG);
         }}
       />
     </div>
