@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 import React, { useEffect, useMemo, useRef } from 'react';
 import { Flame, Dumbbell, Activity, TrendingUp, Sparkles, CheckCircle2 } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';

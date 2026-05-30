@@ -2,7 +2,7 @@ import { DEFAULT_EXERCISES, createDummyWorkoutData, generateUUID } from '../../d
 import * as workoutRepository from '../../api/supabaseWorkoutRepository.js';
 import { initialSeed } from './authSlice.js';
 
-export const createWorkoutLogSlice = (set, get, store) => ({
+export const createWorkoutLogSlice = (set, get) => ({
   // --- State ---
   workoutLogs: initialSeed.workoutLogs,
   setRecords: initialSeed.setRecords,
@@ -85,7 +85,6 @@ export const createWorkoutLogSlice = (set, get, store) => ({
     blocks.forEach((block) => {
       block.sets.forEach((set) => {
         const hasReps = String(set.reps ?? '').trim() !== '';
-        const hasWeight = String(set.weight ?? '').trim() !== '';
         if (hasReps) {
           const parsedWeight = parseFloat(set.weight);
           const safeWeight = isFinite(parsedWeight) ? Math.max(0, parsedWeight) : 0;
@@ -205,6 +204,7 @@ export const createWorkoutLogSlice = (set, get, store) => ({
       routines: [],
       sessions: [],
       sessionExercises: [],
+      sessionExerciseGroups: [],
       workoutLogs: [],
       setRecords: []
     });

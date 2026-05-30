@@ -1,4 +1,5 @@
 import { swapItems } from '../utils/array.js';
+import { findGroupForSessionExercise } from '../utils/sessionExerciseGroups.js';
 
 function focusElement(element, delay = 0) {
   setTimeout(() => {
@@ -14,19 +15,24 @@ export function useRoutineKeyboardNavigation({
   temporarySessionId,
   effectiveRoutineSessions,
   activeSessionExercises,
+  activeSessionExerciseGroups = [],
   sessionExercises,
   selectedExerciseId,
   isAddingExerciseRow,
   sessionRefs,
   exerciseRefs,
+  exerciseGroupRefs,
   settingControlRefs,
   addSessionBtnRef,
   addExerciseBtnRef,
+  addGroupBtnRef,
   reorderSessions,
   reorderSessionExercises,
   onSelectSession,
+  onFocusExerciseSettings = () => {},
   setSelectedSessionId,
   setSelectedExerciseId,
+  setSelectedExerciseGroupId = () => {},
   setIsAddingExerciseRow,
   setFocusedRoutinePanel,
   isReadOnly,
@@ -39,6 +45,11 @@ export function useRoutineKeyboardNavigation({
   const focusExerciseById = (id, delay = 0) => {
     setFocusedRoutinePanel('exercises');
     focusElement(exerciseRefs.current[id], delay);
+  };
+
+  const focusExerciseGroupById = (id, delay = 0) => {
+    setFocusedRoutinePanel('groups');
+    focusElement(exerciseGroupRefs?.current?.[id], delay);
   };
 
   const focusSession = (index, delay = 0) => {
@@ -56,11 +67,14 @@ export function useRoutineKeyboardNavigation({
   };
 
   const focusSettingControl = (index) => {
-    const el = settingControlRefs.current[index];
-    if (el && document.body.contains(el)) {
-      setFocusedRoutinePanel('settings');
-      focusElement(el);
-    }
+    setFocusedRoutinePanel('settings');
+    setTimeout(() => {
+      const el = settingControlRefs.current[index];
+      if (el && document.body.contains(el)) {
+        el.focus();
+        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }, 20);
   };
 
   const focusSelectedExerciseRow = () => {
@@ -77,8 +91,15 @@ export function useRoutineKeyboardNavigation({
 
   const focusAddExerciseButton = () => {
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setFocusedRoutinePanel('exercises');
     focusElement(addExerciseBtnRef.current);
+  };
+
+  const focusAddGroupButton = () => {
+    setSelectedExerciseGroupId(null);
+    setFocusedRoutinePanel('groups');
+    focusElement(addGroupBtnRef?.current);
   };
 
   const handleSettingValueKeyDown = (event, index, onIncrement, onDecrement) => {
@@ -187,6 +208,7 @@ export function useRoutineKeyboardNavigation({
         event.preventDefault();
         if (activeSessionExercises.length > 0) {
           setSelectedExerciseId(activeSessionExercises[0].id);
+          setSelectedExerciseGroupId(null);
           focusExercise(0);
         } else if (!isAddingExerciseRow) {
           focusAddExerciseButton();
@@ -224,6 +246,7 @@ export function useRoutineKeyboardNavigation({
             focusExerciseById(currentExerciseId, 20);
           } else {
             setSelectedExerciseId(activeSessionExercises[nextIndex].id);
+            setSelectedExerciseGroupId(null);
             focusExercise(nextIndex);
           }
         } else if (nextIndex === activeSessionExercises.length && !isAddingExerciseRow) {
@@ -245,6 +268,7 @@ export function useRoutineKeyboardNavigation({
             focusExerciseById(currentExerciseId, 20);
           } else {
             setSelectedExerciseId(activeSessionExercises[prevIndex].id);
+            setSelectedExerciseGroupId(null);
             focusExercise(prevIndex);
           }
         }
@@ -257,7 +281,14 @@ export function useRoutineKeyboardNavigation({
       }
       case 'ArrowRight': {
         event.preventDefault();
-        focusSettingControl(0);
+        const group = findGroupForSessionExercise(activeSessionExerciseGroups, activeSessionExercises[index]);
+        if (group) {
+          setSelectedExerciseGroupId(group.id);
+          focusExerciseGroupById(group.id);
+        } else {
+          onFocusExerciseSettings();
+          focusSettingControl(0);
+        }
         break;
       }
       case 'Enter':
@@ -265,6 +296,7 @@ export function useRoutineKeyboardNavigation({
         event.preventDefault();
         const exerciseId = activeSessionExercises[index].id;
         setSelectedExerciseId(selectedExerciseId === exerciseId ? null : exerciseId);
+        setSelectedExerciseGroupId(null);
         break;
       }
       default:
@@ -278,11 +310,21 @@ export function useRoutineKeyboardNavigation({
       if (activeSessionExercises.length > 0) {
         const lastIndex = activeSessionExercises.length - 1;
         setSelectedExerciseId(activeSessionExercises[lastIndex].id);
+        setSelectedExerciseGroupId(null);
         focusExercise(lastIndex);
+      }
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      if (addGroupBtnRef?.current && !addGroupBtnRef.current.disabled) {
+        focusAddGroupButton();
       }
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
       focusActiveSessionRow();
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      onFocusExerciseSettings();
+      focusSettingControl(0);
     }
   };
 
@@ -301,6 +343,7 @@ export function useRoutineKeyboardNavigation({
       event.preventDefault();
       if (activeSessionExercises.length > 0) {
         setSelectedExerciseId(activeSessionExercises[0].id);
+        setSelectedExerciseGroupId(null);
         focusExercise(0);
       } else if (!isAddingExerciseRow) {
         focusAddExerciseButton();
@@ -314,6 +357,7 @@ export function useRoutineKeyboardNavigation({
     const firstSession = effectiveRoutineSessions[0] || { id: temporarySessionId };
     setSelectedSessionId(firstSession.id);
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(false);
 
     setTimeout(() => {
@@ -323,6 +367,7 @@ export function useRoutineKeyboardNavigation({
 
       if (exercisesOfFirstSession.length > 0) {
         setSelectedExerciseId(exercisesOfFirstSession[0].id);
+        setSelectedExerciseGroupId(null);
         focusExerciseById(exercisesOfFirstSession[0].id, 50);
       } else {
         focusSessionById(firstSession.id, 50);
@@ -338,5 +383,7 @@ export function useRoutineKeyboardNavigation({
     handleAddExerciseButtonKeyDown,
     focusFirstSessionFirstExercise,
     focusExercise,
+    focusExerciseGroupById,
+    focusSettingControl,
   };
 }

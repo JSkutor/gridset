@@ -1,4 +1,3 @@
-import React from 'react';
 import { renderHook } from '@testing-library/react';
 import { useRoutineKeyboardNavigation } from './useRoutineKeyboardNavigation.js';
 import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
@@ -6,17 +5,21 @@ import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest';
 describe('useRoutineKeyboardNavigation', () => {
   let sessionRefs;
   let exerciseRefs;
+  let exerciseGroupRefs;
   let settingControlRefs;
   let addSessionBtnRef;
   let addExerciseBtnRef;
+  let addGroupBtnRef;
 
   let reorderSessionsMock;
   let reorderSessionExercisesMock;
   let onSelectSessionMock;
   let setSelectedSessionIdMock;
   let setSelectedExerciseIdMock;
+  let setSelectedExerciseGroupIdMock;
   let setIsAddingExerciseRowMock;
   let setFocusedRoutinePanelMock;
+  let onFocusExerciseSettingsMock;
 
   const makeMockDomElement = () => {
     const el = document.createElement('button');
@@ -45,6 +48,12 @@ describe('useRoutineKeyboardNavigation', () => {
       },
     };
 
+    exerciseGroupRefs = {
+      current: {
+        'group-1': makeMockDomElement(),
+      },
+    };
+
     settingControlRefs = {
       current: [
         makeMockDomElement(),
@@ -60,13 +69,19 @@ describe('useRoutineKeyboardNavigation', () => {
       current: makeMockDomElement(),
     };
 
+    addGroupBtnRef = {
+      current: makeMockDomElement(),
+    };
+
     reorderSessionsMock = vi.fn();
     reorderSessionExercisesMock = vi.fn();
     onSelectSessionMock = vi.fn();
     setSelectedSessionIdMock = vi.fn();
     setSelectedExerciseIdMock = vi.fn();
+    setSelectedExerciseGroupIdMock = vi.fn();
     setIsAddingExerciseRowMock = vi.fn();
     setFocusedRoutinePanelMock = vi.fn();
+    onFocusExerciseSettingsMock = vi.fn();
   });
 
   afterEach(() => {
@@ -87,14 +102,18 @@ describe('useRoutineKeyboardNavigation', () => {
         isAddingExerciseRow: false,
         sessionRefs,
         exerciseRefs,
+        exerciseGroupRefs,
         settingControlRefs,
         addSessionBtnRef,
         addExerciseBtnRef,
+        addGroupBtnRef,
         reorderSessions: reorderSessionsMock,
         reorderSessionExercises: reorderSessionExercisesMock,
         onSelectSession: onSelectSessionMock,
+        onFocusExerciseSettings: onFocusExerciseSettingsMock,
         setSelectedSessionId: setSelectedSessionIdMock,
         setSelectedExerciseId: setSelectedExerciseIdMock,
+        setSelectedExerciseGroupId: setSelectedExerciseGroupIdMock,
         setIsAddingExerciseRow: setIsAddingExerciseRowMock,
         setFocusedRoutinePanel: setFocusedRoutinePanelMock,
         isReadOnly: false,
@@ -145,6 +164,67 @@ describe('useRoutineKeyboardNavigation', () => {
     expect(controlEvent.preventDefault).toHaveBeenCalled();
     vi.runAllTimers();
     expect(settingControlRefs.current[1].focus).toHaveBeenCalled();
+  });
+
+  test('ArrowRight moves from grouped exercises to group brackets and ungrouped exercises to settings', () => {
+    const { result } = renderHook(() =>
+      useRoutineKeyboardNavigation({
+        effectiveRoutineId: 'routine-1',
+        effectiveSessionId: 'session-1',
+        temporarySessionId: null,
+        effectiveRoutineSessions: [{ id: 'session-1' }],
+        activeSessionExercises: [
+          { id: 'ex-1', session_id: 'session-1', order: 1 },
+          { id: 'ex-2', session_id: 'session-1', order: 2 },
+        ],
+        activeSessionExerciseGroups: [
+          { id: 'group-1', session_id: 'session-1', start_order: 1, size: 1 },
+        ],
+        sessionExercises: [],
+        selectedExerciseId: 'ex-1',
+        isAddingExerciseRow: false,
+        sessionRefs,
+        exerciseRefs,
+        exerciseGroupRefs,
+        settingControlRefs,
+        addSessionBtnRef,
+        addExerciseBtnRef,
+        addGroupBtnRef,
+        reorderSessions: reorderSessionsMock,
+        reorderSessionExercises: reorderSessionExercisesMock,
+        onSelectSession: onSelectSessionMock,
+        onFocusExerciseSettings: onFocusExerciseSettingsMock,
+        setSelectedSessionId: setSelectedSessionIdMock,
+        setSelectedExerciseId: setSelectedExerciseIdMock,
+        setSelectedExerciseGroupId: setSelectedExerciseGroupIdMock,
+        setIsAddingExerciseRow: setIsAddingExerciseRowMock,
+        setFocusedRoutinePanel: setFocusedRoutinePanelMock,
+        isReadOnly: false,
+      })
+    );
+
+    const groupedEvent = {
+      key: 'ArrowRight',
+      preventDefault: vi.fn(),
+    };
+    result.current.handleExerciseKeyDown(groupedEvent, 0);
+
+    expect(groupedEvent.preventDefault).toHaveBeenCalled();
+    expect(setSelectedExerciseGroupIdMock).toHaveBeenCalledWith('group-1');
+    vi.runOnlyPendingTimers();
+    expect(exerciseGroupRefs.current['group-1'].focus).toHaveBeenCalled();
+    expect(onFocusExerciseSettingsMock).not.toHaveBeenCalled();
+
+    const ungroupedEvent = {
+      key: 'ArrowRight',
+      preventDefault: vi.fn(),
+    };
+    result.current.handleExerciseKeyDown(ungroupedEvent, 1);
+
+    expect(ungroupedEvent.preventDefault).toHaveBeenCalled();
+    expect(onFocusExerciseSettingsMock).toHaveBeenCalled();
+    vi.runOnlyPendingTimers();
+    expect(settingControlRefs.current[0].focus).toHaveBeenCalled();
   });
 
   test('key combos with Ctrl/Meta (Meta + ArrowDown, Meta + ArrowUp) trigger callbacks reorderSessions and reorderSessionExercises with spied array swaps', () => {

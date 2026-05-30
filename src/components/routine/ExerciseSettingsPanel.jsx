@@ -1,4 +1,4 @@
-import { Clock, Dumbbell, RotateCcw, Timer, Activity } from "lucide-react";
+import { Clock, Dumbbell, Layers, RotateCcw, Timer, Activity } from "lucide-react";
 import {
   NumberStepper,
   RestTimeStepper,
@@ -10,9 +10,14 @@ import { useWorkoutStore } from "../../store/useWorkoutStore";
 export default function ExerciseSettingsPanel({
   selectedExerciseLink,
   selectedExercise,
+  selectedExerciseGroup,
+  selectedExerciseGroupForSettings,
+  exerciseCount,
   onSettingControlRef,
   onSettingValueKeyDown,
   onUpdateTarget,
+  onUpdateExerciseGroup,
+  onFocusExerciseGroupRow,
   onPanelFocus,
   isReadOnly,
 }) {
@@ -40,10 +45,20 @@ export default function ExerciseSettingsPanel({
       </div>
 
       <div style={{ flex: 1, overflowY: "auto", padding: "0 16px 16px" }}>
-        {selectedExerciseLink && selectedExercise ? (
+        {selectedExerciseGroupForSettings ? (
+          <GroupSettings
+            group={selectedExerciseGroupForSettings}
+            exerciseCount={exerciseCount}
+            onSettingControlRef={onSettingControlRef}
+            onUpdateExerciseGroup={onUpdateExerciseGroup}
+            onFocusExerciseGroupRow={onFocusExerciseGroupRow}
+            isReadOnly={isReadOnly}
+          />
+        ) : selectedExerciseLink && selectedExercise ? (
           <ExerciseSettings
             selectedExerciseLink={selectedExerciseLink}
             selectedExercise={selectedExercise}
+            selectedExerciseGroup={selectedExerciseGroup}
             onSettingControlRef={onSettingControlRef}
             onSettingValueKeyDown={onSettingValueKeyDown}
             onUpdateTarget={onUpdateTarget}
@@ -70,9 +85,140 @@ export default function ExerciseSettingsPanel({
   );
 }
 
+function GroupSettings({
+  group,
+  exerciseCount,
+  onSettingControlRef,
+  onUpdateExerciseGroup,
+  onFocusExerciseGroupRow,
+  isReadOnly,
+}) {
+  const size = Math.max(2, Math.min(Number(group.size) || 2, exerciseCount));
+  const maxStart = Math.max(1, exerciseCount - size + 1);
+  const startOrder = Math.min(maxStart, Math.max(1, Number(group.start_order) || 1));
+
+  const moveFocus = (index) => {
+    const element = document.querySelector(`[data-group-setting-index="${index}"]`);
+    element?.focus();
+  };
+
+  const handleValueKeyDown = (event, index, onIncrement, onDecrement) => {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      if (event.metaKey || event.ctrlKey) onIncrement();
+      else moveFocus(index - 1);
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      if (event.metaKey || event.ctrlKey) onDecrement();
+      else moveFocus(index + 1);
+    } else if (event.key === "ArrowLeft" || event.key === "Escape") {
+      event.preventDefault();
+      onFocusExerciseGroupRow(group.id);
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <div>
+        <div
+          style={{
+            fontSize: "18px",
+            fontWeight: "700",
+            color: "var(--text-bright)",
+            letterSpacing: "-0.02em",
+            marginBottom: "4px",
+          }}
+        >
+          {group.name}
+        </div>
+        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: "10px",
+              padding: "2px 6px",
+              borderRadius: "3px",
+              background: `color-mix(in srgb, ${group.color || "#9ece6a"} 12%, transparent)`,
+              color: group.color || "#9ece6a",
+              border: `1px solid color-mix(in srgb, ${group.color || "#9ece6a"} 24%, transparent)`,
+            }}
+          >
+            그룹
+          </span>
+        </div>
+      </div>
+
+      <SettingRow label="그룹 이름" icon={<Layers size={13} />}>
+        <input
+          className="setting-text-input"
+          value={group.name}
+          maxLength={40}
+          disabled={isReadOnly}
+          onChange={(event) => onUpdateExerciseGroup(group.id, { name: event.target.value })}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") {
+              event.preventDefault();
+              onFocusExerciseGroupRow(group.id);
+            } else if (event.key === "ArrowDown") {
+              event.preventDefault();
+              moveFocus(0);
+            }
+          }}
+        />
+      </SettingRow>
+
+      <SettingRow label="시작 위치" icon={<RotateCcw size={13} />}>
+        <NumberStepper
+          value={startOrder}
+          min={1}
+          max={maxStart}
+          onChange={(value) => onUpdateExerciseGroup(group.id, { start_order: value })}
+          valueRef={(element) => {
+            if (element) element.dataset.groupSettingIndex = "0";
+            onSettingControlRef(0, element);
+          }}
+          onValueKeyDown={(event) =>
+            handleValueKeyDown(
+              event,
+              0,
+              () => onUpdateExerciseGroup(group.id, { start_order: Math.min(maxStart, startOrder + 1) }),
+              () => onUpdateExerciseGroup(group.id, { start_order: Math.max(1, startOrder - 1) }),
+            )
+          }
+          unit="번째"
+          disabled={isReadOnly}
+        />
+      </SettingRow>
+
+      <SettingRow label="그룹 크기" icon={<Dumbbell size={13} />}>
+        <NumberStepper
+          value={size}
+          min={2}
+          max={Math.max(2, exerciseCount)}
+          onChange={(value) => onUpdateExerciseGroup(group.id, { size: value })}
+          valueRef={(element) => {
+            if (element) element.dataset.groupSettingIndex = "1";
+            onSettingControlRef(1, element);
+          }}
+          onValueKeyDown={(event) =>
+            handleValueKeyDown(
+              event,
+              1,
+              () => onUpdateExerciseGroup(group.id, { size: Math.min(exerciseCount, size + 1) }),
+              () => onUpdateExerciseGroup(group.id, { size: Math.max(2, size - 1) }),
+            )
+          }
+          unit="개"
+          disabled={isReadOnly}
+        />
+      </SettingRow>
+    </div>
+  );
+}
+
 function ExerciseSettings({
   selectedExerciseLink,
   selectedExercise,
+  selectedExerciseGroup,
   onSettingControlRef,
   onSettingValueKeyDown,
   onUpdateTarget,
@@ -126,6 +272,20 @@ function ExerciseSettings({
               }}
             >
               {selectedExercise.equipment}
+            </span>
+          )}
+          {selectedExerciseGroup && (
+            <span
+              style={{
+                fontSize: "10px",
+                padding: "2px 6px",
+                borderRadius: "3px",
+                background: `color-mix(in srgb, ${selectedExerciseGroup.color || "#9ece6a"} 12%, transparent)`,
+                color: selectedExerciseGroup.color || "#9ece6a",
+                border: `1px solid color-mix(in srgb, ${selectedExerciseGroup.color || "#9ece6a"} 24%, transparent)`,
+              }}
+            >
+              {selectedExerciseGroup.name}
             </span>
           )}
         </div>

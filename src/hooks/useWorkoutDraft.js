@@ -152,8 +152,8 @@ export function useWorkoutDraft({
 
   const saveWorkout = useCallback(() => {
     if (!session || !hasEnteredData || !startTime) return;
-    saveWorkoutLog(session.id, blocks, startTime);
-    onSaveSuccess?.();
+    const newLog = saveWorkoutLog(session.id, blocks, startTime);
+    onSaveSuccess?.(newLog);
   }, [blocks, hasEnteredData, onSaveSuccess, saveWorkoutLog, session, startTime]);
 
   return {

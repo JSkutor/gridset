@@ -4,7 +4,7 @@ import { generateUUID } from '../../data/dummyGenerator.js';
 import * as workoutRepository from '../../api/supabaseWorkoutRepository.js';
 import { initialSeed, GUEST_USER } from './authSlice.js';
 
-export const createExerciseSlice = (set, get, store) => ({
+export const createExerciseSlice = (set, get) => ({
   // --- State ---
   exercises: initialSeed.exercises,
 

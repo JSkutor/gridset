@@ -1,33 +1,65 @@
 import { useRef } from 'react';
 import { LayoutGroup } from 'framer-motion';
 import { ListPlus } from 'lucide-react';
+import AddExerciseGroupRow from './AddExerciseGroupRow';
 import AddExerciseRow from './AddExerciseRow';
+import ExerciseGroupBracket from './ExerciseGroupBracket';
+import ExerciseGroupRow from './ExerciseGroupRow';
 import ExerciseRow from './ExerciseRow';
 import RoutineAddButton from './RoutineAddButton';
 import { isTemporarySession } from '../../utils/sessionHelper';
+import {
+  MAX_GROUPS_PER_SESSION,
+  getLargestAvailableGroupSize,
+} from '../../utils/sessionExerciseGroups';
 
 export default function SessionExerciseListPanel({
   session,
   dayLetter,
   sessionExercises,
+  exerciseGroups = [],
   exercises,
   selectedExerciseId,
+  selectedExerciseGroupId = null,
   isPanelFocused,
+  isGroupPanelFocused = false,
   isAddingExerciseRow,
+  isAddingExerciseGroupRow = false,
   addExerciseBtnRef,
+  addGroupBtnRef,
   onExerciseKeyDown,
   onAddExerciseButtonKeyDown,
+  onAddGroupButtonKeyDown,
+  onExerciseGroupKeyDown,
   onExerciseRef,
+  onExerciseGroupRef,
+  onExerciseGroupRowRef,
   onSelectExercise,
+  onSelectExerciseGroup,
   onDeleteExercise,
+  onDeleteExerciseGroup,
   onAddExercise,
+  onAddExerciseGroup,
   onStartAddingExercise,
+  onStartAddingExerciseGroup,
   onCancelAddingExercise,
+  onCancelAddingExerciseGroup,
   onPanelFocus,
+  onGroupPanelFocus,
+  onGroupRowFocus,
+  onGroupAddButtonFocus,
   isReadOnly,
 }) {
   const scrollContainerRef = useRef(null);
   const isTemporary = isTemporarySession(session);
+  const hasGroups = exerciseGroups.length > 0;
+  const largestAvailableGroupSize = getLargestAvailableGroupSize(sessionExercises.length, exerciseGroups);
+  const canAddExerciseGroup = exerciseGroups.length < MAX_GROUPS_PER_SESSION && largestAvailableGroupSize >= 2;
+  const groupAddDisabledReason = exerciseGroups.length >= MAX_GROUPS_PER_SESSION
+    ? '그룹은 세션당 최대 4개까지 만들 수 있습니다.'
+    : largestAvailableGroupSize < 2
+      ? '겹치지 않게 묶을 수 있는 연속 운동이 2개 이상 필요합니다.'
+      : undefined;
 
   const scrollToBottom = () => {
     setTimeout(() => {
@@ -89,26 +121,54 @@ export default function SessionExerciseListPanel({
           <>
             {sessionExercises.length === 0 ? null : (
               <LayoutGroup id={`session-exercises-${session.id}`}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', padding: '6px 4px 4px 4px' }}>
+                <div
+                  className={`routine-exercise-grid ${hasGroups ? 'routine-exercise-grid--with-groups' : ''}`}
+                  style={{
+                    gridTemplateRows: `repeat(${sessionExercises.length}, minmax(58px, auto))`,
+                  }}
+                >
                   {sessionExercises.map((sessionExercise, index) => {
                     const exercise = exercises.find(item => item.id === sessionExercise.exercise_id);
                     if (!exercise) return null;
 
                     const isSelected = sessionExercise.id === selectedExerciseId;
                     return (
-                      <ExerciseRow
+                      <div
                         key={sessionExercise.id}
-                        refCallback={element => onExerciseRef(sessionExercise.id, element)}
-                        sessionExercise={sessionExercise}
-                        exercise={exercise}
+                        className="routine-exercise-row-slot"
+                        style={{ gridRow: index + 1 }}
+                      >
+                        <ExerciseRow
+                          refCallback={element => onExerciseRef(sessionExercise.id, element)}
+                          sessionExercise={sessionExercise}
+                          exercise={exercise}
+                          index={index}
+                          isSelected={isSelected}
+                          isHighlighted={isSelected && isPanelFocused}
+                          onKeyDown={onExerciseKeyDown}
+                          onFocus={onPanelFocus}
+                          onSelect={onSelectExercise}
+                          onDelete={onDeleteExercise}
+                          isReadOnly={isReadOnly}
+                        />
+                      </div>
+                    );
+                  })}
+
+                  {hasGroups && exerciseGroups.map((group, index) => {
+                    const isSelected = group.id === selectedExerciseGroupId;
+                    return (
+                      <ExerciseGroupBracket
+                        key={group.id}
+                        refCallback={element => onExerciseGroupRef(group.id, element)}
+                        group={group}
                         index={index}
+                        exerciseCount={sessionExercises.length}
                         isSelected={isSelected}
-                        isHighlighted={isSelected && isPanelFocused}
-                        onKeyDown={onExerciseKeyDown}
-                        onFocus={onPanelFocus}
-                        onSelect={onSelectExercise}
-                        onDelete={onDeleteExercise}
-                        isReadOnly={isReadOnly}
+                        isHighlighted={isSelected && isGroupPanelFocused}
+                        onKeyDown={onExerciseGroupKeyDown}
+                        onFocus={onGroupPanelFocus}
+                        onSelect={onSelectExerciseGroup}
                       />
                     );
                   })}
@@ -135,19 +195,76 @@ export default function SessionExerciseListPanel({
             )}
 
             {!isAddingExerciseRow && !isReadOnly && (
-              <RoutineAddButton
-                ref={addExerciseBtnRef}
-                label="운동 추가"
-                onFocus={() => {
-                  onPanelFocus();
-                  onSelectExercise(null);
-                }}
-                onClick={() => {
-                  onStartAddingExercise();
-                  scrollToBottom();
-                }}
-                onKeyDown={onAddExerciseButtonKeyDown}
-              />
+              <>
+                <RoutineAddButton
+                  ref={addExerciseBtnRef}
+                  label="운동 추가"
+                  onFocus={() => {
+                    onPanelFocus();
+                    onSelectExercise(null);
+                    onSelectExerciseGroup(null);
+                  }}
+                  onClick={() => {
+                    onStartAddingExercise();
+                    scrollToBottom();
+                  }}
+                  onKeyDown={onAddExerciseButtonKeyDown}
+                />
+
+                {!isAddingExerciseGroupRow && (
+                  <RoutineAddButton
+                    ref={addGroupBtnRef}
+                    label="그룹 추가"
+                    disabled={!canAddExerciseGroup}
+                    title={groupAddDisabledReason}
+                    onFocus={() => {
+                      onGroupAddButtonFocus();
+                    }}
+                    onClick={() => {
+                      onStartAddingExerciseGroup();
+                      scrollToBottom();
+                    }}
+                    onKeyDown={onAddGroupButtonKeyDown}
+                  />
+                )}
+
+                {isAddingExerciseGroupRow && (
+                  <AddExerciseGroupRow
+                    exerciseCount={largestAvailableGroupSize}
+                    groupCount={exerciseGroups.length}
+                    onAddGroup={(groupDraft) => {
+                      if (onAddExerciseGroup(groupDraft)) {
+                        onCancelAddingExerciseGroup(false);
+                      }
+                    }}
+                    onCancel={() => onCancelAddingExerciseGroup(true)}
+                  />
+                )}
+
+                {exerciseGroups.length > 0 && (
+                  <div className="routine-group-row-list">
+                    {exerciseGroups.map((group, index) => {
+                      const isSelected = group.id === selectedExerciseGroupId;
+                      return (
+                        <ExerciseGroupRow
+                          key={group.id}
+                          refCallback={element => onExerciseGroupRowRef(group.id, element)}
+                          group={group}
+                          index={index}
+                          exerciseCount={sessionExercises.length}
+                          isSelected={isSelected}
+                          isHighlighted={isSelected && isGroupPanelFocused}
+                          onKeyDown={onExerciseGroupKeyDown}
+                          onFocus={onGroupRowFocus}
+                          onSelect={onSelectExerciseGroup}
+                          onDelete={onDeleteExerciseGroup}
+                          isReadOnly={isReadOnly}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </>
         )}

@@ -176,6 +176,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   height: 100vh;
   padding-top: 36px;
   gap: 125px;
+  outline: none;
 }
 
 .rest-timer-stage {

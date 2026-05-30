@@ -9,6 +9,7 @@ import RestTimer from './components/RestTimer'
 import AccountMenu from './components/AccountMenu'
 import HelpModal from './components/HelpModal'
 import SyncStatusBanner from './components/SyncStatusBanner'
+import WorkoutCompletionModal from './components/WorkoutCompletionModal'
 import { HelpCircle } from 'lucide-react'
 import { useWorkoutStore } from './store/useWorkoutStore'
 import { useTabNavigation } from './hooks/useTabNavigation'
@@ -41,6 +42,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('S')
   const [activeExerciseId, setActiveExerciseId] = useState(null)
   const [restTimer, setRestTimer] = useState(null)
+  const [completedWorkoutLog, setCompletedWorkoutLog] = useState(null)
 
   useSyncExternalStore(
     subscribeToWorkoutStoreHydration,
@@ -53,6 +55,11 @@ function App() {
   // Ref for WorkoutGrid imperative focus methods (C-key toggle)
   const workoutGridRef = useRef(null);
   const routineDetailRef = useRef(null);
+  const appContainerRef = useRef(null);
+
+  useEffect(() => {
+    appContainerRef.current?.focus();
+  }, []);
   
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
 
@@ -185,11 +192,9 @@ function App() {
     focusTargetSelector: getNavFocusTargetSelector,
   });
 
-  const handleSaveSuccess = useCallback(() => {
-    setSelectedSessionId(null);
-    setActiveExerciseId(null);
-    setActiveTab('L');
-  }, [setSelectedSessionId]);
+  const handleSaveSuccess = useCallback((newLog) => {
+    setCompletedWorkoutLog(newLog);
+  }, []);
 
   const setGridKey = useMemo(() => {
     if (!selectedSession) return 'empty-session';
@@ -202,7 +207,7 @@ function App() {
   }, [selectedSession, sessionExercises]);
 
   return (
-    <div className="app-container">
+    <div ref={appContainerRef} className="app-container" tabIndex={-1}>
       <div className="top-right-header-actions">
         <button 
           className="help-trigger-btn"
@@ -257,6 +262,16 @@ function App() {
       </div>
 
       <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} onDataReset={handleDataReset} />
+      <WorkoutCompletionModal
+        isOpen={Boolean(completedWorkoutLog)}
+        workoutLog={completedWorkoutLog}
+        onClose={() => {
+          setCompletedWorkoutLog(null);
+          setSelectedSessionId(null);
+          setActiveExerciseId(null);
+          setActiveTab('L');
+        }}
+      />
     </div>
   )
 }

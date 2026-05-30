@@ -155,4 +155,29 @@ describe('RoutineDetail Component', () => {
       expect(btn.disabled).toBe(true);
     });
   });
+
+  test('focused group management rows show group settings', () => {
+    const { sessionA1 } = setupStoreForTest();
+    const state = useWorkoutStore.getState();
+    const row = state.addExercise('Row', 'Back', 'Cable', 'kg', false);
+
+    state.addSessionExercise(sessionA1.id, row.id, 2, 4, '10');
+    state.addSessionExerciseGroup(sessionA1.id, '슈퍼세트 A', 2);
+
+    render(<RoutineDetail />);
+
+    const exercisePanel = document.querySelector('.exercise-scroll-container');
+
+    fireEvent.click(within(exercisePanel).getByText('Bench Press'));
+    expect(screen.getByLabelText('세트 값').textContent).toBe('4');
+
+    const groupRow = within(exercisePanel)
+      .getByText('슈퍼세트 A')
+      .closest('.routine-group-row');
+
+    fireEvent.focus(groupRow);
+
+    expect(screen.getByDisplayValue('슈퍼세트 A')).toBeDefined();
+    expect(screen.getByText('그룹 이름')).toBeDefined();
+  });
 });

@@ -8,7 +8,7 @@
 [![Zustand](https://img.shields.io/badge/Zustand-5.x-brown.svg)](https://github.com/pmndrs/zustand)
 [![Supabase](https://img.shields.io/badge/Supabase-Database--Auth-green.svg?logo=supabase&logoColor=white)](https://supabase.com)
 [![Vitest](https://img.shields.io/badge/Vitest-3.x-yellow.svg?logo=vitest&logoColor=white)](https://vitest.dev)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](LICENSE)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL_v3-blue.svg)](LICENSE)
 
 ---
 
@@ -100,6 +100,13 @@ GridSet은 기존의 모바일 중심 피트니스 앱들이 충족하지 못했
 ```text
 gridset/
 ├── .cursorrules               # 개발 에이전트를 위한 규칙 사전
+├── docs/                      # 프로젝트 개발 표준 및 세부 기술 문서 모음
+│   ├── git_branch_convention.md        # Git 브랜치 네이밍 및 워크플로우 컨벤션 가이드
+│   ├── git_commit_convention.md        # Git 커밋 메시지 컨벤션 가이드
+│   ├── SCHEMA.md                       # 데이터베이스 테이블 스키마 상세 정의서
+│   ├── REQUIREMENTS.md                 # 요구사항 분석 및 프로젝트 로드맵 정의서
+│   ├── KEYBOARD_UX.md                  # 키보드 내비게이션 및 UX 단축키 명세서
+│   └── FITNESS_DATA_CLEANING_REPORT.md  # 더미/운동 데이터 클렌징 분석 보고서
 ├── scratch/                   # 데이터베이스 생성 SQL, 가이드 유틸 모음
 │   ├── supabase_schema.sql             # Supabase 전체 테이블 DDL 및 RLS 정책 스크립트
 │   ├── supabase_seed_default_exercises.sql  # 320개 한/영 고품질 기본 운동 Seed 파일
@@ -187,8 +194,11 @@ GridSet은 오픈소스 생태계에서의 적극적인 피드백과 Pull Reques
 ### 2. 개발 및 브랜치 전략
 * 메인 브랜치는 `main` 입니다.
 * 새로운 작업은 항상 최신 `main`에서 브랜치를 분기하여 작업합니다.
-  * 기능 추가: `feature/개발기능명` (예: `feature/exercise-substitution`)
-  * 오류 수정: `bugfix/해결버그명` (예: `bugfix/timer-safari-glitch`)
+* 일관된 협업과 코드 추적을 위해 정의된 가이드를 준수합니다.
+  * [Git 브랜치 네이밍 및 워크플로우 컨벤션 가이드](file:///Users/kutor/Documents/Projects_Kutor/gridset/docs/git_branch_convention.md)
+  * [Git 커밋 메시지 컨벤션 가이드](file:///Users/kutor/Documents/Projects_Kutor/gridset/docs/git_commit_convention.md)
+
+
 
 ### 3. 테스트 및 품질 유지
 * GridSet은 안전한 기능 병합을 위해 테스트 작성을 매우 중시합니다. 새로운 데이터 가공 유틸이나 로직 변경이 생길 경우, 대응하는 테스트 케이스(`.test.js` 또는 `.test.jsx`)를 반드시 작성해 주시기 바랍니다.
@@ -202,6 +212,6 @@ GridSet은 오픈소스 생태계에서의 적극적인 피드백과 Pull Reques
 
 ## 📄 라이선스 (License)
 
-This project is licensed under the **GNU AGPLv3** - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the **GNU GPLv3** - see the [LICENSE](LICENSE) file for details.
 
 GridSet을 이용해 주셔서 감사합니다! 더 빠르고 강도 높은 훈련을 편리하게 기록해 보세요. 💪
