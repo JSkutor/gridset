@@ -11,6 +11,7 @@ import {
   SESSION_COLORS,
   TEMPORARY_SESSION_COLOR,
   TEMPORARY_SESSION_ORDER,
+  isRoutineReadOnly,
 } from './sessionHelper.js';
 
 const sessions = [
@@ -57,5 +58,22 @@ describe('sessionHelper: Day Lettering & Palette Styling', () => {
       ['pull', 'push', 'legs'],
     );
     assert.equal(getRoutineTemporarySession(sessions, 'ppl').id, temporarySession.id);
+  });
+
+  test('isRoutineReadOnly correctly determines read-only status', () => {
+    const sortedRoutines = [
+      { id: 'routine-1', name: 'Routine 1' },
+      { id: 'routine-2', name: 'Routine 2' },
+      { id: 'routine-3', name: 'Routine 3' },
+    ];
+
+    // Under normal circumstances, any routine except the first (latest) is read-only.
+    assert.equal(isRoutineReadOnly('routine-1', sortedRoutines), false);
+    assert.equal(isRoutineReadOnly('routine-2', sortedRoutines), true);
+    assert.equal(isRoutineReadOnly('routine-3', sortedRoutines), true);
+
+    // Edge cases
+    assert.equal(isRoutineReadOnly(null, sortedRoutines), false);
+    assert.equal(isRoutineReadOnly('routine-1', []), false);
   });
 });

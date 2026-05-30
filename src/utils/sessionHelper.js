@@ -66,3 +66,9 @@ export function getFormattedSessionName(session, allSessions) {
   const dayLetter = getSessionDayLetter(session, allSessions);
   return dayLetter ? `Day ${dayLetter} : ${session.name}` : session.name;
 }
+
+export function isRoutineReadOnly(routineId, sortedRoutines) {
+  if (!routineId || sortedRoutines.length === 0) return false;
+  return routineId !== sortedRoutines[0].id;
+}
+

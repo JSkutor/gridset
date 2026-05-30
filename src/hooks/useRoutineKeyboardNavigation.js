@@ -1,3 +1,5 @@
+import { swapItems } from '../utils/array.js';
+
 function focusElement(element, delay = 0) {
   setTimeout(() => {
     element?.focus();
@@ -5,13 +7,6 @@ function focusElement(element, delay = 0) {
   }, delay);
 }
 
-function swapItems(items, fromIndex, toIndex) {
-  const nextItems = [...items];
-  const temp = nextItems[fromIndex];
-  nextItems[fromIndex] = nextItems[toIndex];
-  nextItems[toIndex] = temp;
-  return nextItems;
-}
 
 export function useRoutineKeyboardNavigation({
   effectiveRoutineId,

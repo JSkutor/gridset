@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useRoutineKeyboardNavigation } from '../hooks/useRoutineKeyboardNavigation';
 import {
@@ -7,6 +7,7 @@ import {
   getRoutineTemporarySession,
   getSessionDayLetter,
   isTemporarySession,
+  isRoutineReadOnly,
 } from '../utils/sessionHelper';
 import ExerciseSettingsPanel from './routine/ExerciseSettingsPanel';
 import RoutineTabs from './routine/RoutineTabs';
@@ -117,7 +118,7 @@ const RoutineDetail = forwardRef((props, ref) => {
 
   const effectiveRoutineId = selectedRoutineId || sortedRoutines[0]?.id || null;
   const effectiveRoutine = sortedRoutines.find(routine => routine.id === effectiveRoutineId) || null;
-  const isReadOnly = Boolean(effectiveRoutineId && sortedRoutines[0] && effectiveRoutineId !== sortedRoutines[0].id);
+  const isReadOnly = isRoutineReadOnly(effectiveRoutineId, sortedRoutines);
 
   const effectiveRoutineSessions = getRegularRoutineSessions(sessions, effectiveRoutineId);
   const effectiveTemporarySession = getRoutineTemporarySession(sessions, effectiveRoutineId);
