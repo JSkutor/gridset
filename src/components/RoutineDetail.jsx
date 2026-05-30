@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useRoutineKeyboardNavigation } from '../hooks/useRoutineKeyboardNavigation';
 import {
@@ -9,6 +9,10 @@ import {
   isTemporarySession,
   isRoutineReadOnly,
 } from '../utils/sessionHelper';
+import {
+  findGroupForSessionExercise,
+  getLinksCoveredByGroup,
+} from '../utils/sessionExerciseGroups';
 import ExerciseSettingsPanel from './routine/ExerciseSettingsPanel';
 import RoutineTabs from './routine/RoutineTabs';
 import SessionExerciseListPanel from './routine/SessionExerciseListPanel';
@@ -25,6 +29,7 @@ const RoutineDetail = forwardRef((props, ref) => {
   }, [routines]);
   const sessions = useWorkoutStore(state => state.sessions);
   const sessionExercises = useWorkoutStore(state => state.sessionExercises);
+  const sessionExerciseGroups = useWorkoutStore(state => state.sessionExerciseGroups);
   const exercises = useWorkoutStore(state => state.exercises);
 
   const addRoutine = useWorkoutStore(state => state.addRoutine);
@@ -38,6 +43,9 @@ const RoutineDetail = forwardRef((props, ref) => {
   const addSessionExercise = useWorkoutStore(state => state.addSessionExercise);
   const deleteSessionExercise = useWorkoutStore(state => state.deleteSessionExercise);
   const updateSessionExercise = useWorkoutStore(state => state.updateSessionExercise);
+  const addSessionExerciseGroup = useWorkoutStore(state => state.addSessionExerciseGroup);
+  const updateSessionExerciseGroup = useWorkoutStore(state => state.updateSessionExerciseGroup);
+  const deleteSessionExerciseGroup = useWorkoutStore(state => state.deleteSessionExerciseGroup);
   const addExercise = useWorkoutStore(state => state.addExercise);
   const reorderSessions = useWorkoutStore(state => state.reorderSessions);
   const reorderSessionExercises = useWorkoutStore(state => state.reorderSessionExercises);
@@ -45,7 +53,10 @@ const RoutineDetail = forwardRef((props, ref) => {
   const [selectedRoutineId, setSelectedRoutineId] = useState(null);
   const [selectedSessionId, setSelectedSessionId] = useState(null);
   const [selectedExerciseId, setSelectedExerciseId] = useState(null);
+  const [selectedExerciseGroupId, setSelectedExerciseGroupId] = useState(null);
+  const [settingsMode, setSettingsMode] = useState('exercise');
   const [isAddingExerciseRow, setIsAddingExerciseRow] = useState(false);
+  const [isAddingExerciseGroupRow, setIsAddingExerciseGroupRow] = useState(false);
   const [focusedRoutinePanel, setFocusedRoutinePanel] = useState(null);
 
   const [isEditingRoutineName, setIsEditingRoutineName] = useState(false);
@@ -57,10 +68,14 @@ const RoutineDetail = forwardRef((props, ref) => {
 
   const sessionRefs = useRef({});
   const exerciseRefs = useRef({});
+  const exerciseGroupRefs = useRef({});
+  const exerciseGroupRowRefs = useRef({});
   const settingControlRefs = useRef([]);
   const addSessionBtnRef = useRef(null);
   const addExerciseBtnRef = useRef(null);
+  const addGroupBtnRef = useRef(null);
   const pendingFocusIndexRef = useRef(null);
+  const pendingGroupFocusIdRef = useRef(null);
 
   const setSessionRef = (id, element) => {
     if (element) {
@@ -75,6 +90,22 @@ const RoutineDetail = forwardRef((props, ref) => {
       exerciseRefs.current[id] = element;
     } else {
       delete exerciseRefs.current[id];
+    }
+  };
+
+  const setExerciseGroupRef = (id, element) => {
+    if (element) {
+      exerciseGroupRefs.current[id] = element;
+    } else {
+      delete exerciseGroupRefs.current[id];
+    }
+  };
+
+  const setExerciseGroupRowRef = (id, element) => {
+    if (element) {
+      exerciseGroupRowRefs.current[id] = element;
+    } else {
+      delete exerciseGroupRowRefs.current[id];
     }
   };
 
@@ -105,14 +136,18 @@ const RoutineDetail = forwardRef((props, ref) => {
     const temporarySession = getRoutineTemporarySession(sessions, id);
     setSelectedSessionId(routineSessions[0]?.id || temporarySession?.id || null);
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(false);
+    setIsAddingExerciseGroupRow(false);
     setFocusedRoutinePanel('sessions');
   };
 
   const handleSelectSession = (id) => {
     setSelectedSessionId(id);
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(false);
+    setIsAddingExerciseGroupRow(false);
     setFocusedRoutinePanel('sessions');
   };
 
@@ -133,11 +168,18 @@ const RoutineDetail = forwardRef((props, ref) => {
   const activeSessionExercises = sessionExercises
     .filter(sessionExercise => sessionExercise.session_id === (effectiveSession?.id || null))
     .sort((a, b) => a.order - b.order);
+  const activeSessionExerciseGroups = sessionExerciseGroups
+    .filter(group => group.session_id === (effectiveSession?.id || null))
+    .sort((a, b) => (a.start_order || 0) - (b.start_order || 0));
   const dayLetter = getSessionDayLetter(effectiveSession, sessions);
   const canAddSession = effectiveRoutineSessions.length < MAX_SESSIONS_PER_ROUTINE;
   const selectedExerciseLink = activeSessionExercises.find(sessionExercise => sessionExercise.id === selectedExerciseId);
   const selectedExercise = selectedExerciseLink
     ? exercises.find(exercise => exercise.id === selectedExerciseLink.exercise_id)
+    : null;
+  const selectedExerciseGroup = findGroupForSessionExercise(activeSessionExerciseGroups, selectedExerciseLink);
+  const selectedExerciseGroupForSettings = settingsMode === 'group'
+    ? activeSessionExerciseGroups.find(group => group.id === selectedExerciseGroupId) || null
     : null;
 
   const {
@@ -148,25 +190,35 @@ const RoutineDetail = forwardRef((props, ref) => {
     handleAddExerciseButtonKeyDown,
     focusFirstSessionFirstExercise,
     focusExercise,
+    focusExerciseGroupById,
+    focusSettingControl,
   } = useRoutineKeyboardNavigation({
     effectiveRoutineId,
     effectiveSessionId,
     temporarySessionId: effectiveTemporarySession?.id || null,
     effectiveRoutineSessions,
     activeSessionExercises,
+    activeSessionExerciseGroups,
     sessionExercises,
     selectedExerciseId,
     isAddingExerciseRow,
     sessionRefs,
     exerciseRefs,
+    exerciseGroupRefs,
     settingControlRefs,
     addSessionBtnRef,
     addExerciseBtnRef,
+    addGroupBtnRef,
     reorderSessions,
     reorderSessionExercises,
     onSelectSession: handleSelectSession,
+    onFocusExerciseSettings: () => setSettingsMode('exercise'),
     setSelectedSessionId,
-    setSelectedExerciseId,
+    setSelectedExerciseId: (id) => {
+      setSelectedExerciseId(id);
+      if (id) setSelectedExerciseGroupId(null);
+    },
+    setSelectedExerciseGroupId,
     setIsAddingExerciseRow,
     setFocusedRoutinePanel,
     isReadOnly,
@@ -224,7 +276,9 @@ const RoutineDetail = forwardRef((props, ref) => {
     setEditingSessionId(newSession.id);
     setEditingSessionNameVal(newSession.name);
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(false);
+    setIsAddingExerciseGroupRow(false);
     setFocusedRoutinePanel('sessions');
   };
 
@@ -239,7 +293,9 @@ const RoutineDetail = forwardRef((props, ref) => {
     setEditingSessionId(newSession.id);
     setEditingSessionNameVal(newSession.name);
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(false);
+    setIsAddingExerciseGroupRow(false);
     setFocusedRoutinePanel('sessions');
   };
 
@@ -276,7 +332,9 @@ const RoutineDetail = forwardRef((props, ref) => {
       deleteSession(session.id);
       setSelectedSessionId(fallbackId);
       setSelectedExerciseId(null);
+      setSelectedExerciseGroupId(null);
       setIsAddingExerciseRow(false);
+      setIsAddingExerciseGroupRow(false);
       setFocusedRoutinePanel('sessions');
       setPendingNewSessionId(null);
       setPendingNewSessionReturnId(null);
@@ -301,6 +359,8 @@ const RoutineDetail = forwardRef((props, ref) => {
       deleteSession(session.id);
       const remainingSessions = effectiveSessionOptions.filter(item => item.id !== session.id);
       setSelectedSessionId(remainingSessions[0]?.id || null);
+      setSelectedExerciseId(null);
+      setSelectedExerciseGroupId(null);
     }
   };
 
@@ -325,6 +385,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     const nextOrder = newIndex + 1;
     const newSessionExercise = addSessionExercise(effectiveSession.id, storeExercise.id, nextOrder, 3, '10');
     setSelectedExerciseId(newSessionExercise.id);
+    setSelectedExerciseGroupId(null);
     setFocusedRoutinePanel('exercises');
     pendingFocusIndexRef.current = newIndex;
   };
@@ -341,6 +402,7 @@ const RoutineDetail = forwardRef((props, ref) => {
     if (isReadOnly) return;
     deleteSessionExercise(id);
     if (selectedExerciseId === id) setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
   };
 
   const handleUpdateTarget = (id, field, value) => {
@@ -348,10 +410,17 @@ const RoutineDetail = forwardRef((props, ref) => {
     updateSessionExercise(id, { [field]: value });
   };
 
+  const handleUpdateExerciseGroup = (id, updates) => {
+    if (isReadOnly) return;
+    updateSessionExerciseGroup(id, updates);
+  };
+
   const handleStartAddingExercise = () => {
     if (isReadOnly) return;
     setSelectedExerciseId(null);
+    setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(true);
+    setIsAddingExerciseGroupRow(false);
     setFocusedRoutinePanel('exercises');
   };
 
@@ -361,6 +430,231 @@ const RoutineDetail = forwardRef((props, ref) => {
       setTimeout(() => addExerciseBtnRef.current?.focus(), 50);
     }
   };
+
+  const handleSelectExercise = (id) => {
+    setSelectedExerciseId(id);
+    if (id) setSettingsMode('exercise');
+    if (id) setSelectedExerciseGroupId(null);
+  };
+
+  const handleSelectExerciseGroup = (groupOrId) => {
+    const id = typeof groupOrId === 'object' ? groupOrId?.id : groupOrId;
+    setSelectedExerciseGroupId(id || null);
+    if (typeof groupOrId === 'object' && groupOrId?.id) {
+      setSettingsMode('group');
+    }
+  };
+
+  const handleFocusExerciseGroupRow = (group) => {
+    setFocusedRoutinePanel('groups');
+    if (!group?.id) return;
+    setSelectedExerciseGroupId(group.id);
+    setSettingsMode('group');
+  };
+
+  const handleStartAddingExerciseGroup = () => {
+    if (isReadOnly || activeSessionExercises.length < 2) return;
+    setSelectedExerciseGroupId(null);
+    setIsAddingExerciseRow(false);
+    setIsAddingExerciseGroupRow(true);
+    setFocusedRoutinePanel('group-add');
+  };
+
+  const handleCancelAddingExerciseGroup = (shouldFocusAddButton = true) => {
+    setIsAddingExerciseGroupRow(false);
+    if (shouldFocusAddButton) {
+      setFocusedRoutinePanel('group-add');
+      setTimeout(() => addGroupBtnRef.current?.focus(), 50);
+    }
+  };
+
+  const focusExerciseGroupRowById = (id, delay = 0) => {
+    if (!id) return;
+    setFocusedRoutinePanel('groups');
+    setTimeout(() => {
+      exerciseGroupRowRefs.current[id]?.focus();
+      exerciseGroupRowRefs.current[id]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }, delay);
+  };
+
+  const getFirstExerciseInGroup = (group) => {
+    return getLinksCoveredByGroup(activeSessionExercises, group)[0] || null;
+  };
+
+  const focusGroupSettings = (group) => {
+    const firstExercise = getFirstExerciseInGroup(group);
+    if (!selectedExerciseId && firstExercise) {
+      setSelectedExerciseId(firstExercise.id);
+    }
+    setSelectedExerciseGroupId(group.id);
+    setSettingsMode('group');
+    focusSettingControl(0);
+  };
+
+  const focusExerciseSettingsFromGroup = (group) => {
+    const firstExercise = getFirstExerciseInGroup(group);
+    if (!selectedExerciseId && firstExercise) {
+      setSelectedExerciseId(firstExercise.id);
+    }
+    setSettingsMode('exercise');
+    focusSettingControl(0);
+  };
+
+  const handleAddGroupButtonKeyDown = (event) => {
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      addExerciseBtnRef.current?.focus();
+    } else if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      const firstGroup = activeSessionExerciseGroups[0];
+      if (firstGroup) {
+        setSelectedExerciseGroupId(firstGroup.id);
+        focusExerciseGroupRowById(firstGroup.id);
+      }
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      if (activeSessionExercises.length > 0) {
+        const lastIndex = activeSessionExercises.length - 1;
+        setSelectedExerciseId(activeSessionExercises[lastIndex].id);
+        setSelectedExerciseGroupId(null);
+        focusExercise(lastIndex);
+      }
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      const firstGroup = activeSessionExerciseGroups[0];
+      if (firstGroup) focusGroupSettings(firstGroup);
+      else focusSettingControl(0);
+    }
+  };
+
+  const handleAddExerciseGroup = ({ name, size }) => {
+    if (!effectiveSession?.id || isReadOnly) return false;
+    const newGroup = addSessionExerciseGroup(effectiveSession.id, name, size);
+    if (!newGroup) return false;
+
+    if (!selectedExerciseId) {
+      const firstExercise = getFirstExerciseInGroup(newGroup);
+      if (firstExercise) setSelectedExerciseId(firstExercise.id);
+    }
+    setSelectedExerciseGroupId(newGroup.id);
+    setFocusedRoutinePanel('groups');
+    pendingGroupFocusIdRef.current = newGroup.id;
+    return true;
+  };
+
+  const handleDeleteExerciseGroup = (id) => {
+    if (isReadOnly) return;
+    deleteSessionExerciseGroup(id);
+    if (selectedExerciseGroupId === id) setSelectedExerciseGroupId(null);
+  };
+
+  const handleExerciseGroupKeyDown = (event, index) => {
+    const group = activeSessionExerciseGroups[index];
+    if (!group) return;
+    const isDetailRow = event.currentTarget.classList.contains('routine-group-row');
+    const focusGroup = (id, delay = 0) => {
+      if (isDetailRow) focusExerciseGroupRowById(id, delay);
+      else focusExerciseGroupById(id, delay);
+    };
+
+    switch (event.key) {
+      case 'ArrowDown': {
+        event.preventDefault();
+        const isMoving = event.metaKey || event.ctrlKey;
+        if (isMoving) {
+          if (isReadOnly) break;
+          const maxStart = Math.max(1, activeSessionExercises.length - (group.size || 2) + 1);
+          const nextStart = Math.min(maxStart, (group.start_order || 1) + 1);
+          if (nextStart !== group.start_order) {
+            updateSessionExerciseGroup(group.id, { start_order: nextStart });
+          }
+          focusGroup(group.id, 20);
+        } else {
+          const nextGroup = activeSessionExerciseGroups[index + 1];
+          if (nextGroup) {
+            setSelectedExerciseGroupId(nextGroup.id);
+            focusGroup(nextGroup.id);
+          } else if (!isDetailRow) {
+            setFocusedRoutinePanel('group-add');
+            addGroupBtnRef.current?.focus();
+          }
+        }
+        break;
+      }
+      case 'ArrowUp': {
+        event.preventDefault();
+        const isMoving = event.metaKey || event.ctrlKey;
+        if (isMoving) {
+          if (isReadOnly) break;
+          const nextStart = Math.max(1, (group.start_order || 1) - 1);
+          if (nextStart !== group.start_order) {
+            updateSessionExerciseGroup(group.id, { start_order: nextStart });
+          }
+          focusGroup(group.id, 20);
+        } else {
+          const prevGroup = activeSessionExerciseGroups[index - 1];
+          if (prevGroup) {
+            setSelectedExerciseGroupId(prevGroup.id);
+            focusGroup(prevGroup.id);
+          } else if (isDetailRow) {
+            setFocusedRoutinePanel('group-add');
+            addGroupBtnRef.current?.focus();
+          } else if (activeSessionExercises.length > 0) {
+            const firstIndex = Math.max(0, (group.start_order || 1) - 1);
+            setSelectedExerciseId(activeSessionExercises[firstIndex]?.id || null);
+            setSelectedExerciseGroupId(null);
+            focusExercise(firstIndex);
+          }
+        }
+        break;
+      }
+      case 'ArrowLeft': {
+        event.preventDefault();
+        const exerciseIndex = Math.max(0, (group.start_order || 1) - 1);
+        setSelectedExerciseId(activeSessionExercises[exerciseIndex]?.id || null);
+        setSelectedExerciseGroupId(null);
+        focusExercise(exerciseIndex);
+        break;
+      }
+      case 'ArrowRight': {
+        event.preventDefault();
+        if (isDetailRow) {
+          focusGroupSettings(group);
+        } else {
+          focusExerciseSettingsFromGroup(group);
+        }
+        break;
+      }
+      case 'Enter':
+      case ' ': {
+        event.preventDefault();
+        handleSelectExerciseGroup(selectedExerciseGroupId === group.id ? null : group.id);
+        break;
+      }
+      case 'Backspace':
+      case 'Delete': {
+        event.preventDefault();
+        handleDeleteExerciseGroup(group.id);
+        break;
+      }
+      default:
+        break;
+    }
+  };
+
+  useEffect(() => {
+    if (!selectedExerciseGroupId) return;
+    const stillExists = activeSessionExerciseGroups.some(group => group.id === selectedExerciseGroupId);
+    if (!stillExists) setSelectedExerciseGroupId(null);
+  }, [activeSessionExerciseGroups, selectedExerciseGroupId]);
+
+  useEffect(() => {
+    if (!pendingGroupFocusIdRef.current) return;
+    const id = pendingGroupFocusIdRef.current;
+    pendingGroupFocusIdRef.current = null;
+    focusExerciseGroupById(id, 20);
+  }, [activeSessionExerciseGroups.length, focusExerciseGroupById]);
+
   const handleBlur = (event) => {
     if (!event.currentTarget.contains(event.relatedTarget)) {
       setFocusedRoutinePanel(null);
@@ -427,29 +721,51 @@ const RoutineDetail = forwardRef((props, ref) => {
           session={effectiveSession}
           dayLetter={dayLetter}
           sessionExercises={activeSessionExercises}
+          exerciseGroups={activeSessionExerciseGroups}
           exercises={exercises}
           selectedExerciseId={selectedExerciseId}
+          selectedExerciseGroupId={selectedExerciseGroupId}
           isPanelFocused={focusedRoutinePanel === 'exercises'}
+          isGroupPanelFocused={focusedRoutinePanel === 'groups'}
           isAddingExerciseRow={isAddingExerciseRow}
+          isAddingExerciseGroupRow={isAddingExerciseGroupRow}
           addExerciseBtnRef={addExerciseBtnRef}
+          addGroupBtnRef={addGroupBtnRef}
           onExerciseKeyDown={handleExerciseKeyDown}
           onAddExerciseButtonKeyDown={handleAddExerciseButtonKeyDown}
+          onAddGroupButtonKeyDown={handleAddGroupButtonKeyDown}
+          onExerciseGroupKeyDown={handleExerciseGroupKeyDown}
           onExerciseRef={setExerciseRef}
-          onSelectExercise={setSelectedExerciseId}
+          onExerciseGroupRef={setExerciseGroupRef}
+          onExerciseGroupRowRef={setExerciseGroupRowRef}
+          onSelectExercise={handleSelectExercise}
+          onSelectExerciseGroup={handleSelectExerciseGroup}
           onDeleteExercise={handleDeleteExercise}
+          onDeleteExerciseGroup={handleDeleteExerciseGroup}
           onAddExercise={handleAddExerciseToSession}
+          onAddExerciseGroup={handleAddExerciseGroup}
           onStartAddingExercise={handleStartAddingExercise}
+          onStartAddingExerciseGroup={handleStartAddingExerciseGroup}
           onCancelAddingExercise={handleCancelAddingExercise}
+          onCancelAddingExerciseGroup={handleCancelAddingExerciseGroup}
           onPanelFocus={() => setFocusedRoutinePanel('exercises')}
+          onGroupPanelFocus={() => setFocusedRoutinePanel('groups')}
+          onGroupRowFocus={handleFocusExerciseGroupRow}
+          onGroupAddButtonFocus={() => setFocusedRoutinePanel('group-add')}
           isReadOnly={isReadOnly}
         />
 
         <ExerciseSettingsPanel
           selectedExerciseLink={selectedExerciseLink}
           selectedExercise={selectedExercise}
+          selectedExerciseGroup={selectedExerciseGroup}
+          selectedExerciseGroupForSettings={selectedExerciseGroupForSettings}
+          exerciseCount={activeSessionExercises.length}
           onSettingControlRef={setSettingControlRef}
           onSettingValueKeyDown={handleSettingValueKeyDown}
           onUpdateTarget={handleUpdateTarget}
+          onUpdateExerciseGroup={handleUpdateExerciseGroup}
+          onFocusExerciseGroupRow={focusExerciseGroupRowById}
           onPanelFocus={() => setFocusedRoutinePanel('settings')}
           isReadOnly={isReadOnly}
         />

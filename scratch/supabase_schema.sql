@@ -7,6 +7,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. Clean existing tables if needed (optional - uncomment if resetting)
 -- DROP TABLE IF EXISTS public.set_records CASCADE;
 -- DROP TABLE IF EXISTS public.workout_logs CASCADE;
+-- DROP TABLE IF EXISTS public.session_exercise_groups CASCADE;
 -- DROP TABLE IF EXISTS public.session_exercises CASCADE;
 -- DROP TABLE IF EXISTS public.exercises CASCADE;
 -- DROP TABLE IF EXISTS public.sessions CASCADE;
@@ -63,7 +64,21 @@ CREATE TABLE public.session_exercises (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 6. workout_logs Table
+-- 6. session_exercise_groups Table
+CREATE TABLE public.session_exercise_groups (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    session_id UUID NOT NULL REFERENCES public.sessions(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    start_order INTEGER NOT NULL,
+    size INTEGER NOT NULL,
+    color TEXT DEFAULT '#7aa2f7' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT session_exercise_groups_size_check CHECK (size >= 2),
+    CONSTRAINT session_exercise_groups_start_order_check CHECK (start_order >= 1)
+);
+
+-- 7. workout_logs Table
 CREATE TABLE public.workout_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -74,7 +89,7 @@ CREATE TABLE public.workout_logs (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 7. set_records Table
+-- 8. set_records Table
 CREATE TABLE public.set_records (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     workout_log_id UUID NOT NULL REFERENCES public.workout_logs(id) ON DELETE CASCADE,
@@ -95,6 +110,7 @@ ALTER TABLE public.routines ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.exercises ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.session_exercises ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.session_exercise_groups ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.workout_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.set_records ENABLE ROW LEVEL SECURITY;
 
@@ -129,6 +145,15 @@ CREATE POLICY "Users can manage their own session exercises" ON public.session_e
         )
     );
 
+-- Session Exercise Groups
+CREATE POLICY "Users can manage their own session exercise groups" ON public.session_exercise_groups
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.sessions s 
+            WHERE s.id = session_id AND s.user_id = auth.uid()
+        )
+    );
+
 -- Workout Logs
 CREATE POLICY "Users can manage their own workout logs" ON public.workout_logs
     FOR ALL USING (auth.uid() = user_id);
@@ -151,6 +176,7 @@ CREATE INDEX IF NOT EXISTS idx_sessions_user ON public.sessions(user_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_sessions_one_temporary_per_routine ON public.sessions(routine_id) WHERE session_order = 0;
 CREATE INDEX IF NOT EXISTS idx_exercises_user ON public.exercises(user_id);
 CREATE INDEX IF NOT EXISTS idx_session_exercises_session ON public.session_exercises(session_id);
+CREATE INDEX IF NOT EXISTS idx_session_exercise_groups_session ON public.session_exercise_groups(session_id);
 CREATE INDEX IF NOT EXISTS idx_workout_logs_user ON public.workout_logs(user_id);
 CREATE INDEX IF NOT EXISTS idx_set_records_log ON public.set_records(workout_log_id);
 
@@ -1075,5 +1101,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.routines TO authenticated, servic
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.exercises TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_exercises TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_exercise_groups TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workout_logs TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.set_records TO authenticated, service_role;

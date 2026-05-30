@@ -153,6 +153,56 @@ describe('setGridModel: Input Validation & Metric Fillers', () => {
     assert.equal(fillExerciseWeightsFromFirstSet(blocks, 0, 1, '80'), blocks);
     assert.equal(fillExerciseWeightsFromFirstSet(blocks, 0, 0, '.'), blocks);
   });
+
+  test('fillExerciseWeightsFromFirstSet isolates grouped exercises (only fills matching exercise)', () => {
+    const blocks = [
+      {
+        id: 'block-group',
+        is_group: true,
+        sets: [
+          { id: 'g-1', set_number: 1, weight: '', reps: '', exercise_id: 'exA' },
+          { id: 'g-2', set_number: 1, weight: '', reps: '', exercise_id: 'exB' },
+          { id: 'g-3', set_number: 2, weight: '', reps: '', exercise_id: 'exA' },
+          { id: 'g-4', set_number: 2, weight: '', reps: '', exercise_id: 'exB' },
+        ],
+      },
+    ];
+
+    // Trigger autocomplete on Exercise A's first set (index 0)
+    const updatedA = fillExerciseWeightsFromFirstSet(blocks, 0, 0, '50');
+    assert.deepEqual(
+      updatedA[0].sets.map((set) => set.weight),
+      ['50', '', '50', ''],
+    );
+
+    // Trigger autocomplete on Exercise B's first set (index 1)
+    const updatedB = fillExerciseWeightsFromFirstSet(blocks, 0, 1, '60');
+    assert.deepEqual(
+      updatedB[0].sets.map((set) => set.weight),
+      ['', '60', '', '60'],
+    );
+  });
+
+  test('fillExerciseWeightsFromFirstSet works from any row of the first set (e.g. unilateral Side R)', () => {
+    const blocks = [
+      {
+        id: 'block-uni',
+        sets: [
+          { id: 'u-1', set_number: 1, side: 'L', weight: '', reps: '', exercise_id: 'exA' },
+          { id: 'u-2', set_number: 1, side: 'R', weight: '', reps: '', exercise_id: 'exA' },
+          { id: 'u-3', set_number: 2, side: 'L', weight: '', reps: '', exercise_id: 'exA' },
+          { id: 'u-4', set_number: 2, side: 'R', weight: '', reps: '', exercise_id: 'exA' },
+        ],
+      },
+    ];
+
+    // Trigger autocomplete from index 1 (Set 1, R)
+    const updated = fillExerciseWeightsFromFirstSet(blocks, 0, 1, '15');
+    assert.deepEqual(
+      updated[0].sets.map((set) => set.weight),
+      ['15', '15', '15', '15'],
+    );
+  });
 });
 
 describe('setGridModel: Rest Timer Payload Computations', () => {
@@ -164,6 +214,13 @@ describe('setGridModel: Rest Timer Payload Computations', () => {
     assert.equal(
       getSetCompletionKey({ id: 'link-a' }, { set_number: 2 }),
       'link-a:2:both',
+    );
+  });
+
+  test('getSetCompletionKey includes exercise_id if present to isolate grouped exercises', () => {
+    assert.equal(
+      getSetCompletionKey({ id: 'group-1' }, { set_number: 1, side: 'both', exercise_id: 'exA' }),
+      'group-1:1:both:exA',
     );
   });
 
@@ -280,5 +337,54 @@ describe('setGridModel: Rest Timer Payload Computations', () => {
     });
 
     assert.equal(payload, null);
+  });
+
+  test('getRestTimerPayloadForCompletedSet triggers rest between rounds (sets) in a group block', () => {
+    const blocks = [
+      {
+        id: 'group-a',
+        is_group: true,
+        group_name: 'Superset A',
+        exercise_name: 'Superset A (Bench + Row)',
+        group_exercises: [
+          { exercise_id: 'bench', name: 'Bench Press', target_sets: 2 },
+          { exercise_id: 'row', name: 'Row', target_sets: 2 },
+        ],
+        sets: [
+          { set_number: 1, side: 'both', exercise_id: 'bench', session_exercise_id: 'link-bench' },
+          { set_number: 1, side: 'both', exercise_id: 'row', session_exercise_id: 'link-row' },
+          { set_number: 2, side: 'both', exercise_id: 'bench', session_exercise_id: 'link-bench' },
+          { set_number: 2, side: 'both', exercise_id: 'row', session_exercise_id: 'link-row' },
+        ],
+      },
+    ];
+    const sessionExercises = [
+      { id: 'link-bench', rest_between_sets: 60, rest_after_exercise: 120 },
+      { id: 'link-row', rest_between_sets: 90, rest_after_exercise: 150 },
+    ];
+
+    // Finishing bench in round 1 should NOT trigger rest
+    const payloadBenchRound1 = getRestTimerPayloadForCompletedSet({
+      blocks,
+      sessionExercises,
+      blockIndex: 0,
+      rowIndex: 0, // bench set 1
+    });
+    assert.equal(payloadBenchRound1, null);
+
+    // Finishing row in round 1 should trigger rest using row's rest_between_sets
+    const payloadRowRound1 = getRestTimerPayloadForCompletedSet({
+      blocks,
+      sessionExercises,
+      blockIndex: 0,
+      rowIndex: 1, // row set 1
+    });
+    assert.deepEqual(payloadRowRound1, {
+      mode: 'set',
+      durationSeconds: 90,
+      exerciseId: 'group-a',
+      exerciseName: 'Superset A (Bench + Row)',
+      setNumber: 1,
+    });
   });
 });

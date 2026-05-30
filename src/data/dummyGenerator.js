@@ -652,6 +652,7 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
   const routines = [];
   const sessions = [];
   const sessionExercises = [];
+  const sessionExerciseGroups = [];
   const workoutLogs = [];
   const setRecords = [];
   const sessionEntriesByKey = new Map();
@@ -799,6 +800,7 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
     routines,
     sessions,
     sessionExercises,
+    sessionExerciseGroups,
     workoutLogs,
     setRecords,
   };

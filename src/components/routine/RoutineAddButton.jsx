@@ -6,6 +6,8 @@ const RoutineAddButton = forwardRef(function RoutineAddButton({
   onFocus,
   onClick,
   onKeyDown,
+  disabled = false,
+  title,
 }, ref) {
   return (
     <button
@@ -15,6 +17,8 @@ const RoutineAddButton = forwardRef(function RoutineAddButton({
       onFocus={onFocus}
       onClick={onClick}
       onKeyDown={onKeyDown}
+      disabled={disabled}
+      title={title}
       style={{
         width: '100%',
         padding: '10px 0',
@@ -22,13 +26,14 @@ const RoutineAddButton = forwardRef(function RoutineAddButton({
         border: '1px dashed var(--border)',
         borderRadius: '8px',
         color: 'var(--text-muted)',
-        cursor: 'pointer',
+        cursor: disabled ? 'not-allowed' : 'pointer',
         fontSize: '13px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         gap: '6px',
         marginTop: '8px',
+        opacity: disabled ? 0.42 : 1,
       }}
     >
       <Plus size={14} />

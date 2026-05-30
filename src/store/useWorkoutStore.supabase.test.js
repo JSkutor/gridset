@@ -36,6 +36,7 @@ function resetStore() {
     routines: [],
     sessions: [],
     sessionExercises: [],
+    sessionExerciseGroups: [],
     workoutLogs: [],
     setRecords: [],
     isSyncing: false,

@@ -3,6 +3,8 @@ import { DEFAULT_EXERCISES, generateUUID, getDefaultExerciseUnit } from '../data
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
 import { DEFAULT_EXERCISE_BY_NAME, normalizeExerciseForApp } from '../api/supabaseWorkoutRepository.js';
 
+const GROUP_COLOR_PALETTE = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
+
 export function migrateWorkoutPersistState(persistedState, version) {
   let newState = { ...persistedState };
 
@@ -156,6 +158,28 @@ export function migrateWorkoutPersistState(persistedState, version) {
         ...item,
         exercise_id: idMap.get(item.exercise_id) || item.exercise_id,
       })),
+    };
+  }
+
+  if (version < 8) {
+    newState = {
+      ...newState,
+      sessionExerciseGroups: newState.sessionExerciseGroups || [],
+    };
+  }
+
+  if (version < 9) {
+    const groupCountBySession = new Map();
+    newState = {
+      ...newState,
+      sessionExerciseGroups: (newState.sessionExerciseGroups || []).map((group) => {
+        const count = groupCountBySession.get(group.session_id) || 0;
+        groupCountBySession.set(group.session_id, count + 1);
+        return {
+          ...group,
+          color: group.color || GROUP_COLOR_PALETTE[count % GROUP_COLOR_PALETTE.length],
+        };
+      }),
     };
   }
 

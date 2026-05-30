@@ -5,15 +5,31 @@ import {
   getRoutineTemporarySession,
   isTemporarySession,
 } from '../../utils/sessionHelper.js';
+import {
+  MAX_GROUPS_PER_SESSION,
+  MIN_GROUP_SIZE,
+  applyGroupTargetSets,
+  cleanGroupName,
+  findFirstAvailableGroupStart,
+  findGroupForSessionExercise,
+  getLinksCoveredByGroup,
+  getNextGroupColor,
+  getSessionExerciseLinks,
+  getSessionGroups,
+  normalizeGroupPlacement,
+  normalizeGroupPlacementWithoutOverlap,
+  withGroupColor,
+} from '../../utils/sessionExerciseGroups.js';
 import { generateUUID } from '../../data/dummyGenerator.js';
 import * as workoutRepository from '../../api/supabaseWorkoutRepository.js';
 import { initialSeed } from './authSlice.js';
 
-export const createRoutineSlice = (set, get, store) => ({
+export const createRoutineSlice = (set, get) => ({
   // --- State ---
   routines: initialSeed.routines,
   sessions: initialSeed.sessions,
   sessionExercises: initialSeed.sessionExercises,
+  sessionExerciseGroups: initialSeed.sessionExerciseGroups || [],
 
   // --- Actions ---
   addRoutine: (name) => {
@@ -44,7 +60,8 @@ export const createRoutineSlice = (set, get, store) => ({
     set((state) => ({
       routines: state.routines.filter(r => r.id !== id),
       sessions: state.sessions.filter(s => s.routine_id !== id),
-      sessionExercises: state.sessionExercises.filter(se => !sessionIdsToDelete.includes(se.session_id))
+      sessionExercises: state.sessionExercises.filter(se => !sessionIdsToDelete.includes(se.session_id)),
+      sessionExerciseGroups: state.sessionExerciseGroups.filter(group => !sessionIdsToDelete.includes(group.session_id))
     }));
 
     if (!currentUser.isGuest) {
@@ -85,9 +102,12 @@ export const createRoutineSlice = (set, get, store) => ({
     const sessionsToCopy = sessions.filter(s => s.routine_id === sourceRoutineId);
     const newSessions = [];
     const newSessionExercises = [];
+    const newSessionExerciseGroups = [];
+    const sessionIdMap = new Map();
 
     sessionsToCopy.forEach(s => {
       const newSessionId = generateUUID();
+      sessionIdMap.set(s.id, newSessionId);
       newSessions.push({
         id: newSessionId,
         name: s.name,
@@ -115,10 +135,23 @@ export const createRoutineSlice = (set, get, store) => ({
       });
     });
 
+    (get().sessionExerciseGroups || [])
+      .filter(group => sessionIdMap.has(group.session_id))
+      .forEach(group => {
+        newSessionExerciseGroups.push({
+          ...withGroupColor(group, get().sessionExerciseGroups || []),
+          id: generateUUID(),
+          session_id: sessionIdMap.get(group.session_id),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+      });
+
     set((state) => ({
       routines: [...state.routines, newRoutine],
       sessions: [...state.sessions, ...newSessions],
-      sessionExercises: [...state.sessionExercises, ...newSessionExercises]
+      sessionExercises: [...state.sessionExercises, ...newSessionExercises],
+      sessionExerciseGroups: [...state.sessionExerciseGroups, ...newSessionExerciseGroups]
     }));
 
     if (!currentUser.isGuest) {
@@ -127,6 +160,7 @@ export const createRoutineSlice = (set, get, store) => ({
         await workoutRepository.upsertRows('routines', [newRoutine]);
         await workoutRepository.upsertRows('sessions', newSessions);
         await workoutRepository.upsertRows('session_exercises', newSessionExercises);
+        await workoutRepository.upsertRows('session_exercise_groups', newSessionExerciseGroups);
       });
     }
 
@@ -215,7 +249,8 @@ export const createRoutineSlice = (set, get, store) => ({
 
       return {
         sessions: finalSessions,
-        sessionExercises: state.sessionExercises.filter(se => se.session_id !== id)
+        sessionExercises: state.sessionExercises.filter(se => se.session_id !== id),
+        sessionExerciseGroups: state.sessionExerciseGroups.filter(group => group.session_id !== id)
       };
     });
 
@@ -300,7 +335,10 @@ export const createRoutineSlice = (set, get, store) => ({
     if (!exerciseToDelete) return;
 
     const sessionId = exerciseToDelete.session_id;
+    const deletedOrder = Number(exerciseToDelete.order) || 0;
     let finalExercises = [];
+    let finalGroups = [];
+    let deletedGroups = [];
 
     set((state) => {
       const remainingExercises = state.sessionExercises.filter(se => se.id !== id);
@@ -321,33 +359,94 @@ export const createRoutineSlice = (set, get, store) => ({
         return se;
       });
 
+      const remainingCount = sessionExs.length;
+      const updatedAt = new Date().toISOString();
+      deletedGroups = [];
+      finalGroups = state.sessionExerciseGroups.reduce((groups, group) => {
+        if (group.session_id !== sessionId) {
+          groups.push(group);
+          return groups;
+        }
+
+        let startOrder = Number(group.start_order) || 1;
+        let size = Number(group.size) || MIN_GROUP_SIZE;
+        const endOrder = startOrder + size - 1;
+
+        if (deletedOrder < startOrder) {
+          startOrder -= 1;
+        } else if (deletedOrder >= startOrder && deletedOrder <= endOrder) {
+          size -= 1;
+        }
+
+        const normalizedGroup = normalizeGroupPlacement(
+          { ...group, start_order: startOrder, size, updated_at: updatedAt },
+          remainingCount,
+        );
+
+        if (!normalizedGroup) {
+          deletedGroups.push(group);
+          return groups;
+        }
+
+        groups.push(normalizedGroup);
+        return groups;
+      }, []);
+
       return {
-        sessionExercises: finalExercises
+        sessionExercises: finalExercises,
+        sessionExerciseGroups: finalGroups,
       };
     });
 
     if (!currentUser.isGuest) {
       const exercisesToUpsert = finalExercises.filter(se => se.session_id === sessionId);
+      const groupsToUpsert = finalGroups.filter(group => group.session_id === sessionId);
       get().runRemoteSync('deleteSessionExercise', async () => {
         await workoutRepository.deleteRow('session_exercises', id);
         await workoutRepository.upsertRows('session_exercises', exercisesToUpsert);
+        await workoutRepository.upsertRows('session_exercise_groups', groupsToUpsert);
+        await Promise.all(deletedGroups.map(group => workoutRepository.deleteRow('session_exercise_groups', group.id)));
       });
     }
   },
 
   updateSessionExercise: (id, updates) => {
-    const { currentUser } = get();
+    const { currentUser, sessionExercises, sessionExerciseGroups } = get();
     const updatedAt = new Date().toISOString();
+    const currentLink = sessionExercises.find(se => se.id === id);
+    const hasGroupConstrainedField = 'target_sets' in updates || 'rest_between_sets' in updates || 'rest_after_exercise' in updates;
+    const targetGroup = hasGroupConstrainedField
+      ? findGroupForSessionExercise(sessionExerciseGroups, currentLink)
+      : null;
+    let changedLinks = [];
     
     set((state) => ({
-      sessionExercises: state.sessionExercises.map(se => 
-        se.id === id ? { ...se, ...updates, updated_at: updatedAt } : se
-      )
+      sessionExercises: state.sessionExercises.map(se => {
+        const isCurrentLink = se.id === id;
+        const isGroupedLink = targetGroup
+          ? getLinksCoveredByGroup(state.sessionExercises, targetGroup).some(link => link.id === se.id)
+          : false;
+
+        if (!isCurrentLink && !isGroupedLink) return se;
+
+        const nextLink = {
+          ...se,
+          ...(isGroupedLink && 'target_sets' in updates ? { target_sets: updates.target_sets } : {}),
+          ...(isGroupedLink && 'rest_between_sets' in updates ? { rest_between_sets: updates.rest_between_sets } : {}),
+          ...(isGroupedLink && 'rest_after_exercise' in updates ? { rest_after_exercise: updates.rest_after_exercise } : {}),
+          ...(isCurrentLink ? updates : {}),
+          updated_at: updatedAt,
+        };
+        changedLinks.push(nextLink);
+        return nextLink;
+      })
     }));
 
     if (!currentUser.isGuest) {
       get().runRemoteSync('updateSessionExercise', () =>
-        workoutRepository.updateRow('session_exercises', id, { ...updates, updated_at: updatedAt }),
+        changedLinks.length > 1
+          ? workoutRepository.upsertRows('session_exercises', changedLinks)
+          : workoutRepository.updateRow('session_exercises', id, { ...updates, updated_at: updatedAt }),
       );
     }
   },
@@ -357,15 +456,24 @@ export const createRoutineSlice = (set, get, store) => ({
     let updatedExercises = [];
     
     set((state) => {
+      const updatedAt = new Date().toISOString();
       updatedExercises = state.sessionExercises.map(se => {
         if (se.session_id === session_id) {
           const newOrderIndex = orderedExerciseLinkIds.indexOf(se.id);
           if (newOrderIndex !== -1) {
-            return { ...se, order: newOrderIndex + 1, updated_at: new Date().toISOString() };
+            return { ...se, order: newOrderIndex + 1, updated_at: updatedAt };
           }
         }
         return se;
       });
+
+      state.sessionExerciseGroups
+        .filter(group => group.session_id === session_id)
+        .forEach(group => {
+          const result = applyGroupTargetSets(updatedExercises, group, updatedAt);
+          updatedExercises = result.sessionExercises;
+        });
+
       return { sessionExercises: updatedExercises };
     });
 
@@ -373,6 +481,111 @@ export const createRoutineSlice = (set, get, store) => ({
       const exercisesToUpsert = updatedExercises.filter(se => se.session_id === session_id);
       get().runRemoteSync('reorderSessionExercises', () =>
         workoutRepository.upsertRows('session_exercises', exercisesToUpsert),
+      );
+    }
+  },
+
+  addSessionExerciseGroup: (session_id, name, size = MIN_GROUP_SIZE) => {
+    const { currentUser, sessionExercises, sessionExerciseGroups } = get();
+    const sessionLinks = getSessionExerciseLinks(sessionExercises, session_id);
+    const existingGroups = getSessionGroups(sessionExerciseGroups, session_id);
+    if (existingGroups.length >= MAX_GROUPS_PER_SESSION) return null;
+
+    const exerciseCount = sessionLinks.length;
+    if (exerciseCount < MIN_GROUP_SIZE) return null;
+    const rawSize = Number.parseInt(size, 10);
+    const normalizedSize = Math.min(
+      exerciseCount,
+      Math.max(MIN_GROUP_SIZE, Number.isFinite(rawSize) ? rawSize : MIN_GROUP_SIZE),
+    );
+    const startOrder = findFirstAvailableGroupStart(normalizedSize, existingGroups, exerciseCount);
+    if (startOrder === null) return null;
+
+    const createdAt = new Date().toISOString();
+    const normalizedGroup = normalizeGroupPlacement({
+      id: generateUUID(),
+      session_id,
+      name: cleanGroupName(name, `그룹 ${sessionExerciseGroups.filter(group => group.session_id === session_id).length + 1}`),
+      start_order: startOrder,
+      size: normalizedSize,
+      color: getNextGroupColor(sessionExerciseGroups, session_id),
+      created_at: createdAt,
+      updated_at: createdAt,
+    }, sessionLinks.length);
+
+    if (!normalizedGroup) return null;
+
+    let touchedLinks = [];
+    set((state) => {
+      const result = applyGroupTargetSets(state.sessionExercises, normalizedGroup, createdAt);
+      touchedLinks = result.touchedLinks;
+      return {
+        sessionExercises: result.sessionExercises,
+        sessionExerciseGroups: [...state.sessionExerciseGroups, normalizedGroup],
+      };
+    });
+
+    if (!currentUser.isGuest) {
+      get().runRemoteSync('addSessionExerciseGroup', async () => {
+        await workoutRepository.upsertRows('session_exercise_groups', [normalizedGroup]);
+        await workoutRepository.upsertRows('session_exercises', touchedLinks);
+      });
+    }
+
+    return normalizedGroup;
+  },
+
+  updateSessionExerciseGroup: (id, updates) => {
+    const { currentUser, sessionExerciseGroups, sessionExercises } = get();
+    const group = sessionExerciseGroups.find(item => item.id === id);
+    if (!group) return null;
+
+    const updatedAt = new Date().toISOString();
+    const sessionLinkCount = getSessionExerciseLinks(sessionExercises, group.session_id).length;
+    const otherGroups = getSessionGroups(sessionExerciseGroups, group.session_id, id);
+    const direction = 'start_order' in updates
+      ? Math.sign((Number(updates.start_order) || Number(group.start_order) || 1) - (Number(group.start_order) || 1))
+      : 0;
+    const normalizedGroup = normalizeGroupPlacementWithoutOverlap({
+      ...withGroupColor(group, sessionExerciseGroups),
+      ...updates,
+      name: 'name' in updates ? cleanGroupName(updates.name, group.name) : group.name,
+      updated_at: updatedAt,
+    }, sessionLinkCount, otherGroups, direction);
+
+    if (!normalizedGroup) return null;
+
+    let touchedLinks = [];
+    set((state) => {
+      const result = applyGroupTargetSets(state.sessionExercises, normalizedGroup, updatedAt);
+      touchedLinks = result.touchedLinks;
+      return {
+        sessionExercises: result.sessionExercises,
+        sessionExerciseGroups: state.sessionExerciseGroups.map(item =>
+          item.id === id ? normalizedGroup : item
+        ),
+      };
+    });
+
+    if (!currentUser.isGuest) {
+      get().runRemoteSync('updateSessionExerciseGroup', async () => {
+        await workoutRepository.upsertRows('session_exercise_groups', [normalizedGroup]);
+        await workoutRepository.upsertRows('session_exercises', touchedLinks);
+      });
+    }
+
+    return normalizedGroup;
+  },
+
+  deleteSessionExerciseGroup: (id) => {
+    const { currentUser } = get();
+    set((state) => ({
+      sessionExerciseGroups: state.sessionExerciseGroups.filter(group => group.id !== id),
+    }));
+
+    if (!currentUser.isGuest) {
+      get().runRemoteSync('deleteSessionExerciseGroup', () =>
+        workoutRepository.deleteRow('session_exercise_groups', id),
       );
     }
   },

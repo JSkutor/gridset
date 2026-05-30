@@ -300,6 +300,10 @@ describe('useWorkoutDraft', () => {
     expect(saveWorkoutLogMock).not.toHaveBeenCalled();
     expect(onSaveSuccessMock).not.toHaveBeenCalled();
 
+    // Mock saveWorkoutLog to return a mock log object
+    const mockCreatedLog = { id: 'mock-log-id', session_id: mockSession.id };
+    saveWorkoutLogMock.mockReturnValue(mockCreatedLog);
+
     // Type a value for reps (so we have entered data & startTime)
     act(() => {
       result.current.updateRow(0, 0, 'reps', '10');
@@ -316,5 +320,6 @@ describe('useWorkoutDraft', () => {
       expect.any(String)
     );
     expect(onSaveSuccessMock).toHaveBeenCalledTimes(1);
+    expect(onSaveSuccessMock).toHaveBeenCalledWith(mockCreatedLog);
   });
 });

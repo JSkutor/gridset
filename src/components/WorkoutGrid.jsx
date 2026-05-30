@@ -62,10 +62,11 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, on
 // ─── WorkoutGrid ──────────────────────────────────────────────────────────────
 
 const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart, onSaveSuccess }, ref) {
-  const sessions         = useWorkoutStore((state) => state.sessions);
-  const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
-  const exercises        = useWorkoutStore((state) => state.exercises);
-  const saveWorkoutLog   = useWorkoutStore((state) => state.saveWorkoutLog);
+  const sessions              = useWorkoutStore((state) => state.sessions);
+  const sessionExercises      = useWorkoutStore((state) => state.sessionExercises);
+  const sessionExerciseGroups = useWorkoutStore((state) => state.sessionExerciseGroups);
+  const exercises             = useWorkoutStore((state) => state.exercises);
+  const saveWorkoutLog        = useWorkoutStore((state) => state.saveWorkoutLog);
 
   const {
     blocks,
@@ -85,6 +86,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
     session,
     sessionExercises,
     exercises,
+    sessionExerciseGroups,
     saveWorkoutLog,
     onRestStart,
     onSaveSuccess,
@@ -326,9 +328,21 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                           ? 'workout-grid-table-row-exercise-header--first'
                           : 'workout-grid-table-row-exercise-header--subsequent'
                       }`}
+                      style={block.is_group ? { '--group-color': block.group_color || '#7aa2f7' } : {}}
                     >
                       <td colSpan={3}>
-                        {block.exercise_name}
+                        {block.is_group ? (
+                          <>
+                            <span className="workout-grid-group-name-highlight">
+                              {block.group_name}
+                            </span>
+                            <span className="workout-grid-group-exercises-label">
+                              {` (${block.group_exercises.map(e => e.name).join(' + ')})`}
+                            </span>
+                          </>
+                        ) : (
+                          block.exercise_name
+                        )}
                       </td>
                     </tr>
 

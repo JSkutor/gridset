@@ -176,6 +176,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   height: 100vh;
   padding-top: 36px;
   gap: 125px;
+  outline: none;
 }
 
 .rest-timer-stage {
@@ -4284,4 +4285,106 @@ body.keyboard-navigating * {
     box-shadow: 0 0 14px rgba(224, 175, 104, 0.45);
     filter: brightness(1.08);
   }
+}
+
+/* ─── Workout Grid Group Subheader Color Accent ─── */
+.workout-grid-group-name-highlight {
+  color: var(--group-color, #7aa2f7) !important;
+}
+
+/* ─── Log Group Record Visual Styling ─── */
+.log-group-record-card-box {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: color-mix(in srgb, var(--group-color, #7aa2f7) 4%, rgba(255, 255, 255, 0.015));
+  border: 1px solid color-mix(in srgb, var(--group-color, #7aa2f7) 16%, rgba(255, 255, 255, 0.06));
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 4px;
+  box-shadow: 
+    inset 0 0 16px color-mix(in srgb, var(--group-color, #7aa2f7) 3%, transparent),
+    0 4px 18px rgba(0, 0, 0, 0.15);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.log-group-record-card-box:hover {
+  border-color: color-mix(in srgb, var(--group-color, #7aa2f7) 24%, rgba(255, 255, 255, 0.1));
+  box-shadow: 
+    inset 0 0 20px color-mix(in srgb, var(--group-color, #7aa2f7) 5%, transparent),
+    0 6px 24px rgba(0, 0, 0, 0.22);
+}
+
+.log-group-record-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 10px;
+}
+
+.log-group-record-badge {
+  font-size: 10.5px;
+  font-weight: 800;
+  color: var(--group-color, #7aa2f7);
+  background: color-mix(in srgb, var(--group-color, #7aa2f7) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--group-color, #7aa2f7) 20%, transparent);
+  padding: 2.5px 7px;
+  border-radius: 6px;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+.log-group-record-exercises-label {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.log-group-exercises-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* History Group Badge (Exercise View) */
+.log-exercise-history-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.log-exercise-history-meta-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.log-exercise-history-meta-wrap span {
+  display: inline-flex !important;
+  align-items: center;
+  margin: 0 !important;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.log-history-group-badge {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--group-color, #7aa2f7);
+  background: color-mix(in srgb, var(--group-color, #7aa2f7) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--group-color, #7aa2f7) 20%, transparent);
+  padding: 1.5px 5.5px !important;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 1;
 }

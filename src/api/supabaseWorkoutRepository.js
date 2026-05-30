@@ -135,6 +135,11 @@ export async function fetchUserWorkoutData(userId) {
     : { data: [], error: null };
   if (sessionExerciseResult.error) throw sessionExerciseResult.error;
 
+  const sessionExerciseGroupResult = sessionIds.length > 0
+    ? await supabase.from('session_exercise_groups').select('*').in('session_id', sessionIds)
+    : { data: [], error: null };
+  if (sessionExerciseGroupResult.error) throw sessionExerciseGroupResult.error;
+
   const { data: serverLogs, error: wlError } = await supabase
     .from('workout_logs')
     .select('*')
@@ -153,6 +158,7 @@ export async function fetchUserWorkoutData(userId) {
     routines: serverRoutines || [],
     sessions: serverSessions || [],
     sessionExercises: sessionExerciseResult.data || [],
+    sessionExerciseGroups: sessionExerciseGroupResult.data || [],
     workoutLogs: serverLogs || [],
     setRecords: setRecordResult.data || [],
   };
@@ -215,6 +221,7 @@ export async function migrateLocalDataToSupabase({
   routines,
   sessions,
   sessionExercises,
+  sessionExerciseGroups = [],
   workoutLogs,
   setRecords,
 }) {
@@ -226,6 +233,7 @@ export async function migrateLocalDataToSupabase({
   await insertRows('routines', routines.map((routine) => ({ ...routine, user_id: authUserId })));
   await insertRows('sessions', sessions.map((session) => ({ ...session, user_id: authUserId })));
   await insertRows('session_exercises', sessionExercises);
+  await insertRows('session_exercise_groups', sessionExerciseGroups);
   await insertRows('workout_logs', workoutLogs.map((log) => ({ ...log, user_id: authUserId })));
   await insertRows('set_records', setRecords);
 }
@@ -246,6 +254,7 @@ export async function replaceUserWorkoutDataWithSeed(seedData, userId) {
   await insertRows('routines', seedData.routines);
   await insertRows('sessions', seedData.sessions);
   await insertRows('session_exercises', seedData.sessionExercises);
+  await insertRows('session_exercise_groups', seedData.sessionExerciseGroups || []);
   await insertRows('workout_logs', seedData.workoutLogs);
   await insertRows('set_records', seedData.setRecords);
 }

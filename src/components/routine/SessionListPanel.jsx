@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { LayoutGroup } from 'framer-motion';
-import { Clock, Plus } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import RoutineHeader from './RoutineHeader';
 import RoutineAddButton from './RoutineAddButton';
 import { SessionEditRow, SessionRow } from './SessionRows';

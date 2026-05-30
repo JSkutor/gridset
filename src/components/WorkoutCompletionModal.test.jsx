@@ -1,5 +1,5 @@
 import React from 'react';
-import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import WorkoutCompletionModal from './WorkoutCompletionModal.jsx';
 import { useWorkoutStore } from '../store/useWorkoutStore.js';

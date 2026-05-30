@@ -5,7 +5,7 @@ export const GUEST_USER = { id: '00000000-0000-0000-0000-000000000000', name: 'ê
 
 export const initialSeed = createDummyWorkoutData({ userId: GUEST_USER.id, existingExercises: DEFAULT_EXERCISES });
 
-export const createAuthSlice = (set, get, store) => {
+export const createAuthSlice = (set, get) => {
   const failedRemoteSyncTasks = new Map();
   let remoteSyncTaskId = 0;
 
@@ -149,6 +149,7 @@ export const createAuthSlice = (set, get, store) => {
           routines: [],
           sessions: [],
           sessionExercises: [],
+          sessionExerciseGroups: [],
           workoutLogs: [],
           setRecords: [],
           remoteSyncError: null
@@ -173,7 +174,7 @@ export const createAuthSlice = (set, get, store) => {
     },
 
     migrateLocalDataToSupabase: async (authUserId) => {
-      const { exercises, routines, sessions, sessionExercises, workoutLogs, setRecords } = get();
+      const { exercises, routines, sessions, sessionExercises, sessionExerciseGroups, workoutLogs, setRecords } = get();
       
       try {
         set({ isSyncing: true });
@@ -183,6 +184,7 @@ export const createAuthSlice = (set, get, store) => {
           routines,
           sessions,
           sessionExercises,
+          sessionExerciseGroups,
           workoutLogs,
           setRecords,
         });
