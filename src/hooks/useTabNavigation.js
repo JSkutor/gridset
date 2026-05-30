@@ -95,7 +95,7 @@ export function useTabNavigation({
     const handleKeyDown = (event) => {
       // Ignore all shortcuts if a help or auth modal is open.
       if (
-        document.querySelector('.help-backdrop') || 
+        document.querySelector('.help-backdrop') ||
         document.querySelector('.auth-modal-backdrop')
       ) {
         return;

@@ -23,6 +23,10 @@
   --purple: #bb9af7;
   --cyan: #0db9d7;
 
+  /* Unilateral set side labels — matched luminance, subtle hue split */
+  --side-l: #8eada8;
+  --side-r: #ada896;
+
   --border: rgba(148, 163, 201, 0.10);
   --border-strong: rgba(148, 163, 201, 0.18);
   --border-focus: rgba(122, 162, 247, 0.45);

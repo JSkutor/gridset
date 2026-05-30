@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { LogOut, RefreshCw, Trash2, User, UserCheck } from 'lucide-react';
+import { LogOut, RefreshCw, User, UserCheck } from 'lucide-react';
 import AuthModal from './AuthModal';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { supabase } from '../utils/supabaseClient';
 
-const SHOW_DEV_UTILITIES = import.meta.env.DEV;
-
-export default function AccountMenu({ onDataReset }) {
+export default function AccountMenu() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -14,7 +12,6 @@ export default function AccountMenu({ onDataReset }) {
   const currentUser = useWorkoutStore(state => state.currentUser);
   const isSyncing = useWorkoutStore(state => state.isSyncing);
   const fetchUserData = useWorkoutStore(state => state.fetchUserData);
-  const clearAllData = useWorkoutStore(state => state.clearAllData);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -30,11 +27,6 @@ export default function AccountMenu({ onDataReset }) {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
-
-  const handleClearAllData = () => {
-    clearAllData();
-    onDataReset?.();
-  };
 
   return (
     <div ref={dropdownRef} className="account-menu-container">
@@ -97,23 +89,6 @@ export default function AccountMenu({ onDataReset }) {
               >
                 <LogOut size={14} />
                 로그아웃
-              </button>
-            </>
-          )}
-
-          {SHOW_DEV_UTILITIES && (
-            <>
-              <div className="dropdown-divider" />
-
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleClearAllData();
-                  setIsProfileDropdownOpen(false);
-                }}
-              >
-                <Trash2 size={14} />
-                초기화
               </button>
             </>
           )}

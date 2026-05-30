@@ -1,4 +1,3 @@
-import { BarChart3 } from 'lucide-react';
 import { formatDate, formatMetric } from '../../utils/logFormatters';
 
 export default function ExerciseProgressChart({ points, exercise }) {
@@ -10,9 +9,10 @@ export default function ExerciseProgressChart({ points, exercise }) {
 
   if (points.length === 0) {
     return (
-      <div className="log-chart-empty">
-        <BarChart3 size={22} />
-        기록할 데이터가 없습니다
+      <div className="log-chart-wrap">
+        <div className="log-chart-placeholder" role="status">
+          기록 없음
+        </div>
       </div>
     );
   }

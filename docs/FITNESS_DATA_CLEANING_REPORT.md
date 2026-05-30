@@ -92,9 +92,19 @@ node scratch/sync_exercises.mjs
 
 ## 5. 리소스 및 백업 정보 (Resources)
 
-* **정제 완료 최종 데이터:** [scratch/extracted_exercises.json](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/extracted_exercises.json) (준서님 루틴 2종 추가되어 총 875개 수록)
+* **정제 완료 최종 데이터:** [scratch/extracted_exercises.json](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/extracted_exercises.json)  
+  > [!IMPORTANT]
+  > **이 JSON 파일이 전체 운동 데이터의 마스터(Source of Truth)입니다.**  
+  > 기본 운동 사전을 수정하거나 새로운 운동을 추가할 때에는 DB를 직접 수정하지 않고, **이 JSON 파일을 먼저 수정**해야 합니다. 수정 후 아래의 터미널 명령어를 통해 서버 DB로 즉시 반영(Upsert) 동기화할 수 있습니다.
 * **안전 백업 원본 파일:** [scratch/extracted_exercises.json.bak](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/extracted_exercises.json.bak)
 * **초경량 DB 실시간 동기화 스크립트:** [scratch/sync_exercises.mjs](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/sync_exercises.mjs)
+  > [!TIP]
+  > **터미널 실행 방법:**  
+  > Supabase 웹 사이트가 아니라, 로컬 개발 환경의 **터미널(프로젝트 루트 디렉토리)**에서 다음 Node.js 명령어로 간단하게 동기화를 실행합니다.
+  > ```bash
+  > node scratch/sync_exercises.mjs
+  > ```
+  > (실행하려면 `.env.local` 파일에 `SUPABASE_SERVICE_ROLE_KEY`가 올바르게 세팅되어 있어야 합니다.)
 * **SQL 시드 생성 자동 빌더:** [scratch/generate_cleaned_seed.mjs](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/generate_cleaned_seed.mjs)
 
 ---

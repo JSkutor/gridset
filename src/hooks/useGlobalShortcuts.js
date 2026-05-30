@@ -1,5 +1,4 @@
 import { useEffect } from 'react';
-import { startViewTransition } from './useViewTransition';
 
 const RETIRED_NAV_SHORTCUT_KEYS = new Set(['1', '2', '3']);
 
@@ -15,40 +14,12 @@ function isEditableTarget(target) {
   );
 }
 
-function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector) {
-  if (!focusTargetSelector) return;
-
-  const activeElement = document.activeElement;
-  if (focusScopeSelector) {
-    if (!(activeElement instanceof HTMLElement)) return;
-    if (!activeElement.closest(focusScopeSelector)) return;
-  }
-
-  const selector =
-    typeof focusTargetSelector === 'function'
-      ? focusTargetSelector(targetTab)
-      : focusTargetSelector;
-  const targetElement = document.querySelector(selector);
-
-  if (targetElement instanceof HTMLElement) {
-    targetElement.focus({ preventScroll: true });
-  }
-}
-
-export function useGlobalShortcuts({
-  NAV_TAB_IDS,
-  activeTab,
-  setActiveTab,
-  workoutGridRef,
-  routineDetailRef,
-  focusScopeSelector,
-  focusTargetSelector,
-}) {
+export function useGlobalShortcuts({ workoutGridRef, routineDetailRef }) {
   useEffect(() => {
     const handleGlobalKeyDown = (event) => {
       // Ignore all shortcuts if a help or auth modal is open.
       if (
-        document.querySelector('.help-backdrop') || 
+        document.querySelector('.help-backdrop') ||
         document.querySelector('.auth-modal-backdrop')
       ) {
         return;
@@ -93,23 +64,6 @@ export function useGlobalShortcuts({
       if (!hasModifier && RETIRED_NAV_SHORTCUT_KEYS.has(event.key)) {
         event.preventDefault();
         event.stopImmediatePropagation();
-        return;
-      }
-
-      // Cmd/Ctrl + Arrow: cycle through top-level tabs.
-      if ((event.metaKey || event.ctrlKey) && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        const currentIndex = Math.max(0, NAV_TAB_IDS.indexOf(activeTab));
-        const step = event.key === 'ArrowRight' ? 1 : -1;
-        const nextIndex = (currentIndex + step + NAV_TAB_IDS.length) % NAV_TAB_IDS.length;
-        const nextTab = NAV_TAB_IDS[nextIndex];
-        const transitionDirection = step === 1 ? 'forward' : 'backward';
-
-        startViewTransition(() => {
-          setActiveTab(nextTab);
-          focusNavigationTarget(nextTab, focusScopeSelector, focusTargetSelector);
-        }, transitionDirection);
       }
     };
 
@@ -117,13 +71,5 @@ export function useGlobalShortcuts({
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown, true);
     };
-  }, [
-    NAV_TAB_IDS,
-    activeTab,
-    focusScopeSelector,
-    focusTargetSelector,
-    setActiveTab,
-    workoutGridRef,
-    routineDetailRef,
-  ]);
+  }, [workoutGridRef, routineDetailRef]);
 }

@@ -502,7 +502,7 @@
 }
 
 .log-set-col {
-  width: 60px;
+  width: 64px;
 }
 
 .log-set-grid.has-memo .log-value-col {
@@ -537,7 +537,11 @@
 }
 
 .log-set-grid .cell-set {
-  width: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  width: 64px;
   color: var(--text-muted);
   font-size: 15px;
   font-weight: 500;
@@ -678,6 +682,11 @@
   padding: 8px;
 }
 
+.log-exercise-picker-list.is-empty {
+  flex: 1;
+  min-height: 320px;
+}
+
 .log-exercise-picker {
   width: 100%;
   min-height: 58px;
@@ -780,19 +789,24 @@
   font-variant-numeric: tabular-nums;
 }
 
-.log-chart-empty {
-  flex: 1;
-  min-height: 220px;
+.log-chart-placeholder {
+  height: 145px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: rgba(0, 0, 0, 0.12);
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .log-full-record-panel {
   min-height: 0;
+}
+
+.log-full-record-panel .log-scroll-area:has(.log-empty-state) {
+  min-height: 220px;
 }
 
 .log-exercise-history-row {
@@ -851,6 +865,8 @@
 }
 
 .log-routine-graph-shell {
+  --routine-track-height: 128px;
+  --routine-dot-y: 72px;
   position: relative;
   padding: 18px 18px 20px;
   border-bottom: 1px solid var(--border);
@@ -871,7 +887,7 @@
   overflow-x: auto;
   overflow-y: visible;
   overscroll-behavior-x: contain;
-  padding: 2px 2px 0;
+  padding: 4px 2px 0;
 }
 
 .log-routine-stage {
@@ -883,7 +899,7 @@
   position: relative;
   display: grid;
   grid-template-columns: repeat(var(--commit-count, 1), minmax(150px, 1fr));
-  height: 112px;
+  height: var(--routine-track-height);
   isolation: isolate;
 }
 
@@ -891,7 +907,7 @@
   position: absolute;
   left: 18px;
   right: 18px;
-  top: 55px;
+  top: calc(var(--routine-dot-y) - 1px);
   height: 2px;
   border-radius: 999px;
   background:
@@ -912,7 +928,7 @@
 .log-routine-commit {
   position: relative;
   z-index: 1;
-  height: 112px;
+  height: var(--routine-track-height);
   min-width: 0;
   padding: 0 8px;
   border: none;
@@ -952,7 +968,7 @@
 
 .log-routine-commit-dot {
   position: absolute;
-  top: 56px;
+  top: var(--routine-dot-y);
   left: 50%;
   width: 30px;
   height: 30px;
@@ -996,7 +1012,9 @@
 .log-routine-commit-label {
   position: absolute;
   left: 50%;
-  top: 0;
+  top: 8px;
+  bottom: auto;
+  z-index: 2;
   width: min(148px, calc(100% - 10px));
   min-width: 0;
   display: flex;
@@ -1035,8 +1053,8 @@
 
 .log-routine-branch-stage {
   position: relative;
-  margin-top: -56px;
-  padding-top: 128px;
+  margin-top: calc(var(--routine-dot-y) - var(--routine-track-height));
+  padding-top: var(--routine-track-height);
 }
 
 .log-routine-branch-lines {

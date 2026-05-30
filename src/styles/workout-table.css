@@ -69,10 +69,14 @@
 
 .spreadsheet .col-set,
 .spreadsheet td.cell-set {
-  width: 60px;
+  width: 64px;
 }
 
 .spreadsheet td.cell-set {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
   color: var(--text-muted);
   font-weight: 500;
   font-size: 15px;

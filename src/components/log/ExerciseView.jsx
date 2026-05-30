@@ -26,6 +26,7 @@ export default function ExerciseView({ exerciseSummaries, selectedExerciseId, se
   }, [selectedSummary]);
 
   const bestPoint = selectedSummary?.points.reduce((best, point) => (!best || point.value > best.value ? point : best), null);
+  const hasExerciseData = Boolean(selectedSummary);
 
   return (
     <div className="log-view-grid log-view-grid--exercise">
@@ -37,7 +38,7 @@ export default function ExerciseView({ exerciseSummaries, selectedExerciseId, se
           </div>
         </div>
 
-        <div className="log-exercise-picker-list">
+        <div className={`log-exercise-picker-list${exerciseSummaries.length === 0 ? ' is-empty' : ''}`}>
           {exerciseSummaries.length === 0 ? (
             <EmptyState title="운동 기록이 없습니다" body="완료된 세트가 생기면 종목별 로그가 쌓입니다." />
           ) : (
@@ -63,107 +64,107 @@ export default function ExerciseView({ exerciseSummaries, selectedExerciseId, se
       </section>
 
       <div className="log-exercise-main">
-        {selectedSummary ? (
-          <>
-            <LogCalendar
-              monthDate={exerciseMonthDate}
-              selectedDateKey=""
-              activityByDate={activityByDate}
-              sessionsById={sessionsById}
-              onSelectDate={(date) => setExerciseMonthDate(getMonthStart(date))}
-              onMonthChange={(delta) => {
-                const next = new Date(exerciseMonthDate);
-                next.setMonth(next.getMonth() + delta);
-                setExerciseMonthDate(getMonthStart(next));
-              }}
+        <LogCalendar
+          monthDate={exerciseMonthDate}
+          selectedDateKey=""
+          activityByDate={activityByDate}
+          sessionsById={sessionsById}
+          onSelectDate={(date) => setExerciseMonthDate(getMonthStart(date))}
+          onMonthChange={(delta) => {
+            const next = new Date(exerciseMonthDate);
+            next.setMonth(next.getMonth() + delta);
+            setExerciseMonthDate(getMonthStart(next));
+          }}
+        />
+
+        <section className="log-panel log-chart-panel">
+          <div className="log-panel-header">
+            <div>
+              <span className="log-kicker">Progress</span>
+              <h2>{selectedExercise?.name ?? '—'}</h2>
+            </div>
+            <span className="log-subtle-chip">{getMetricLabel(selectedExercise)}</span>
+          </div>
+
+          <div className="log-stat-row">
+            <StatPill label="전체" value={hasExerciseData ? `${selectedSummary.logs.length}회` : '-'} icon={History} />
+            <StatPill label="세트" value={hasExerciseData ? `${selectedSummary.setCount}세트` : '-'} icon={Dumbbell} />
+            <StatPill
+              label="최고"
+              value={bestPoint && selectedExercise ? formatMetric(bestPoint.value, selectedExercise) : '-'}
+              icon={Activity}
             />
+          </div>
 
-            <section className="log-panel log-chart-panel">
-              <div className="log-panel-header">
-                <div>
-                  <span className="log-kicker">Progress</span>
-                  <h2>{selectedExercise.name}</h2>
-                </div>
-                <span className="log-subtle-chip">{getMetricLabel(selectedExercise)}</span>
-              </div>
+          <ExerciseProgressChart points={selectedSummary?.points ?? []} exercise={selectedExercise} />
+        </section>
 
-              <div className="log-stat-row">
-                <StatPill label="전체" value={`${selectedSummary.logs.length}회`} icon={History} />
-                <StatPill label="세트" value={`${selectedSummary.setCount}세트`} icon={Dumbbell} />
-                <StatPill label="최고" value={bestPoint ? formatMetric(bestPoint.value, selectedExercise) : '-'} icon={Activity} />
-              </div>
+        <section className="log-panel log-full-record-panel">
+          <div className="log-panel-header">
+            <div>
+              <span className="log-kicker">All Records</span>
+              <h2>전체 기록</h2>
+            </div>
+          </div>
 
-              <ExerciseProgressChart points={selectedSummary.points} exercise={selectedExercise} />
-            </section>
+          <div className="log-scroll-area">
+            {hasExerciseData ? (
+              selectedSummary.logs.map((log) => {
+                const session = sessionsById.get(log.session_id);
+                let groupName = null;
+                let groupColor = null;
 
-            <section className="log-panel log-full-record-panel">
-              <div className="log-panel-header">
-                <div>
-                  <span className="log-kicker">All Records</span>
-                  <h2>전체 기록</h2>
-                </div>
-              </div>
-
-              <div className="log-scroll-area">
-                {selectedSummary.logs.map((log) => {
-                  const session = sessionsById.get(log.session_id);
-                  let groupName = null;
-                  let groupColor = null;
-
-                  if (session) {
-                    const links = sessionExercises.filter(se => se.session_id === session.id);
-                    const link = links.find(se => se.exercise_id === selectedExercise.id);
-                    if (link) {
-                      const groups = sessionExerciseGroups.filter(g => g.session_id === session.id);
-                      const matchedGroup = groups.find(g => {
-                        const start = Number(g.start_order) || 1;
-                        const end = start + (Number(g.size) || 2) - 1;
-                        return link.order >= start && link.order <= end;
-                      });
-                      if (matchedGroup) {
-                        groupName = matchedGroup.name;
-                        const palette = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
-                        const groupIdx = groups.findIndex(g => g.id === matchedGroup.id);
-                        groupColor = matchedGroup.color || palette[groupIdx % palette.length] || '#7aa2f7';
-                      }
+                if (session) {
+                  const links = sessionExercises.filter(se => se.session_id === session.id);
+                  const link = links.find(se => se.exercise_id === selectedExercise.id);
+                  if (link) {
+                    const groups = sessionExerciseGroups.filter(g => g.session_id === session.id);
+                    const matchedGroup = groups.find(g => {
+                      const start = Number(g.start_order) || 1;
+                      const end = start + (Number(g.size) || 2) - 1;
+                      return link.order >= start && link.order <= end;
+                    });
+                    if (matchedGroup) {
+                      groupName = matchedGroup.name;
+                      const palette = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
+                      const groupIdx = groups.findIndex(g => g.id === matchedGroup.id);
+                      groupColor = matchedGroup.color || palette[groupIdx % palette.length] || '#7aa2f7';
                     }
                   }
+                }
 
-                  return (
-                    <article key={log.key} className="log-exercise-history-row">
-                      <div className="log-exercise-history-date">
-                        <strong>{formatDate(log.date, { month: 'short', day: 'numeric' })}</strong>
-                        <span>{formatDate(log.date, { weekday: 'short' })}</span>
-                      </div>
-                      <div className="log-exercise-history-body">
-                        <div className="log-exercise-history-summary">
-                          <strong>{formatMetric(log.value, selectedExercise)}</strong>
-                          <div className="log-exercise-history-meta-wrap">
-                            <span>{log.records.length}세트</span>
-                            {groupName && (
-                              <span 
-                                className="log-history-group-badge"
-                                style={{ '--group-color': groupColor }}
-                              >
-                                {groupName}
-                              </span>
-                            )}
-                            <span>· {formatDateTime(log.startTime)}</span>
-                          </div>
+                return (
+                  <article key={log.key} className="log-exercise-history-row">
+                    <div className="log-exercise-history-date">
+                      <strong>{formatDate(log.date, { month: 'short', day: 'numeric' })}</strong>
+                      <span>{formatDate(log.date, { weekday: 'short' })}</span>
+                    </div>
+                    <div className="log-exercise-history-body">
+                      <div className="log-exercise-history-summary">
+                        <strong>{formatMetric(log.value, selectedExercise)}</strong>
+                        <div className="log-exercise-history-meta-wrap">
+                          <span>{log.records.length}세트</span>
+                          {groupName && (
+                            <span
+                              className="log-history-group-badge"
+                              style={{ '--group-color': groupColor }}
+                            >
+                              {groupName}
+                            </span>
+                          )}
+                          <span>· {formatDateTime(log.startTime)}</span>
                         </div>
-                        <SetRecordTable records={log.records} exercise={selectedExercise} compact />
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </section>
-          </>
-        ) : (
-          <section className="log-panel">
-            <EmptyState title="운동 기록이 없습니다" body="완료된 세트가 생기면 달력, 그래프, 전체 기록을 볼 수 있습니다." />
-          </section>
-        )}
+                      <SetRecordTable records={log.records} exercise={selectedExercise} compact />
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <EmptyState title="운동 기록이 없습니다" body="완료된 세트가 생기면 종목별 전체 기록이 표시됩니다." />
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

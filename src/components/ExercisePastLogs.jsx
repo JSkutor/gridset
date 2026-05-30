@@ -86,6 +86,13 @@ export default function ExercisePastLogs({ activeExerciseId }) {
               </div>
 
               <table className="spreadsheet spreadsheet--readonly">
+                <thead>
+                  <tr style={{ height: 0 }}>
+                    <th className="col-set" style={{ height: 0, padding: 0, border: 'none' }}></th>
+                    <th style={{ height: 0, padding: 0, border: 'none' }}></th>
+                    <th style={{ height: 0, padding: 0, border: 'none' }}></th>
+                  </tr>
+                </thead>
                 <tbody>
                   {log.sets.map((set) => (
                     <tr key={set.id}>
@@ -115,7 +122,7 @@ export default function ExercisePastLogs({ activeExerciseId }) {
                         <span className="past-logs-memo-badge">
                           {set.set_number}세트
                           {set.side && set.side !== 'both' && (
-                            <span className={`past-logs-memo-badge-side ${set.side === 'L' ? 'side-l' : 'side-r'}`}>
+                            <span className={`side-badge side-badge--${set.side.toLowerCase()}`}>
                               {set.side}
                             </span>
                           )}

@@ -6,21 +6,54 @@ import { EmptyState } from "./LogSharedComponents";
 
 const BRANCH_VIEWBOX_WIDTH = 1000;
 const BRANCH_VIEWBOX_HEIGHT = 150;
-const BRANCH_START_Y = 12;
-const BRANCH_JOINT_Y = 60;
-const BRANCH_END_Y = 132;
+const BRANCH_LAYOUT_FALLBACK = {
+  sourceX: BRANCH_VIEWBOX_WIDTH / 2,
+  sourceY: 12,
+  targets: [{ x: BRANCH_VIEWBOX_WIDTH / 2, y: 138 }],
+};
 
-function getTimelineX(index, count) {
-  if (count <= 0) return BRANCH_VIEWBOX_WIDTH / 2;
-  return Math.round(((index + 0.5) / count) * BRANCH_VIEWBOX_WIDTH);
+function clampBranchX(x) {
+  const edge = 24;
+  return Math.min(Math.max(Math.round(x), edge), BRANCH_VIEWBOX_WIDTH - edge);
 }
 
-function getBranchPath(sourceX, targetX) {
+function clampBranchY(y) {
+  return Math.min(Math.max(Math.round(y), 4), BRANCH_VIEWBOX_HEIGHT - 4);
+}
+
+function getBranchPath(sourceX, sourceY, targetX, targetY) {
+  const jointY = sourceY + (targetY - sourceY) * 0.4;
+  const spreadY = sourceY + (targetY - sourceY) * 0.74;
   return [
-    `M ${sourceX} ${BRANCH_START_Y}`,
-    `C ${sourceX} ${BRANCH_JOINT_Y - 30}, ${sourceX} ${BRANCH_JOINT_Y - 10}, ${sourceX} ${BRANCH_JOINT_Y}`,
-    `C ${sourceX} ${BRANCH_JOINT_Y + 42}, ${targetX} ${BRANCH_JOINT_Y + 42}, ${targetX} ${BRANCH_END_Y}`,
+    `M ${sourceX} ${sourceY}`,
+    `C ${sourceX} ${sourceY + 16}, ${sourceX} ${jointY - 10}, ${sourceX} ${jointY}`,
+    `C ${sourceX} ${spreadY}, ${targetX} ${spreadY}, ${targetX} ${targetY}`,
   ].join(" ");
+}
+
+function mapPointToViewBox(pointRect, stageRect, svgRect) {
+  const x =
+    ((pointRect.left + pointRect.width / 2 - stageRect.left) / stageRect.width) *
+    BRANCH_VIEWBOX_WIDTH;
+  const y =
+    ((pointRect.top + pointRect.height / 2 - svgRect.top) / svgRect.height) *
+    BRANCH_VIEWBOX_HEIGHT;
+  return { x: clampBranchX(x), y: clampBranchY(y) };
+}
+
+function branchLayoutsEqual(previous, next) {
+  if (
+    previous.sourceX !== next.sourceX ||
+    previous.sourceY !== next.sourceY ||
+    previous.targets.length !== next.targets.length
+  ) {
+    return false;
+  }
+
+  return previous.targets.every(
+    (target, index) =>
+      target.x === next.targets[index].x && target.y === next.targets[index].y,
+  );
 }
 
 // ─── Branch Card Data Builder ────────────────────────────────
@@ -59,33 +92,65 @@ function buildBranches(selectedEvent, selectedSessions) {
 
 // ─── Scroll & Branch Source Tracking Hooks ────────────────────
 
-function useBranchSourceTracking(activeCommitRef, branchStageRef) {
-  const [branchSourceX, setBranchSourceX] = useState(BRANCH_VIEWBOX_WIDTH / 2);
+function useBranchLayout(
+  activeCommitRef,
+  branchStageRef,
+  branchLinesRef,
+  pinRefs,
+  branchCount,
+) {
+  const [branchLayout, setBranchLayout] = useState(BRANCH_LAYOUT_FALLBACK);
 
-  const updateBranchSource = useCallback(() => {
-    const activeCommit = activeCommitRef.current;
+  const updateBranchLayout = useCallback(() => {
     const branchStage = branchStageRef.current;
-    if (!activeCommit || !branchStage) return;
+    const branchLines = branchLinesRef.current;
+    if (!branchStage || !branchLines) return;
 
-    const activeRect = activeCommit.getBoundingClientRect();
     const stageRect = branchStage.getBoundingClientRect();
-    if (!stageRect.width) return;
+    const svgRect = branchLines.getBoundingClientRect();
+    if (!stageRect.width || !svgRect.height) return;
 
-    const centerX = activeRect.left + activeRect.width / 2 - stageRect.left;
-    const clampedX = Math.min(Math.max(centerX, 24), stageRect.width - 24);
-    setBranchSourceX(
-      Math.round((clampedX / stageRect.width) * BRANCH_VIEWBOX_WIDTH),
+    const activeCommit = activeCommitRef.current;
+    const sourceAnchor =
+      activeCommit?.querySelector(".log-routine-commit-dot") ?? activeCommit;
+    const sourcePoint = sourceAnchor
+      ? mapPointToViewBox(
+          sourceAnchor.getBoundingClientRect(),
+          stageRect,
+          svgRect,
+        )
+      : {
+          x: BRANCH_LAYOUT_FALLBACK.sourceX,
+          y: BRANCH_LAYOUT_FALLBACK.sourceY,
+        };
+
+    const targets = pinRefs.current
+      .slice(0, branchCount)
+      .filter(Boolean)
+      .map((pin) =>
+        mapPointToViewBox(pin.getBoundingClientRect(), stageRect, svgRect),
+      );
+
+    const nextLayout = {
+      sourceX: sourcePoint.x,
+      sourceY: sourcePoint.y,
+      targets:
+        targets.length > 0 ? targets : BRANCH_LAYOUT_FALLBACK.targets,
+    };
+
+    setBranchLayout((previous) =>
+      branchLayoutsEqual(previous, nextLayout) ? previous : nextLayout,
     );
-  }, [activeCommitRef, branchStageRef]);
+  }, [activeCommitRef, branchLinesRef, branchStageRef, pinRefs, branchCount]);
 
-  return { branchSourceX, updateBranchSource };
+  return { branchLayout, updateBranchLayout };
 }
 
 function useScrollIntoView(
   selectedEvent,
   latestEventId,
   activeCommitRef,
-  updateBranchSource,
+  updateBranchLayout,
 ) {
   useEffect(() => {
     if (!selectedEvent) return undefined;
@@ -98,17 +163,17 @@ function useScrollIntoView(
         behavior: "auto",
       });
 
-      secondFrame = window.requestAnimationFrame(updateBranchSource);
+      secondFrame = window.requestAnimationFrame(updateBranchLayout);
     });
 
     return () => {
       window.cancelAnimationFrame(firstFrame);
       if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
     };
-  }, [latestEventId, selectedEvent, activeCommitRef, updateBranchSource]);
+  }, [latestEventId, selectedEvent, activeCommitRef, updateBranchLayout]);
 }
 
-function useHorizontalScroll(timelineScrollRef, updateBranchSource) {
+function useHorizontalScroll(timelineScrollRef, updateBranchLayout) {
   useEffect(() => {
     const scrollNode = timelineScrollRef.current;
     if (!scrollNode) return undefined;
@@ -118,7 +183,7 @@ function useHorizontalScroll(timelineScrollRef, updateBranchSource) {
       if (frameId !== null) return;
       frameId = window.requestAnimationFrame(() => {
         frameId = null;
-        updateBranchSource();
+        updateBranchLayout();
       });
     };
 
@@ -148,7 +213,28 @@ function useHorizontalScroll(timelineScrollRef, updateBranchSource) {
       scrollNode.removeEventListener("scroll", scheduleBranchUpdate);
       window.removeEventListener("resize", scheduleBranchUpdate);
     };
-  }, [timelineScrollRef, updateBranchSource]);
+  }, [timelineScrollRef, updateBranchLayout]);
+}
+
+function useBranchLayoutSync(branchStageRef, updateBranchLayout, syncKey) {
+  useEffect(() => {
+    let frameId = window.requestAnimationFrame(updateBranchLayout);
+    const branchStage = branchStageRef.current;
+    if (!branchStage) {
+      return () => window.cancelAnimationFrame(frameId);
+    }
+
+    const observer = new ResizeObserver(() => {
+      window.cancelAnimationFrame(frameId);
+      frameId = window.requestAnimationFrame(updateBranchLayout);
+    });
+    observer.observe(branchStage);
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      observer.disconnect();
+    };
+  }, [branchStageRef, updateBranchLayout, syncKey]);
 }
 
 // ─── Main Component ──────────────────────────────────────────
@@ -158,11 +244,14 @@ export default function RoutineTimeline({ routineSummaries }) {
   const timelineScrollRef = useRef(null);
   const activeCommitRef = useRef(null);
   const branchStageRef = useRef(null);
+  const branchLinesRef = useRef(null);
+  const pinRefs = useRef([]);
 
-  const { branchSourceX, updateBranchSource } = useBranchSourceTracking(
-    activeCommitRef,
-    branchStageRef,
-  );
+  const setPinRef = useCallback((index) => {
+    return (node) => {
+      pinRefs.current[index] = node;
+    };
+  }, []);
 
   const timelineEvents = useMemo(() => {
     return routineSummaries
@@ -200,13 +289,23 @@ export default function RoutineTimeline({ routineSummaries }) {
   const selectedBranches = buildBranches(selectedEvent, selectedSessions);
   const branchCount = Math.max(1, selectedBranches.length);
 
+  const { branchLayout, updateBranchLayout } = useBranchLayout(
+    activeCommitRef,
+    branchStageRef,
+    branchLinesRef,
+    pinRefs,
+    branchCount,
+  );
+
   useScrollIntoView(
     selectedEvent,
     latestEventId,
     activeCommitRef,
-    updateBranchSource,
+    updateBranchLayout,
   );
-  useHorizontalScroll(timelineScrollRef, updateBranchSource);
+  useHorizontalScroll(timelineScrollRef, updateBranchLayout);
+  const branchLayoutKey = `${selectedEvent?.id ?? "none"}:${branchCount}:${selectedBranches.map((branch) => branch.id).join("|")}`;
+  useBranchLayoutSync(branchStageRef, updateBranchLayout, branchLayoutKey);
 
   return (
     <section className="log-panel log-routine-panel">
@@ -284,48 +383,60 @@ export default function RoutineTimeline({ routineSummaries }) {
           {selectedEvent && (
             <div className="log-routine-branch-stage" ref={branchStageRef}>
               <svg
+                ref={branchLinesRef}
                 className="log-routine-branch-lines"
                 viewBox={`0 0 ${BRANCH_VIEWBOX_WIDTH} ${BRANCH_VIEWBOX_HEIGHT}`}
                 preserveAspectRatio="none"
                 aria-hidden="true"
               >
                 {selectedBranches.map((branch, index) => {
-                  const targetX = getTimelineX(index, branchCount);
+                  const target = branchLayout.targets[index];
+                  if (!target) return null;
                   return (
                     <path
                       key={branch.id}
                       className="log-routine-branch-curve"
-                      d={getBranchPath(branchSourceX, targetX)}
+                      d={getBranchPath(
+                        branchLayout.sourceX,
+                        branchLayout.sourceY,
+                        target.x,
+                        target.y,
+                      )}
                       style={{ "--session-color": branch.color }}
                     />
                   );
                 })}
                 <circle
                   className="log-routine-branch-origin"
-                  cx={branchSourceX}
-                  cy={BRANCH_START_Y}
+                  cx={branchLayout.sourceX}
+                  cy={branchLayout.sourceY}
                   r="5.5"
                 />
-                {selectedBranches.map((branch, index) => (
-                  <circle
-                    key={`${branch.id}-end`}
-                    className="log-routine-branch-end"
-                    cx={getTimelineX(index, branchCount)}
-                    cy={BRANCH_END_Y}
-                    r="4.5"
-                    style={{ "--session-color": branch.color }}
-                  />
-                ))}
+                {selectedBranches.map((branch, index) => {
+                  const target = branchLayout.targets[index];
+                  if (!target) return null;
+                  return (
+                    <circle
+                      key={`${branch.id}-end`}
+                      className="log-routine-branch-end"
+                      cx={target.x}
+                      cy={target.y}
+                      r="4.5"
+                      style={{ "--session-color": branch.color }}
+                    />
+                  );
+                })}
               </svg>
 
               <div className="log-routine-branch-map">
-                {selectedBranches.map((branch) => (
+                {selectedBranches.map((branch, index) => (
                   <article
                     key={branch.id}
                     className={`log-routine-branch-card ${branch.type === "free" ? "log-routine-branch-card--free" : ""} ${branch.type === "empty" ? "is-muted" : ""}`}
                     style={{ "--session-color": branch.color }}
                   >
                     <span
+                      ref={setPinRef(index)}
                       className="log-routine-branch-pin"
                       aria-hidden="true"
                     />

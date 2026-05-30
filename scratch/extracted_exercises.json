@@ -833,7 +833,7 @@
       "kneeling arm drill"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -1974,7 +1974,7 @@
       "뎁스 점프 리프"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -2048,7 +2048,7 @@
       "드롭 푸시"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -3287,7 +3287,7 @@
       "레터럴 박스 점프"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -3309,7 +3309,7 @@
       "레터럴 콘 홉"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -3571,7 +3571,7 @@
       "리니어 3파트 스타트 테크닉"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -3591,7 +3591,7 @@
       "리니어 가속 벽 드릴"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -3611,7 +3611,7 @@
       "리니어 뎁스 점프"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -4102,14 +4102,14 @@
       "삼각근",
       "대퇴사두"
     ],
-    "equipment": "기타",
+    "equipment": "맨몸",
     "synonyms": [
       "mountain climbers",
       "마운틴 클라이머",
       "마운틴 클라이밍"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -4789,7 +4789,7 @@
       "무빙 클로 시리즈"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -5538,7 +5538,7 @@
       "점프 박스"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -5561,7 +5561,7 @@
       "box jump (multiple response)"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -6250,7 +6250,7 @@
       "코어 운동"
     ],
     "category": "stretching",
-    "unit": "reps",
+    "unit": "sec",
     "is_unilateral": true,
     "user_id": null
   },
@@ -6397,7 +6397,7 @@
       "bench sprint"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -7012,7 +7012,7 @@
       "side standing long jump"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -7049,7 +7049,7 @@
       "side to side box shuffle"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -7111,7 +7111,7 @@
       "side hop-sprint"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -9056,7 +9056,7 @@
       "스트라이드 점프 크로스오버"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -9508,7 +9508,7 @@
       "sledgehammer swings"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -10315,7 +10315,7 @@
       "single-leg lateral hop"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -10355,7 +10355,7 @@
       "single-leg stride jump"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -10374,7 +10374,7 @@
       "single leg push-off"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -10415,7 +10415,7 @@
       "single-leg hop progression"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -10435,7 +10435,7 @@
       "single-cone sprint drill"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -10876,7 +10876,7 @@
       "alternate leg diagonal bound"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": true,
     "user_id": null
   },
@@ -13189,7 +13189,7 @@
       "incline push-up depth jump"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -13249,7 +13249,7 @@
       "bicycling"
     ],
     "category": "cardio",
-    "unit": "reps",
+    "unit": "sec",
     "is_unilateral": false,
     "user_id": null
   },
@@ -14143,7 +14143,7 @@
       "민첩성 운동"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -15338,7 +15338,7 @@
       "quick leap"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -16764,7 +16764,7 @@
       "프론트 박스 점프"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -16809,7 +16809,7 @@
       "허들 홉"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -17595,7 +17595,7 @@
       "hurdle hops"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
@@ -17634,7 +17634,7 @@
       "heavy bag thrust"
     ],
     "category": "plyometrics",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },

@@ -93,6 +93,108 @@ body.keyboard-navigating * {
   transform: translateY(-0.5px);
 }
 
+.demo-clear-trigger-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  background: rgba(247, 118, 142, 0.06);
+  border: 1px solid rgba(247, 118, 142, 0.18);
+  color: #f7768e;
+  cursor: pointer;
+  transition:
+    background var(--motion-standard),
+    border-color var(--motion-standard),
+    color var(--motion-standard),
+    transform var(--motion-standard);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.demo-clear-trigger-btn:hover,
+.demo-clear-trigger-btn.is-open {
+  background: rgba(247, 118, 142, 0.12);
+  border-color: rgba(247, 118, 142, 0.32);
+  color: #ff8fa3;
+  transform: translateY(-0.5px);
+}
+
+.demo-clear-action {
+  position: relative;
+}
+
+.demo-clear-popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 10001;
+  width: 240px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(18, 22, 36, 0.98);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  animation: dropdownFade 0.15s ease-out;
+}
+
+.demo-clear-popover-title {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-bright);
+  line-height: 1.35;
+}
+
+.demo-clear-popover-desc {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.demo-clear-popover-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.demo-clear-popover-btn {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition:
+    background var(--motion-standard),
+    border-color var(--motion-standard),
+    filter var(--motion-standard);
+}
+
+.demo-clear-popover-btn.is-danger {
+  background: #f7768e;
+  color: #07080e;
+}
+
+.demo-clear-popover-btn.is-danger:hover {
+  filter: brightness(1.08);
+}
+
+.demo-clear-popover-btn.is-cancel {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--border);
+  color: var(--text-main);
+}
+
+.demo-clear-popover-btn.is-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-bright);
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

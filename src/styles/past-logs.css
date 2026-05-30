@@ -83,21 +83,8 @@
   padding-top: 1px;
 }
 
-.past-logs-memo-badge-side {
-  font-size: 9px;
-  padding: 0 2px;
-  border-radius: 2px;
-  margin-left: 4px;
-}
-
-.past-logs-memo-badge-side.side-l {
-  background: rgba(235, 94, 85, 0.15);
-  color: #eb5e55;
-}
-
-.past-logs-memo-badge-side.side-r {
-  background: rgba(79, 195, 247, 0.15);
-  color: #4fc3f7;
+.past-logs-memo-badge .side-badge {
+  margin-left: 6px;
 }
 
 .past-logs-memo-text {

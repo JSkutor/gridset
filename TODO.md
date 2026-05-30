@@ -5,6 +5,10 @@
 
 TODO: 추후 단축키 지원 및 시스템 통합(OS 밀착형 기능)을 위해 **Tauri**를 사용하여 데스크톱 앱으로 패키징/감싸는 방식 도입 검토.
 
+TODO: csv 추출
+
+TODO: 내 csv 변환, 저장
+
 TODO: 1.0 완성 시 GitHub Flow 브랜치 관리 전략 도입
 
 - **GitHub Flow 브랜치 규칙**:

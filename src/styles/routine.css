@@ -802,33 +802,25 @@
   background: rgba(122, 162, 247, 0.08);
 }
 
-/* ─── Unilateral Exercise Side Badge Styles ─── */
+/* ─── Unilateral Exercise Side Badge (L / R) ─── */
 .side-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  width: 15px;
-  height: 15px;
-  border-radius: 4px;
-  margin-left: 6px;
-  vertical-align: middle;
+  display: inline-block;
+  flex-shrink: 0;
+  margin-left: 4px;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: normal;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   text-transform: uppercase;
 }
 
 .side-badge--l {
-  background: rgba(122, 162, 247, 0.12);
-  color: #7aa2f7;
-  border: 1px solid rgba(122, 162, 247, 0.24);
+  color: var(--side-l);
 }
 
 .side-badge--r {
-  background: rgba(187, 154, 247, 0.12);
-  color: #bb9af7;
-  border: 1px solid rgba(187, 154, 247, 0.24);
+  color: var(--side-r);
 }
 
 /* ─── Inline Session Dropdown Selector Styling ─── */
