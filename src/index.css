@@ -780,6 +780,7 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 
 .log-view-grid--daily {
   grid-template-columns: 340px minmax(0, 1fr);
+  align-items: start;
 }
 
 .log-view-grid--exercise {
@@ -900,12 +901,28 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
   font-family: inherit;
   font-size: 12px;
   font-variant-numeric: tabular-nums;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition: 
+    background 0.15s ease, 
+    border-color 0.15s ease, 
+    color 0.15s ease, 
+    box-shadow 0.15s ease;
 }
 
 .log-calendar-cell:hover {
   border-color: var(--border-strong);
   background: rgba(255, 255, 255, 0.045);
+}
+
+.log-calendar-cell > span:first-of-type {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1px solid transparent;
+  font-weight: 500;
+  transition: all 0.15s ease;
 }
 
 .log-calendar-cell.is-outside-month {
@@ -918,9 +935,19 @@ html:active-view-transition-type(backward)::view-transition-new(page-content) {
 }
 
 .log-calendar-cell.is-selected {
-  color: var(--text-bright);
-  border-color: var(--border-focus);
-  box-shadow: inset 0 0 0 1px rgba(122, 162, 247, 0.18);
+  /* NEVER OVERRIDE border-color TO PRESERVE SESSION ACTIVITY COLORS */
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.log-calendar-cell.is-selected:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.log-calendar-cell.is-selected > span:first-of-type {
+  background: var(--accent);
+  color: var(--bg-deep);
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(122, 162, 247, 0.3);
 }
 
 .log-calendar-activity-marks {

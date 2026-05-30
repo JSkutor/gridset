@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { BarChart3, Calendar, ListChecks } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { useTabNavigation } from '../hooks/useTabNavigation';
@@ -31,7 +31,7 @@ const LOG_VIEWS = [
   },
   {
     id: 'routine',
-    label: '루틴 로그',
+    label: '루틴',
     shortcut: 'D',
     description: '루틴 시작과 구성 변화',
     icon: ListChecks,
@@ -48,6 +48,8 @@ const getLogFocusTargetSelector = (viewId) =>
 // ─── LogPage Component ───────────────────────────────────────
 
 export default function LogPage({ isActive = true }) {
+  const logPageRef = useRef(null);
+
   // ── Store Selectors ──
   const workoutLogs = useWorkoutStore((state) => state.workoutLogs);
   const setRecords = useWorkoutStore((state) => state.setRecords);
@@ -97,8 +99,18 @@ export default function LogPage({ isActive = true }) {
   const [exerciseMonthDate, setExerciseMonthDate] = useState(getMonthStart(initialDate));
   const [selectedExerciseId, setSelectedExerciseId] = useState(exerciseSummaries[0]?.exercise.id || null);
 
+  // ── Scroll Reset on View Change ──
+  useEffect(() => {
+    if (logPageRef.current) {
+      const scrollContainer = logPageRef.current.parentElement;
+      if (scrollContainer) {
+        scrollContainer.scrollTop = 0;
+      }
+    }
+  }, [activeView]);
+
   return (
-    <div className="log-page">
+    <div ref={logPageRef} className="log-page">
       <div className="log-content">
         {activeView === 'daily' && (
           <DailyLogView

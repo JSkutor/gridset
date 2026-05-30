@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { formatDate } from '../../utils/logFormatters';
-import { EmptyState } from './LogSharedComponents';
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { formatDate } from "../../utils/logFormatters";
+import { EmptyState } from "./LogSharedComponents";
 
 // ─── Branch SVG Layout Constants ─────────────────────────────
 
@@ -20,37 +20,38 @@ function getBranchPath(sourceX, targetX) {
     `M ${sourceX} ${BRANCH_START_Y}`,
     `C ${sourceX} ${BRANCH_JOINT_Y - 30}, ${sourceX} ${BRANCH_JOINT_Y - 10}, ${sourceX} ${BRANCH_JOINT_Y}`,
     `C ${sourceX} ${BRANCH_JOINT_Y + 42}, ${targetX} ${BRANCH_JOINT_Y + 42}, ${targetX} ${BRANCH_END_Y}`,
-  ].join(' ');
+  ].join(" ");
 }
 
 // ─── Branch Card Data Builder ────────────────────────────────
 
 function buildBranches(selectedEvent, selectedSessions) {
-
   if (selectedSessions.length > 0) {
     return selectedSessions.map((session) => ({
       id: session.id,
       title: session.name,
       detail: session.lastDate
-        ? `${formatDate(session.lastDate, { month: 'short', day: 'numeric' })} 최근`
-        : '수행 기록 없음',
+        ? `${formatDate(session.lastDate, { month: "short", day: "numeric" })} 최근`
+        : "수행 기록 없음",
       meta: `${session.logCount}회 · ${session.exercises.length}종목`,
       exercises: session.exercises,
       color: session.color,
-      type: 'session',
+      type: "session",
     }));
   }
 
   if (selectedEvent) {
-    return [{
-      id: `${selectedEvent.id}-empty-session`,
-      title: '세션 없음',
-      detail: '루틴 구성 필요',
-      meta: '0종목',
-      exercises: [],
-      color: '#6B7394',
-      type: 'empty',
-    }];
+    return [
+      {
+        id: `${selectedEvent.id}-empty-session`,
+        title: "세션 없음",
+        detail: "루틴 구성 필요",
+        meta: "0종목",
+        exercises: [],
+        color: "#6B7394",
+        type: "empty",
+      },
+    ];
   }
 
   return [];
@@ -72,22 +73,29 @@ function useBranchSourceTracking(activeCommitRef, branchStageRef) {
 
     const centerX = activeRect.left + activeRect.width / 2 - stageRect.left;
     const clampedX = Math.min(Math.max(centerX, 24), stageRect.width - 24);
-    setBranchSourceX(Math.round((clampedX / stageRect.width) * BRANCH_VIEWBOX_WIDTH));
+    setBranchSourceX(
+      Math.round((clampedX / stageRect.width) * BRANCH_VIEWBOX_WIDTH),
+    );
   }, [activeCommitRef, branchStageRef]);
 
   return { branchSourceX, updateBranchSource };
 }
 
-function useScrollIntoView(selectedEvent, latestEventId, activeCommitRef, updateBranchSource) {
+function useScrollIntoView(
+  selectedEvent,
+  latestEventId,
+  activeCommitRef,
+  updateBranchSource,
+) {
   useEffect(() => {
     if (!selectedEvent) return undefined;
 
     let secondFrame = null;
     const firstFrame = window.requestAnimationFrame(() => {
       activeCommitRef.current?.scrollIntoView({
-        block: 'nearest',
-        inline: selectedEvent.id === latestEventId ? 'end' : 'center',
-        behavior: 'auto',
+        block: "nearest",
+        inline: selectedEvent.id === latestEventId ? "end" : "center",
+        behavior: "auto",
       });
 
       secondFrame = window.requestAnimationFrame(updateBranchSource);
@@ -117,7 +125,10 @@ function useHorizontalScroll(timelineScrollRef, updateBranchSource) {
     const handleWheel = (event) => {
       if (scrollNode.scrollWidth <= scrollNode.clientWidth) return;
 
-      const delta = Math.abs(event.deltaY) >= Math.abs(event.deltaX) ? event.deltaY : event.deltaX;
+      const delta =
+        Math.abs(event.deltaY) >= Math.abs(event.deltaX)
+          ? event.deltaY
+          : event.deltaX;
       if (delta === 0) return;
 
       event.preventDefault();
@@ -125,15 +136,17 @@ function useHorizontalScroll(timelineScrollRef, updateBranchSource) {
       scheduleBranchUpdate();
     };
 
-    scrollNode.addEventListener('wheel', handleWheel, { passive: false });
-    scrollNode.addEventListener('scroll', scheduleBranchUpdate, { passive: true });
-    window.addEventListener('resize', scheduleBranchUpdate);
+    scrollNode.addEventListener("wheel", handleWheel, { passive: false });
+    scrollNode.addEventListener("scroll", scheduleBranchUpdate, {
+      passive: true,
+    });
+    window.addEventListener("resize", scheduleBranchUpdate);
 
     return () => {
       if (frameId !== null) window.cancelAnimationFrame(frameId);
-      scrollNode.removeEventListener('wheel', handleWheel);
-      scrollNode.removeEventListener('scroll', scheduleBranchUpdate);
-      window.removeEventListener('resize', scheduleBranchUpdate);
+      scrollNode.removeEventListener("wheel", handleWheel);
+      scrollNode.removeEventListener("scroll", scheduleBranchUpdate);
+      window.removeEventListener("resize", scheduleBranchUpdate);
     };
   }, [timelineScrollRef, updateBranchSource]);
 }
@@ -146,35 +159,53 @@ export default function RoutineTimeline({ routineSummaries }) {
   const activeCommitRef = useRef(null);
   const branchStageRef = useRef(null);
 
-  const { branchSourceX, updateBranchSource } = useBranchSourceTracking(activeCommitRef, branchStageRef);
+  const { branchSourceX, updateBranchSource } = useBranchSourceTracking(
+    activeCommitRef,
+    branchStageRef,
+  );
 
   const timelineEvents = useMemo(() => {
-    return routineSummaries.map((routine) => {
-      const uniqueExercises = new Map();
-      routine.sessions.forEach((session) => {
-        session.exercises.forEach((exercise) => uniqueExercises.set(exercise.id, exercise));
-      });
+    return routineSummaries
+      .map((routine) => {
+        const uniqueExercises = new Map();
+        routine.sessions.forEach((session) => {
+          session.exercises.forEach((exercise) =>
+            uniqueExercises.set(exercise.id, exercise),
+          );
+        });
 
-      return {
-        ...routine,
-        type: 'routine',
-        title: routine.name,
-        exercises: [...uniqueExercises.values()].sort((a, b) => a.name.localeCompare(b.name, 'ko')),
-      };
-    }).sort((a, b) => {
-      const dateA = a.firstDate?.getTime() || 0;
-      const dateB = b.firstDate?.getTime() || 0;
-      return dateA - dateB;
-    });
+        return {
+          ...routine,
+          type: "routine",
+          title: routine.name,
+          exercises: [...uniqueExercises.values()].sort((a, b) =>
+            a.name.localeCompare(b.name, "ko"),
+          ),
+        };
+      })
+      .sort((a, b) => {
+        const dateA = a.firstDate?.getTime() || 0;
+        const dateB = b.firstDate?.getTime() || 0;
+        return dateA - dateB;
+      });
   }, [routineSummaries]);
 
   const latestEventId = timelineEvents[timelineEvents.length - 1]?.id || null;
-  const selectedEvent = timelineEvents.find((event) => event.id === selectedEventId) || timelineEvents[timelineEvents.length - 1] || null;
-  const selectedSessions = selectedEvent?.type === 'routine' ? selectedEvent.sessions : [];
+  const selectedEvent =
+    timelineEvents.find((event) => event.id === selectedEventId) ||
+    timelineEvents[timelineEvents.length - 1] ||
+    null;
+  const selectedSessions =
+    selectedEvent?.type === "routine" ? selectedEvent.sessions : [];
   const selectedBranches = buildBranches(selectedEvent, selectedSessions);
   const branchCount = Math.max(1, selectedBranches.length);
 
-  useScrollIntoView(selectedEvent, latestEventId, activeCommitRef, updateBranchSource);
+  useScrollIntoView(
+    selectedEvent,
+    latestEventId,
+    activeCommitRef,
+    updateBranchSource,
+  );
   useHorizontalScroll(timelineScrollRef, updateBranchSource);
 
   return (
@@ -182,36 +213,46 @@ export default function RoutineTimeline({ routineSummaries }) {
       <div className="log-panel-header">
         <div>
           <span className="log-kicker">Routine Graph</span>
-          <h2>루틴 로그</h2>
+          <h2>루틴</h2>
         </div>
         {timelineEvents.length > 0 && (
-          <span className="log-subtle-chip">{timelineEvents.length} 지점</span>
+          <span className="log-subtle-chip">{timelineEvents.length} 시점</span>
         )}
       </div>
 
       {timelineEvents.length === 0 ? (
         <div className="log-routine-workspace">
-          <EmptyState title="루틴 로그가 없습니다" body="루틴을 만들고 운동을 기록하면 시작 시점과 구성 운동이 정리됩니다." />
+          <EmptyState
+            title="루틴 로그가 없습니다"
+            body="루틴을 만들고 운동을 기록하면 시작 시점과 구성 운동이 정리됩니다."
+          />
         </div>
       ) : (
         <div
           className="log-routine-graph-shell"
           style={{
-            '--commit-count': timelineEvents.length,
-            '--branch-count': branchCount,
-            '--stage-columns': timelineEvents.length,
+            "--commit-count": timelineEvents.length,
+            "--branch-count": branchCount,
+            "--stage-columns": timelineEvents.length,
           }}
         >
           {/* ── Commit Track (horizontal scrollable) ── */}
           <div className="log-routine-graph-scroll" ref={timelineScrollRef}>
             <div className="log-routine-stage">
-              <div className="log-routine-track" role="tablist" aria-label="루틴 변경 지점">
+              <div
+                className="log-routine-track"
+                role="tablist"
+                aria-label="루틴 변경 지점"
+              >
                 <div className="log-routine-track-line" />
                 {timelineEvents.map((event) => {
                   const isActive = event.id === selectedEvent?.id;
                   const firstDateLabel = event.firstDate
-                    ? formatDate(event.firstDate, { month: 'short', day: 'numeric' })
-                    : '기록 전';
+                    ? formatDate(event.firstDate, {
+                        month: "short",
+                        day: "numeric",
+                      })
+                    : "기록 전";
 
                   return (
                     <button
@@ -219,8 +260,11 @@ export default function RoutineTimeline({ routineSummaries }) {
                       type="button"
                       role="tab"
                       aria-selected={isActive}
-                      className={`log-routine-commit ${isActive ? 'is-active' : ''} ${event.type === 'free' ? 'is-muted' : ''}`}
-                      style={{ '--event-color': event.type === 'free' ? '#9AA4BC' : '#7AA2F7' }}
+                      className={`log-routine-commit ${isActive ? "is-active" : ""} ${event.type === "free" ? "is-muted" : ""}`}
+                      style={{
+                        "--event-color":
+                          event.type === "free" ? "#9AA4BC" : "#7AA2F7",
+                      }}
                       ref={isActive ? activeCommitRef : null}
                       onClick={() => setSelectedEventId(event.id)}
                     >
@@ -252,11 +296,16 @@ export default function RoutineTimeline({ routineSummaries }) {
                       key={branch.id}
                       className="log-routine-branch-curve"
                       d={getBranchPath(branchSourceX, targetX)}
-                      style={{ '--session-color': branch.color }}
+                      style={{ "--session-color": branch.color }}
                     />
                   );
                 })}
-                <circle className="log-routine-branch-origin" cx={branchSourceX} cy={BRANCH_START_Y} r="5.5" />
+                <circle
+                  className="log-routine-branch-origin"
+                  cx={branchSourceX}
+                  cy={BRANCH_START_Y}
+                  r="5.5"
+                />
                 {selectedBranches.map((branch, index) => (
                   <circle
                     key={`${branch.id}-end`}
@@ -264,7 +313,7 @@ export default function RoutineTimeline({ routineSummaries }) {
                     cx={getTimelineX(index, branchCount)}
                     cy={BRANCH_END_Y}
                     r="4.5"
-                    style={{ '--session-color': branch.color }}
+                    style={{ "--session-color": branch.color }}
                   />
                 ))}
               </svg>
@@ -273,10 +322,13 @@ export default function RoutineTimeline({ routineSummaries }) {
                 {selectedBranches.map((branch) => (
                   <article
                     key={branch.id}
-                    className={`log-routine-branch-card ${branch.type === 'free' ? 'log-routine-branch-card--free' : ''} ${branch.type === 'empty' ? 'is-muted' : ''}`}
-                    style={{ '--session-color': branch.color }}
+                    className={`log-routine-branch-card ${branch.type === "free" ? "log-routine-branch-card--free" : ""} ${branch.type === "empty" ? "is-muted" : ""}`}
+                    style={{ "--session-color": branch.color }}
                   >
-                    <span className="log-routine-branch-pin" aria-hidden="true" />
+                    <span
+                      className="log-routine-branch-pin"
+                      aria-hidden="true"
+                    />
                     <div className="log-routine-branch-head">
                       <div>
                         <strong>{branch.title}</strong>

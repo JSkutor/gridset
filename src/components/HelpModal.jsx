@@ -157,7 +157,7 @@ export default function HelpModal({ isOpen, onClose, onDataReset }) {
                   <kbd>S</kbd>
                 </div>
                 <div className="help-shortcut-row">
-                  <span>루틴 로그</span>
+                  <span>루틴</span>
                   <kbd>D</kbd>
                 </div>
               </div>
