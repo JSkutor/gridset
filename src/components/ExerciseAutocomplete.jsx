@@ -64,7 +64,16 @@ export default function ExerciseAutocomplete({
 
   // 키보드 네비게이션 제어
   const handleKeyDown = (e) => {
-    // IME 입력 중인 경우 Enter 등의 키 이벤트를 무시하여 중복 등록 방지
+    // ── 검색 결과 없을 때 Enter ──────────────────────────
+    // IME 조합 중(한글 입력 등)에도 Enter 허용.
+    // 초성 검색(예: "ㅍㅇ") 후 Enter로 조합 확정 + 운동 추가를 한 번에 처리.
+    if (e.key === "Enter" && isOpen && suggestions.length === 0) {
+      e.preventDefault();
+      handleCustomSelect();
+      return;
+    }
+
+    // IME 입력 중인 경우 다른 키 이벤트는 무시 (중복 등록 방지)
     if (e.nativeEvent?.isComposing || e.isComposing) return;
 
     if (e.key === "Escape") {
@@ -78,14 +87,6 @@ export default function ExerciseAutocomplete({
     }
 
     if (!isOpen) return;
-
-    if (suggestions.length === 0) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        handleCustomSelect();
-      }
-      return;
-    }
 
     switch (e.key) {
       case "ArrowDown":
@@ -338,13 +339,18 @@ export default function ExerciseAutocomplete({
             </button>
             <div
               style={{
-                fontSize: "10px",
-                color: "var(--text-muted)",
+                fontSize: "11px",
+                color: "var(--accent-dim)",
                 textAlign: "center",
-                marginTop: "8px",
+                marginTop: "10px",
+                padding: "6px 12px",
+                background: "rgba(122, 162, 247, 0.06)",
+                borderRadius: "6px",
+                border: "1px solid rgba(122, 162, 247, 0.1)",
+                fontWeight: 500,
               }}
             >
-              또는 키보드 Enter를 누르면 바로 추가됩니다.
+              ⏎ Enter 키를 누르면 바로 추가됩니다
             </div>
           </div>
         </div>

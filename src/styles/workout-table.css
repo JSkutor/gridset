@@ -42,7 +42,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Caveat', 'Nanum Pen Script', cursive;
+  font-family: "Caveat", "Nanum Pen Script", cursive;
   font-size: 24px;
   font-weight: 700;
   color: var(--text-muted);
@@ -88,8 +88,19 @@
   position: relative;
 }
 
-.spreadsheet:not(.keyboard-navigating) td.cell-input:hover {
+.spreadsheet td.cell-input:hover {
   background: var(--bg-cell-hover);
+}
+
+/* ─── Keyboard navigation overrides ───
+   body.keyboard-navigating is set synchronously (capture-phase keydown),
+   so these rules take effect immediately — no wait for React re-render.
+
+   :not(:focus-within) ensures the focus-highlight on the active cell
+   is NOT suppressed by the keyboard-navigating rule.  Only cells that
+   are hovered-but-not-focused get the transparent override. */
+body.keyboard-navigating .spreadsheet td.cell-input:hover:not(:focus-within) {
+  background: transparent;
 }
 
 .spreadsheet td.cell-input:focus-within {
@@ -131,7 +142,9 @@
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  transition: color var(--motion-medium), background var(--motion-medium);
+  transition:
+    color var(--motion-medium),
+    background var(--motion-medium);
   font-weight: 500;
   font-size: 13px;
   font-family: inherit;
@@ -140,6 +153,21 @@
 .add-row-btn:hover {
   color: var(--accent);
   background: transparent;
+}
+
+body.keyboard-navigating .spreadsheet .add-row-btn:hover {
+  color: var(--text-muted);
+  background: transparent;
+}
+
+.add-row-btn:focus-visible {
+  outline: none;
+  color: var(--accent);
+  background: rgba(122, 162, 247, 0.06);
+  box-shadow:
+    0 0 0 2px rgba(122, 162, 247, 0.25),
+    0 0 16px rgba(122, 162, 247, 0.1);
+  border-radius: 4px;
 }
 
 /* ─── Read-only Spreadsheet (Past Logs) ─── */

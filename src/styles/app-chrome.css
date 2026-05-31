@@ -83,7 +83,7 @@ body.keyboard-navigating * {
     border-color var(--motion-standard),
     color var(--motion-standard),
     transform var(--motion-standard);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .help-trigger-btn:hover {
@@ -196,7 +196,9 @@ body.keyboard-navigating * {
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sync-status-banner {
@@ -214,7 +216,11 @@ body.keyboard-navigating * {
   border: 1px solid rgba(247, 118, 142, 0.24);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(247, 118, 142, 0.12), rgba(12, 14, 24, 0.86) 42%),
+    linear-gradient(
+      135deg,
+      rgba(247, 118, 142, 0.12),
+      rgba(12, 14, 24, 0.86) 42%
+    ),
     rgba(12, 14, 24, 0.9);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.34);
   backdrop-filter: blur(22px) saturate(1.25);
@@ -263,7 +269,10 @@ body.keyboard-navigating * {
   font-size: 11px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.18s, border-color 0.18s, transform 0.18s;
+  transition:
+    background 0.18s,
+    border-color 0.18s,
+    transform 0.18s;
 }
 
 .sync-status-banner__retry:hover:not(:disabled) {

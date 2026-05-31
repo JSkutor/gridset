@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback } from "react";
 
 /**
  * Column descriptors for the set-entry grid.
@@ -8,8 +8,8 @@ import { useRef, useState, useEffect, useCallback } from 'react';
  * @type {{ colIndex: number; field: string; header: string }[]}
  */
 export const COLUMNS = [
-  { colIndex: 0, field: 'weight', header: 'kg'   },
-  { colIndex: 1, field: 'reps',   header: 'Reps' },
+  { colIndex: 0, field: "weight", header: "kg" },
+  { colIndex: 1, field: "reps", header: "Reps" },
 ];
 
 /** Derived from COLUMNS so NUM_COLS is always in sync with the column definitions. */
@@ -56,23 +56,31 @@ export function useGridNavigation(totalRows) {
 
   // After a new row is added (totalRows grows), focus the pending cell.
   useEffect(() => {
-    if (pendingFocusIndex !== null && gridRefs.current[pendingFocusIndex]?.[0]) {
+    if (
+      pendingFocusIndex !== null &&
+      gridRefs.current[pendingFocusIndex]?.[0]
+    ) {
       gridRefs.current[pendingFocusIndex][0].focus({ preventScroll: true });
       setPendingFocusIndex(null);
     }
   }, [pendingFocusIndex, totalRows]);
 
-  // Listen for mouse movement to restore hover styles once the user moves the mouse.
+  // Listen for mouse interaction to restore hover styles.
+  // Both mousemove and mousedown reset isKeyboardActive so clicking
+  // a cell (without moving the mouse) also clears the keyboard-nav
+  // state and lets :focus-within highlight show unimpeded.
   useEffect(() => {
     if (!isKeyboardActive) return;
 
-    const handleMouseMove = () => {
+    const handleMouseInteraction = () => {
       setIsKeyboardActive(false);
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseInteraction);
+    window.addEventListener("mousedown", handleMouseInteraction);
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("mousemove", handleMouseInteraction);
+      window.removeEventListener("mousedown", handleMouseInteraction);
     };
   }, [isKeyboardActive]);
 
@@ -82,13 +90,16 @@ export function useGridNavigation(totalRows) {
     lastFocusedCell.current = { row, col };
   }, []);
 
-  const focusCell = useCallback((row, col) => {
-    const el = gridRefs.current[row]?.[col];
-    if (el) {
-      el.focus({ preventScroll: true });
-      recordFocus(row, col);
-    }
-  }, [recordFocus]);
+  const focusCell = useCallback(
+    (row, col) => {
+      const el = gridRefs.current[row]?.[col];
+      if (el) {
+        el.focus({ preventScroll: true });
+        recordFocus(row, col);
+      }
+    },
+    [recordFocus],
+  );
 
   // ── public API ──────────────────────────────────────────────────────────────
 
@@ -96,10 +107,13 @@ export function useGridNavigation(totalRows) {
    * Returns a ref callback that registers the DOM <input> at (rowIndex, colIndex).
    * Usage: <input ref={getCellRef(globalRowIndex, colIndex)} />
    */
-  const getCellRef = useCallback((rowIndex, colIndex) => (el) => {
-    if (!gridRefs.current[rowIndex]) gridRefs.current[rowIndex] = [];
-    gridRefs.current[rowIndex][colIndex] = el;
-  }, []);
+  const getCellRef = useCallback(
+    (rowIndex, colIndex) => (el) => {
+      if (!gridRefs.current[rowIndex]) gridRefs.current[rowIndex] = [];
+      gridRefs.current[rowIndex][colIndex] = el;
+    },
+    [],
+  );
 
   /**
    * Keyboard handler to attach to every grid <input>.
@@ -110,52 +124,51 @@ export function useGridNavigation(totalRows) {
    */
   const handleKeyDown = useCallback(
     (e, rowIndex, colIndex) => {
+      // Mark keyboard navigation active before moving focus, so the
+      // keyboard-navigating CSS class is applied on the next render and
+      // prevents hover styles from leaking on the row under the mouse cursor.
+      setIsKeyboardActive(true);
+
       switch (e.key) {
-        case 'ArrowUp':
+        case "ArrowUp":
           e.preventDefault();
           if (rowIndex > 0) focusCell(rowIndex - 1, colIndex);
-          setIsKeyboardActive(true);
           break;
 
-        case 'ArrowDown':
+        case "ArrowDown":
           e.preventDefault();
           if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, colIndex);
-          setIsKeyboardActive(true);
           break;
 
-        case 'Enter':
+        case "Enter":
           e.preventDefault();
           if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, colIndex);
-          setIsKeyboardActive(true);
           break;
 
-        case 'Tab':
+        case "Tab":
           e.preventDefault();
           if (!e.shiftKey) {
-            if      (colIndex < NUM_COLS - 1)       focusCell(rowIndex, colIndex + 1);
-            else if (rowIndex < totalRows - 1)       focusCell(rowIndex + 1, 0);
+            if (colIndex < NUM_COLS - 1) focusCell(rowIndex, colIndex + 1);
+            else if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, 0);
           } else {
-            if      (colIndex > 0)                   focusCell(rowIndex, colIndex - 1);
-            else if (rowIndex > 0)                   focusCell(rowIndex - 1, NUM_COLS - 1);
+            if (colIndex > 0) focusCell(rowIndex, colIndex - 1);
+            else if (rowIndex > 0) focusCell(rowIndex - 1, NUM_COLS - 1);
           }
-          setIsKeyboardActive(true);
           break;
 
-        case 'ArrowLeft':
+        case "ArrowLeft":
           if (e.target.selectionStart === 0) {
             e.preventDefault();
-            if      (colIndex > 0)  focusCell(rowIndex, colIndex - 1);
-            else if (rowIndex > 0)  focusCell(rowIndex - 1, NUM_COLS - 1);
-            setIsKeyboardActive(true);
+            if (colIndex > 0) focusCell(rowIndex, colIndex - 1);
+            else if (rowIndex > 0) focusCell(rowIndex - 1, NUM_COLS - 1);
           }
           break;
 
-        case 'ArrowRight':
+        case "ArrowRight":
           if (e.target.selectionEnd === e.target.value.length) {
             e.preventDefault();
-            if      (colIndex < NUM_COLS - 1)  focusCell(rowIndex, colIndex + 1);
+            if (colIndex < NUM_COLS - 1) focusCell(rowIndex, colIndex + 1);
             else if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, 0);
-            setIsKeyboardActive(true);
           }
           break;
 
@@ -191,5 +204,12 @@ export function useGridNavigation(totalRows) {
     }
   }, []);
 
-  return { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus };
+  return {
+    getCellRef,
+    handleKeyDown,
+    requestFocus,
+    isKeyboardActive,
+    focusLastOrFirst,
+    recordFocus,
+  };
 }

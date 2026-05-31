@@ -5,6 +5,7 @@ import {
   getRoutineRowAnimation,
   getRoutineRowHoverAnimation,
 } from '../../utils/routineRowAnimation';
+import { useIsKeyboardNavigating } from '../../hooks/useIsKeyboardNavigating';
 
 export default function ExerciseRow({
   refCallback,
@@ -19,6 +20,8 @@ export default function ExerciseRow({
   onDelete,
   isReadOnly,
 }) {
+  const isKeyboardNav = useIsKeyboardNavigating();
+
   return (
     <motion.div
       ref={refCallback}
@@ -30,7 +33,7 @@ export default function ExerciseRow({
       layout="position"
       animate={getRoutineRowAnimation(isHighlighted)}
       transition={ROUTINE_ROW_LAYOUT_TRANSITION}
-      whileHover={getRoutineRowHoverAnimation(isHighlighted)}
+      whileHover={isKeyboardNav ? undefined : getRoutineRowHoverAnimation(isHighlighted)}
     >
       <span className="routine-row-index">
         {index + 1}

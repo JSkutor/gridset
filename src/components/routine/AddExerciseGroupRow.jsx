@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Check, Minus, Plus, X } from 'lucide-react';
+import { useMemo, useState } from "react";
+import { Check, Minus, Plus, X } from "lucide-react";
 
 export default function AddExerciseGroupRow({
   exerciseCount,
@@ -33,6 +33,12 @@ export default function AddExerciseGroupRow({
         maxLength={40}
         aria-label="그룹 이름"
         placeholder="그룹 이름"
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            onCancel();
+          }
+        }}
       />
 
       <div className="routine-add-group-size">

@@ -6,6 +6,8 @@ import {
   getRoutineRowHoverAnimation,
 } from '../../utils/routineRowAnimation';
 import { getFormattedSessionName, getSessionColor, getSessionDayLetter, isTemporarySession } from '../../utils/sessionHelper';
+import { useIsKeyboardNavigating } from '../../hooks/useIsKeyboardNavigating';
+
 
 export function SessionEditRow({ session, editingName, onEditingNameChange, onFinish, onCancel }) {
   return (
@@ -64,6 +66,8 @@ export function SessionRow({
   const isTemporary = isTemporarySession(session);
   const sessionDayLetter = getSessionDayLetter(session, sessions);
   const sessionColor = getSessionColor(session);
+  const isKeyboardNav = useIsKeyboardNavigating();
+
 
   return (
     <motion.div
@@ -76,7 +80,8 @@ export function SessionRow({
       layout="position"
       animate={getRoutineRowAnimation(isHighlighted)}
       transition={ROUTINE_ROW_LAYOUT_TRANSITION}
-      whileHover={getRoutineRowHoverAnimation(isHighlighted)}
+      whileHover={isKeyboardNav ? undefined : getRoutineRowHoverAnimation(isHighlighted)}
+
     >
       <div className="routine-row-body">
         <div className="routine-session-name">
