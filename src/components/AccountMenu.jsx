@@ -1,17 +1,40 @@
-import { useEffect, useRef, useState } from 'react';
-import { LogOut, RefreshCw, User, UserCheck } from 'lucide-react';
-import AuthModal from './AuthModal';
-import { useWorkoutStore } from '../store/useWorkoutStore';
-import { supabase } from '../utils/supabaseClient';
+import { useEffect, useRef, useState } from "react";
+import { Download, LogOut, RefreshCw, User, UserCheck } from "lucide-react";
+import AuthModal from "./AuthModal";
+import { useWorkoutStore } from "../store/useWorkoutStore";
+import { supabase } from "../utils/supabaseClient";
+import { downloadDataAsCSV } from "../utils/exportData";
 
 export default function AccountMenu() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
-  const currentUser = useWorkoutStore(state => state.currentUser);
-  const isSyncing = useWorkoutStore(state => state.isSyncing);
-  const fetchUserData = useWorkoutStore(state => state.fetchUserData);
+  const currentUser = useWorkoutStore((state) => state.currentUser);
+  const isSyncing = useWorkoutStore((state) => state.isSyncing);
+  const fetchUserData = useWorkoutStore((state) => state.fetchUserData);
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      const state = useWorkoutStore.getState();
+      await downloadDataAsCSV({
+        routines: state.routines,
+        sessions: state.sessions,
+        sessionExercises: state.sessionExercises,
+        sessionExerciseGroups: state.sessionExerciseGroups,
+        exercises: state.exercises,
+        workoutLogs: state.workoutLogs,
+        setRecords: state.setRecords,
+      });
+    } catch (error) {
+      console.error("데이터 내보내기 실패:", error);
+      alert("데이터 내보내기에 실패했습니다. 다시 시도해주세요.");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -21,10 +44,10 @@ export default function AccountMenu() {
     }
 
     if (isProfileDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isProfileDropdownOpen]);
 
@@ -32,24 +55,36 @@ export default function AccountMenu() {
     <div ref={dropdownRef} className="account-menu-container">
       <button
         onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
-        className={`account-menu-trigger ${currentUser.isGuest ? 'is-guest' : 'is-user'}`}
+        className={`account-menu-trigger ${currentUser.isGuest ? "is-guest" : "is-user"}`}
       >
         <User size={13} />
-        {currentUser.isGuest ? '로컬 게스트 모드' : `${currentUser.name} 님`}
+        {currentUser.isGuest ? "로컬 게스트 모드" : `${currentUser.name} 님`}
       </button>
 
       {isProfileDropdownOpen && (
         <div className="account-menu-dropdown">
           <div className="account-menu-info">
             {currentUser.isGuest ? (
-              '로그인 후 데이터를 동기화하세요'
+              "로그인 후 데이터를 동기화하세요"
             ) : (
-              <div style={{ wordBreak: 'break-all' }}>
-                연동 계정:<br />
+              <div style={{ wordBreak: "break-all" }}>
+                연동 계정:
+                <br />
                 <span className="account-menu-email">{currentUser.email}</span>
               </div>
             )}
           </div>
+
+          <div className="dropdown-divider" />
+
+          <button
+            className="dropdown-item"
+            disabled={isExporting}
+            onClick={handleExport}
+          >
+            <Download size={14} />
+            {isExporting ? "내보내는 중..." : "데이터 내보내기"}
+          </button>
 
           <div className="dropdown-divider" />
 
@@ -60,7 +95,7 @@ export default function AccountMenu() {
                 setIsProfileDropdownOpen(false);
                 setIsAuthModalOpen(true);
               }}
-              style={{ color: 'var(--accent)' }}
+              style={{ color: "var(--accent)" }}
             >
               <UserCheck size={14} />
               로그인 / 회원가입
@@ -75,13 +110,18 @@ export default function AccountMenu() {
                   setIsProfileDropdownOpen(false);
                 }}
               >
-                <RefreshCw size={14} style={{ animation: isSyncing ? 'spin 1s linear infinite' : 'none' }} />
-                {isSyncing ? '동기화 중...' : '데이터 수동 동기화'}
+                <RefreshCw
+                  size={14}
+                  style={{
+                    animation: isSyncing ? "spin 1s linear infinite" : "none",
+                  }}
+                />
+                {isSyncing ? "동기화 중..." : "데이터 수동 동기화"}
               </button>
 
               <button
                 className="dropdown-item"
-                style={{ color: '#f7768e' }}
+                style={{ color: "#f7768e" }}
                 onClick={async () => {
                   await supabase.auth.signOut();
                   setIsProfileDropdownOpen(false);
@@ -95,7 +135,10 @@ export default function AccountMenu() {
         </div>
       )}
 
-      <AuthModal isOpen={isAuthModalOpen} onClose={() => setIsAuthModalOpen(false)} />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </div>
   );
 }
