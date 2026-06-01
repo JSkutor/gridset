@@ -279,6 +279,53 @@ describe('useRoutineKeyboardNavigation', () => {
     expect(reorderSessionExercisesMock).toHaveBeenCalledWith('session-1', ['ex-2', 'ex-1']);
   });
 
+  test('focusFirstSessionFirstExercise focuses the first exercise of the active session, not always session 1', () => {
+    exerciseRefs.current['ex-3'] = makeMockDomElement();
+
+    const { result } = renderHook(() =>
+      useRoutineKeyboardNavigation({
+        effectiveRoutineId: 'routine-1',
+        effectiveSessionId: 'session-2',
+        temporarySessionId: null,
+        effectiveRoutineSessions: [{ id: 'session-1' }, { id: 'session-2' }],
+        activeSessionExercises: [{ id: 'ex-3' }],
+        sessionExercises: [
+          { id: 'ex-1', session_id: 'session-1', order: 1 },
+          { id: 'ex-2', session_id: 'session-1', order: 2 },
+          { id: 'ex-3', session_id: 'session-2', order: 1 },
+        ],
+        selectedExerciseId: null,
+        isAddingExerciseRow: false,
+        sessionRefs,
+        exerciseRefs,
+        exerciseGroupRefs,
+        settingControlRefs,
+        addSessionBtnRef,
+        addExerciseBtnRef,
+        addGroupBtnRef,
+        reorderSessions: reorderSessionsMock,
+        reorderSessionExercises: reorderSessionExercisesMock,
+        onSelectSession: onSelectSessionMock,
+        onFocusExerciseSettings: onFocusExerciseSettingsMock,
+        setSelectedSessionId: setSelectedSessionIdMock,
+        setSelectedExerciseId: setSelectedExerciseIdMock,
+        setSelectedExerciseGroupId: setSelectedExerciseGroupIdMock,
+        setIsAddingExerciseRow: setIsAddingExerciseRowMock,
+        setFocusedRoutinePanel: setFocusedRoutinePanelMock,
+        isReadOnly: false,
+      })
+    );
+
+    result.current.focusFirstSessionFirstExercise();
+
+    expect(setSelectedSessionIdMock).toHaveBeenCalledWith('session-2');
+    expect(setSelectedExerciseIdMock).toHaveBeenCalledWith(null);
+    vi.runAllTimers();
+    expect(setSelectedExerciseIdMock).toHaveBeenCalledWith('ex-3');
+    expect(exerciseRefs.current['ex-3'].focus).toHaveBeenCalled();
+    expect(exerciseRefs.current['ex-1'].focus).not.toHaveBeenCalled();
+  });
+
   test('reading only mode (isReadOnly = true) correctly skips/blocks reordering callbacks on ArrowDown/Up', () => {
     const { result } = renderHook(() =>
       useRoutineKeyboardNavigation({

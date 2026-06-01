@@ -33,3 +33,7 @@ test-results/
 
 # Local backup data (SSD 저장, 클라우드 동기화 전 임시 보관)
 local_data/*
+
+
+# graphify
+graphify-out/*

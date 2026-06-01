@@ -149,7 +149,10 @@
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
   animation: fadeIn 0.15s ease-out;
   z-index: 101;
-  max-height: 420px;
+  /* Make the "no results" / custom exercise panel tall enough
+     to avoid internal scrolling on typical layouts, while still
+     respecting small viewports. */
+  max-height: min(70vh, 720px);
   overflow-y: auto;
 }
 

@@ -68,19 +68,52 @@ export default function SessionExerciseListPanel({
         : undefined;
 
   const scrollAddRowToTop = () => {
-    setTimeout(() => {
-      if (scrollContainerRef.current) {
-        const addRow =
-          scrollContainerRef.current.querySelector(".routine-add-row");
-        if (addRow) {
-          const scrollTop =
-            addRow.offsetTop - scrollContainerRef.current.offsetTop;
-          if (scrollContainerRef.current.scrollTop !== scrollTop) {
-            scrollContainerRef.current.scrollTop = scrollTop;
-          }
+    const scheduleNext = (fn) => {
+      if (typeof requestAnimationFrame === "function") requestAnimationFrame(fn);
+      else setTimeout(fn, 16);
+    };
+
+    const tryScroll = (triesLeft) => {
+      const container = scrollContainerRef.current;
+      if (!container) return;
+
+      const addRow = container.querySelector(".routine-add-row");
+      if (!addRow) {
+        if (triesLeft > 0) {
+          scheduleNext(() => tryScroll(triesLeft - 1));
+        }
+        return;
+      }
+
+      // If the panel doesn't have enough content to create scroll range,
+      // create temporary space at the bottom so the add-row can be aligned to the top.
+      const spacer = container.querySelector(".routine-add-row-spacer");
+      if (spacer) {
+        const containerHeight = container.clientHeight || 0;
+        const rowHeight = addRow.getBoundingClientRect().height || addRow.offsetHeight || 0;
+        const needed = Math.max(0, containerHeight - rowHeight - 8);
+        const current = parseFloat(spacer.style.height || "0") || 0;
+        if (Math.abs(current - needed) >= 1) {
+          spacer.style.height = `${needed}px`;
         }
       }
-    }, 50);
+
+      // 1) Prefer standards-based alignment to the top of the scroll container.
+      // This scrolls the nearest scrollable ancestor (the container), not the whole page.
+      addRow.scrollIntoView({ block: "start", behavior: "smooth" });
+
+      // 2) Some layouts/positioning can make `scrollIntoView` land "near" the top.
+      // Normalize so the add-row's top edge matches the container's top edge.
+      const containerRect = container.getBoundingClientRect();
+      const rowRect = addRow.getBoundingClientRect();
+      const delta = rowRect.top - containerRect.top;
+      if (Math.abs(delta) >= 2) {
+        container.scrollTo({ top: container.scrollTop + delta, behavior: "smooth" });
+      }
+    };
+
+    // Wait for the row to mount and layout to settle.
+    setTimeout(() => tryScroll(6), 0);
   };
 
   return (
@@ -235,14 +268,21 @@ export default function SessionExerciseListPanel({
             )}
 
             {isAddingExerciseRow && (
-              <AddExerciseRow
-                index={sessionExercises.length}
-                onAddExercise={(exercise) => {
-                  onAddExercise(exercise);
-                  onCancelAddingExercise(false);
-                }}
-                onCancel={() => onCancelAddingExercise(true)}
-              />
+              <>
+                <AddExerciseRow
+                  index={sessionExercises.length}
+                  onAddExercise={(exercise) => {
+                    onAddExercise(exercise);
+                    onCancelAddingExercise(false);
+                  }}
+                  onCancel={() => onCancelAddingExercise(true)}
+                />
+                <div
+                  className="routine-add-row-spacer"
+                  aria-hidden="true"
+                  style={{ height: 0 }}
+                />
+              </>
             )}
 
             {!isAddingExerciseRow && !isReadOnly && (

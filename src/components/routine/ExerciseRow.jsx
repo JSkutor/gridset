@@ -55,7 +55,7 @@ export default function ExerciseRow({
       </span>
 
       <span className="routine-exercise-target routine-exercise-target--right">
-        {sessionExercise.target_record}회
+        {sessionExercise.target_record}{exercise?.unit === 'sec' ? '초' : '회'}
       </span>
 
       <div className="routine-row-delete-slot">

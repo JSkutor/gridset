@@ -354,23 +354,28 @@ export function useRoutineKeyboardNavigation({
   const focusFirstSessionFirstExercise = () => {
     if (effectiveRoutineSessions.length === 0 && !temporarySessionId) return;
 
-    const firstSession = effectiveRoutineSessions[0] || { id: temporarySessionId };
-    setSelectedSessionId(firstSession.id);
+    const targetSessionId =
+      effectiveSessionId ||
+      effectiveRoutineSessions[0]?.id ||
+      temporarySessionId;
+    if (!targetSessionId) return;
+
+    setSelectedSessionId(targetSessionId);
     setSelectedExerciseId(null);
     setSelectedExerciseGroupId(null);
     setIsAddingExerciseRow(false);
 
     setTimeout(() => {
-      const exercisesOfFirstSession = sessionExercises
-        .filter(se => se.session_id === firstSession.id)
+      const exercisesOfTargetSession = sessionExercises
+        .filter(se => se.session_id === targetSessionId)
         .sort((a, b) => a.order - b.order);
 
-      if (exercisesOfFirstSession.length > 0) {
-        setSelectedExerciseId(exercisesOfFirstSession[0].id);
+      if (exercisesOfTargetSession.length > 0) {
+        setSelectedExerciseId(exercisesOfTargetSession[0].id);
         setSelectedExerciseGroupId(null);
-        focusExerciseById(exercisesOfFirstSession[0].id, 50);
+        focusExerciseById(exercisesOfTargetSession[0].id, 50);
       } else {
-        focusSessionById(firstSession.id, 50);
+        focusSessionById(targetSessionId, 50);
       }
     }, 50);
   };
