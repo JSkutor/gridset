@@ -62,6 +62,7 @@ const createGuestDataSnapshot = (state) => ({
 
 export const createAuthSlice = (set, get) => {
   const failedRemoteSyncTasks = new Map();
+  const inFlightRemoteSyncByDedupKey = new Map();
   let remoteSyncTaskId = 0;
 
   // 최대 보관할 실패 작업 수
@@ -169,14 +170,19 @@ export const createAuthSlice = (set, get) => {
           break;
         }
       }
+      // 교체 후 대기 중인 실패 작업이 없으면 에러 배너를 즉시 해제
+      if (failedRemoteSyncTasks.size === 0) {
+        set({ remoteSyncError: null });
+      }
     }
 
     const id = `remote-sync-${Date.now()}-${remoteSyncTaskId++}`;
     const createdAt = Date.now();
 
-    Promise.resolve()
-      .then(task)
-      .catch((error) => {
+    const executeTask = async () => {
+      try {
+        await task();
+      } catch (error) {
         // 재시도 불가능한 에러면 아예 저장하지 않음
         if (isNonRetryableError(error)) {
           console.warn(
@@ -204,7 +210,27 @@ export const createAuthSlice = (set, get) => {
           `[Sync] ${label} 실패 (대기: ${failedRemoteSyncTasks.size}개):`,
           error.message || error,
         );
-      });
+      }
+    };
+
+    // 같은 dedupKey의 작업은 순서를 보장해 실행한다.
+    // (예: 생성 upsert 직후 취소 delete가 오면 delete가 항상 나중에 실행되어 서버 상태가 정합해짐)
+    if (dedupKey) {
+      const previous = inFlightRemoteSyncByDedupKey.get(dedupKey) || Promise.resolve();
+      const chained = previous
+        .catch(() => {})
+        .then(() => executeTask())
+        .finally(() => {
+          if (inFlightRemoteSyncByDedupKey.get(dedupKey) === chained) {
+            inFlightRemoteSyncByDedupKey.delete(dedupKey);
+          }
+        });
+
+      inFlightRemoteSyncByDedupKey.set(dedupKey, chained);
+      return;
+    }
+
+    void executeTask();
   };
 
   const retryFailedRemoteSyncTasks = async () => {
@@ -305,7 +331,7 @@ export const createAuthSlice = (set, get) => {
       clearRemoteSyncFailures();
     },
 
-    setAuthSession: async (session) => {
+    setAuthSession: async (session, event) => {
       const previousState = get();
       const previousUser = previousState.currentUser;
       const guestDataSnapshot = previousUser.isGuest
@@ -314,6 +340,8 @@ export const createAuthSlice = (set, get) => {
 
       if (session) {
         const user = session.user;
+
+        // 완전히 동일한 세션이면 무시
         if (
           previousState.authSession?.user?.id === user.id &&
           previousState.authSession?.access_token === session.access_token &&
@@ -328,6 +356,17 @@ export const createAuthSlice = (set, get) => {
           email: user.email,
           isGuest: false,
         };
+
+        // 이미 동일 유저로 인증된 상태에서 토큰만 갱신된 경우
+        // (TOKEN_REFRESHED, USER_UPDATED 등) — 데이터 재조회 없이 세션만 교체
+        const isTokenOnlyRefresh =
+          !previousUser.isGuest &&
+          previousState.authSession?.user?.id === user.id &&
+          (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED');
+        if (isTokenOnlyRefresh) {
+          set({ authSession: session, currentUser });
+          return;
+        }
 
         if (previousUser.isGuest) {
           set({
@@ -368,7 +407,7 @@ export const createAuthSlice = (set, get) => {
 
         set({ authSession: session, currentUser });
 
-        // Hydrate data from server
+        // Hydrate data from server (최초 로그인 시)
         await get().fetchUserData();
       } else {
         if (!previousState.authSession && previousUser.isGuest) {

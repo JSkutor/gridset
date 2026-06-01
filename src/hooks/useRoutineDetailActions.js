@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useWorkoutStore } from "../store/useWorkoutStore";
+import { focusElement, focusElementSync } from "../utils/focusUtils";
 import {
   MAX_SESSIONS_PER_ROUTINE,
   getRegularRoutineSessions,
@@ -165,70 +166,35 @@ export function useRoutineDetailActions({
   // --- Focus Helpers ---
   const focusSessionAddButton = (delay = 50) => {
     setFocusedRoutinePanel("session-add");
-    setTimeout(() => {
-      addSessionBtnRef.current?.focus();
-      addSessionBtnRef.current?.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
-      });
-    }, delay);
+    focusElement(addSessionBtnRef.current, delay);
   };
 
   const focusSessionRow = (id, delay = 50) => {
     if (!id) return;
     setFocusedRoutinePanel("sessions");
-    setTimeout(() => {
-      sessionRefs.current[id]?.focus();
-      sessionRefs.current[id]?.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
-      });
-    }, delay);
+    focusElement(sessionRefs.current[id], delay);
   };
 
   const focusExercise = (index, delay = 50) => {
     const exercise = activeSessionExercises[index];
-    if (exercise) {
-      setTimeout(() => {
-        exerciseRefs.current[exercise.id]?.focus();
-        exerciseRefs.current[exercise.id]?.scrollIntoView({
-          block: "nearest",
-          behavior: "smooth",
-        });
-      }, delay);
-    }
+    if (exercise) focusElement(exerciseRefs.current[exercise.id], delay);
   };
 
   const focusExerciseGroupById = (id, delay = 0) => {
-    setTimeout(() => {
-      exerciseGroupRefs.current[id]?.focus();
-      exerciseGroupRefs.current[id]?.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
-      });
-    }, delay);
+    focusElement(exerciseGroupRefs.current[id], delay);
   };
 
   const focusExerciseGroupRowById = (id, delay = 0) => {
     if (!id) return;
     setFocusedRoutinePanel("groups");
-    setTimeout(() => {
-      exerciseGroupRowRefs.current[id]?.focus();
-      exerciseGroupRowRefs.current[id]?.scrollIntoView({
-        block: "nearest",
-        behavior: "smooth",
-      });
-    }, delay);
+    focusElement(exerciseGroupRowRefs.current[id], delay);
   };
 
   const focusSettingControl = (index) => {
     setFocusedRoutinePanel("settings");
     setTimeout(() => {
       const el = settingControlRefs.current[index];
-      if (el && document.body.contains(el)) {
-        el.focus();
-        el.scrollIntoView({ block: "nearest", behavior: "smooth" });
-      }
+      if (el && document.body.contains(el)) focusElementSync(el);
     }, 20);
   };
 

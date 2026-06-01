@@ -3,7 +3,7 @@ import JSZip from "jszip";
 /**
  * 객체 배열을 CSV 문자열로 변환
  */
-function toCSV(rows) {
+export function toCSV(rows) {
   if (!rows || rows.length === 0) return "";
   const headers = Object.keys(rows[0]);
   const escape = (val) => {
@@ -33,7 +33,7 @@ function makeCSVBlob(csv) {
 // 각 CSV 데이터셋 생성 함수
 // ─────────────────────────────────────────────
 
-function buildRoutinesExport({
+export function buildRoutinesExport({
   routines,
   sessions,
   sessionExercises,
@@ -92,7 +92,7 @@ function buildRoutinesExport({
   return rows;
 }
 
-function buildWorkoutHistoryExport({
+export function buildWorkoutHistoryExport({
   workoutLogs,
   setRecords,
   sessions,
@@ -157,7 +157,7 @@ function buildWorkoutHistoryExport({
   return rows;
 }
 
-function buildExercisesExport({ exercises }) {
+export function buildExercisesExport({ exercises }) {
   return exercises.map((ex) => ({
     운동명: ex.name,
     영문명: ex.englishName || ex.english_name || "",
@@ -173,7 +173,7 @@ function buildExercisesExport({ exercises }) {
   }));
 }
 
-function buildExerciseGroupsExport({ sessions, sessionExerciseGroups }) {
+export function buildExerciseGroupsExport({ sessions, sessionExerciseGroups }) {
   const sessionMap = new Map(sessions.map((s) => [s.id, s]));
 
   return (sessionExerciseGroups || [])
@@ -193,7 +193,7 @@ function buildExerciseGroupsExport({ sessions, sessionExerciseGroups }) {
     }));
 }
 
-function buildSummaryExport({ workoutLogs, setRecords, exercises }) {
+export function buildSummaryExport({ workoutLogs, setRecords, exercises }) {
   // 간단 통계: 운동별 총 수행 횟수
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
   const exerciseCount = new Map();

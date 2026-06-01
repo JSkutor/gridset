@@ -420,7 +420,7 @@ export const createRoutineSlice = (set, get) => ({
             newSessionExercise,
           ]);
         },
-        { dedupKey: "session_exercise:" + newSessionExercise.id },
+        { dedupKey: "session_exercises:session:" + session_id },
       );
     }
 
@@ -527,7 +527,7 @@ export const createRoutineSlice = (set, get) => ({
             ),
           );
         },
-        { dedupKey: "session_exercise:" + id },
+        { dedupKey: "session_exercises:session:" + sessionId },
       );
     }
   },
@@ -576,8 +576,9 @@ export const createRoutineSlice = (set, get) => ({
     }));
 
     if (!currentUser.isGuest) {
-      const dedupKey =
-        changedLinks.length > 1
+      const dedupKey = currentLink?.session_id
+        ? "session_exercises:session:" + currentLink.session_id
+        : changedLinks.length > 1
           ? "session_exercises:batch:" + id
           : "session_exercise:" + id;
       get().runRemoteSync(
@@ -628,8 +629,10 @@ export const createRoutineSlice = (set, get) => ({
       const exercisesToUpsert = updatedExercises.filter(
         (se) => se.session_id === session_id,
       );
-      get().runRemoteSync("reorderSessionExercises", () =>
-        workoutRepository.upsertRows("session_exercises", exercisesToUpsert),
+      get().runRemoteSync(
+        "reorderSessionExercises",
+        () => workoutRepository.upsertRows("session_exercises", exercisesToUpsert),
+        { dedupKey: "session_exercises:session:" + session_id },
       );
     }
   },
@@ -703,7 +706,7 @@ export const createRoutineSlice = (set, get) => ({
           ]);
           await workoutRepository.upsertRows("session_exercises", touchedLinks);
         },
-        { dedupKey: "session_exercise_group:" + normalizedGroup.id },
+        { dedupKey: "session_exercises:session:" + session_id },
       );
     }
 
@@ -774,7 +777,7 @@ export const createRoutineSlice = (set, get) => ({
           ]);
           await workoutRepository.upsertRows("session_exercises", touchedLinks);
         },
-        { dedupKey: "session_exercise_group:" + id },
+        { dedupKey: "session_exercises:session:" + group.session_id },
       );
     }
 
@@ -782,7 +785,8 @@ export const createRoutineSlice = (set, get) => ({
   },
 
   deleteSessionExerciseGroup: (id) => {
-    const { currentUser } = get();
+    const { currentUser, sessionExerciseGroups } = get();
+    const groupToDelete = sessionExerciseGroups.find((group) => group.id === id);
     set((state) => ({
       sessionExerciseGroups: state.sessionExerciseGroups.filter(
         (group) => group.id !== id,
@@ -793,7 +797,11 @@ export const createRoutineSlice = (set, get) => ({
       get().runRemoteSync(
         "deleteSessionExerciseGroup",
         () => workoutRepository.deleteRow("session_exercise_groups", id),
-        { dedupKey: "session_exercise_group:" + id },
+        {
+          dedupKey: groupToDelete?.session_id
+            ? "session_exercises:session:" + groupToDelete.session_id
+            : "session_exercise_group:" + id,
+        },
       );
     }
   },

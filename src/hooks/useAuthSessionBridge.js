@@ -10,8 +10,8 @@ export function useAuthSessionBridge() {
       setAuthSession(session);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthSession(session);
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setAuthSession(session, event);
     });
 
     return () => {

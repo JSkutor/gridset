@@ -1,12 +1,6 @@
 import { swapItems } from '../utils/array.js';
 import { findGroupForSessionExercise } from '../utils/sessionExerciseGroups.js';
-
-function focusElement(element, delay = 0) {
-  setTimeout(() => {
-    element?.focus();
-    element?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-  }, delay);
-}
+import { focusElement, focusElementSync } from '../utils/focusUtils.js';
 
 
 export function useRoutineKeyboardNavigation({
@@ -70,10 +64,7 @@ export function useRoutineKeyboardNavigation({
     setFocusedRoutinePanel('settings');
     setTimeout(() => {
       const el = settingControlRefs.current[index];
-      if (el && document.body.contains(el)) {
-        el.focus();
-        el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-      }
+      if (el && document.body.contains(el)) focusElementSync(el);
     }, 20);
   };
 
