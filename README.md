@@ -176,7 +176,7 @@ gridset/
 │   │   │   ├── routineSlice.js      # 루틴·세션·운동 그룹 CRUD
 │   │   │   └── workoutLogSlice.js   # 운동 기록·세트 레코드 CRUD
 │   │   ├── useWorkoutStore.js       # Zustand persist 스토어
-│   │   └── workoutPersistenceMigration.js # v1~v11 마이그레이션
+│   │   └── workoutPersistenceMigration.ts # v1~v11 마이그레이션
 │   ├── utils/                       # 순수 유틸리티 함수
 │   │   ├── hangul.js                # 한글 초성 분해 엔진
 │   │   ├── exerciseSearch.js        # 초성 검색·자동 완성
