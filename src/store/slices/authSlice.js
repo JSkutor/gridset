@@ -3,6 +3,7 @@ import {
   EXERCISE_CATALOG,
   createDummyWorkoutData,
 } from "../../data/dummyGenerator.js";
+import { appLogger } from "../../utils/logger.js";
 
 export const GUEST_USER = {
   id: "00000000-0000-0000-0000-000000000000",
@@ -298,7 +299,7 @@ export const createAuthSlice = (set, get) => {
 
     const remainingTasks = [...failedRemoteSyncTasks.values()];
     if (remainingTasks.length === 0) {
-      console.log(
+      appLogger.info(
         `[Sync] 재시도 완료 — ${successCount}개 성공, ${discardedCount}개 폐기`,
       );
       set({ remoteSyncError: null });
@@ -385,7 +386,7 @@ export const createAuthSlice = (set, get) => {
               !hasServerWorkoutData(serverData, user.id);
 
             if (shouldUploadGuestData) {
-              console.log("Server is empty. Migrating guest local data...");
+              appLogger.info("Server is empty. Migrating guest local data...");
               await workoutRepository.migrateLocalDataToSupabase({
                 authUserId: user.id,
                 ...guestDataSnapshot,

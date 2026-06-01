@@ -233,6 +233,39 @@ describe('Workout Store: Supabase exercise master sync', () => {
     assert.equal(useWorkoutStore.getState().routines.length, 0);
   });
 
+  test('setAuthSession updates token-only auth events without refetching workout data', async () => {
+    useWorkoutStore.setState({
+      currentUser: memberUser,
+      authSession: {
+        user: {
+          id: memberUser.id,
+          email: memberUser.email,
+          user_metadata: { name: memberUser.name },
+        },
+        access_token: 'old-token',
+      },
+      routines: [{ id: 'local-member-routine', name: '기존 루틴', user_id: memberUser.id }],
+    });
+
+    await useWorkoutStore.getState().setAuthSession(
+      {
+        user: {
+          id: memberUser.id,
+          email: memberUser.email,
+          user_metadata: { name: memberUser.name },
+        },
+        access_token: 'new-token',
+      },
+      'TOKEN_REFRESHED',
+    );
+
+    assert.equal(supabaseMock.from.mock.calls.length, 0);
+    assert.equal(useWorkoutStore.getState().authSession.access_token, 'new-token');
+    assert.deepEqual(useWorkoutStore.getState().routines, [
+      { id: 'local-member-routine', name: '기존 루틴', user_id: memberUser.id },
+    ]);
+  });
+
   test('fetchPublicExercises hydrates public DB rows into app exercise shape', async () => {
     const publicRows = [
       {

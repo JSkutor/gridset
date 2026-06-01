@@ -14,7 +14,7 @@ const JONG_SUNG = [
  * 한글 문자열을 초성, 중성, 종성 단위로 풀어줍니다.
  * 예: "풀업" -> "ㅍㅜㄹㅇㅓㅂ"
  */
-export function disassembleHangul(str) {
+export function disassembleHangul(str: string): string {
   let result = '';
   for (let i = 0; i < str.length; i++) {
     const code = str.charCodeAt(i);
@@ -35,7 +35,7 @@ export function disassembleHangul(str) {
  * 문자열에서 한글 초성만 추출합니다.
  * 예: "풀업" -> "ㅍㅇ", "벤치프레스" -> "ㅂㅊㅍㄹㅅ"
  */
-export function extractChosung(str) {
+export function extractChosung(str: string): string {
   let result = '';
   for (let i = 0; i < str.length; i++) {
     const code = str.charCodeAt(i);
@@ -56,7 +56,7 @@ export function extractChosung(str) {
  * 문자열이 오직 한글 초성(자음)으로만 이루어졌는지 확인합니다.
  * 예: "ㅍㅇ" -> true, "풀" -> false
  */
-export function isChosungOnly(str) {
+export function isChosungOnly(str: string): boolean {
   const chosungSet = new Set(CHO_SUNG);
   const clean = str.replace(/\s/g, '');
   if (!clean) return false;
@@ -67,7 +67,7 @@ export function isChosungOnly(str) {
  * 대상 텍스트(target)에 검색어(query)가 초성 혹은 자소 분리 수준에서 매칭되는지 확인합니다.
  * 대소문자 및 공백은 무시합니다.
  */
-export function matchHangul(target, query) {
+export function matchHangul(target: string, query: string): boolean {
   const cleanTarget = target.toLowerCase().replace(/\s/g, '');
   const cleanQuery = query.toLowerCase().replace(/\s/g, '');
 

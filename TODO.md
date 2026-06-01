@@ -9,8 +9,6 @@ TOFIX:
 
 ---
 
-TODO: 내 csv 변환, 저장
-
 TODO: typescript 점진적 도입
 
 TODO: 1.0 완성 시 GitHub Flow 브랜치 관리 전략 도입
@@ -26,15 +24,3 @@ TODO: 1.0 완성 시 GitHub Flow 브랜치 관리 전략 도입
 TODO: en/ko 사이트 분기, 번역, SEO.
 
 ---
-
-## 🔴 긴급: 리팩터링 & 테스트
-
-### 리팩터링
-
-- [ ] `useRoutineDetailActions.js` (328줄) 분할 — 세션/운영/그룹 CRUD + 포커스 관리 각각 분리
-- [ ] `useRoutineDetailActions` + `useRoutineKeyboardNavigation` 간 포커스/네비게이션 책임 중복 정리
-
-### 테스트 추가
-
-- [ ] `src/utils/exportData.js` 유닛 테스트 작성 (`toCSV`, `buildRoutinesExport`, `buildWorkoutHistoryExport`, `buildExercisesExport`, `buildExerciseGroupsExport`, `buildSummaryExport`)
-- [ ] `src/hooks/useRoutineDetailActions.js` 유닛 테스트 작성 (CRUD 액션, 포커스 헬퍼, 그룹/임시세션 로직)
