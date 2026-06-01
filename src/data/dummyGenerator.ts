@@ -1,13 +1,146 @@
 import { EXERCISE_DICTIONARY } from './exerciseDictionary.js';
 import { normalizeMuscleLabel } from './muscleGroups.js';
 
+type DictionaryExercise = (typeof EXERCISE_DICTIONARY)[number];
+type SetSide = 'L' | 'R' | 'both';
+type LogCondition = 'normal' | 'fresh' | 'tired' | 'pressed';
+
+type DummyExercise = {
+  id: string;
+  name: string;
+  englishName: string | null;
+  primary_muscle: string;
+  secondaryMuscles: string[];
+  equipment: string;
+  category: string;
+  unit: string;
+  is_unilateral: boolean;
+  synonyms: string[];
+  user_id: string | null;
+  created_at?: string;
+  updated_at?: string;
+};
+
+type TargetExerciseBlueprint = {
+  name: string;
+  target_sets: number;
+  target_record: string;
+  rest_between_sets: number;
+  rest_after_exercise: number;
+};
+
+type SessionGroupBlueprint = {
+  name: string;
+  start_order: number;
+  size: number;
+};
+
+type SessionBlueprint = {
+  name: string;
+  exercises: TargetExerciseBlueprint[];
+  groups?: SessionGroupBlueprint[];
+};
+
+type RoutineBlueprint = {
+  name: string;
+  sessions: SessionBlueprint[];
+};
+
+type DummyRoutine = {
+  id: string;
+  name: string;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type DummySession = {
+  id: string;
+  name: string;
+  routine_id: string;
+  session_order: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type DummySessionExercise = {
+  id: string;
+  session_id: string;
+  exercise_id: string;
+  order: number;
+  target_sets: number;
+  target_record: string;
+  rest_between_sets: number;
+  rest_after_exercise: number;
+  created_at: string;
+  updated_at: string;
+};
+
+type DummySessionExerciseGroup = {
+  id: string;
+  session_id: string;
+  name: string;
+  start_order: number;
+  size: number;
+  color: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type DummyWorkoutLog = {
+  id: string;
+  user_id: string;
+  session_id: string;
+  start_time: string;
+  end_time: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type DummySetRecord = {
+  id: string;
+  workout_log_id: string;
+  exercise_id: string;
+  set_number: number;
+  weight: number;
+  record: string;
+  side: SetSide;
+  memo: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+type ProgressProfile = {
+  weightStart?: number;
+  weightEnd?: number;
+  weightStep?: number;
+  recordStart?: number;
+  recordEnd?: number;
+};
+
+type SessionEntry = {
+  session: DummySession;
+  blueprint: SessionBlueprint;
+};
+
+type DummyWorkoutData = {
+  exercises: DummyExercise[];
+  routines: DummyRoutine[];
+  sessions: DummySession[];
+  sessionExercises: DummySessionExercise[];
+  sessionExerciseGroups: DummySessionExerciseGroup[];
+  workoutLogs: DummyWorkoutLog[];
+  setRecords: DummySetRecord[];
+};
+
 export const generateUUID = () => crypto.randomUUID();
 
-function rotateLeft(value, bits) {
+function rotateLeft(value: number, bits: number) {
   return (value << bits) | (value >>> (32 - bits));
 }
 
-function sha1Bytes(input) {
+function sha1Bytes(input: string) {
   const message = [...new TextEncoder().encode(input)];
   const bitLength = message.length * 8;
   message.push(0x80);
@@ -90,7 +223,7 @@ function sha1Bytes(input) {
   ]);
 }
 
-function uuidFromExerciseSeed(seed) {
+function uuidFromExerciseSeed(seed: string) {
   const bytes = sha1Bytes(`gridset-exercise:${seed}`).slice(0, 16);
   bytes[6] = (bytes[6] & 0x0f) | 0x50;
   bytes[8] = (bytes[8] & 0x3f) | 0x80;
@@ -100,9 +233,9 @@ function uuidFromExerciseSeed(seed) {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-export const getExerciseCatalogId = (id) => (UUID_REGEX.test(id) ? id : uuidFromExerciseSeed(id));
+export const getExerciseCatalogId = (id: string) => (UUID_REGEX.test(id) ? id : uuidFromExerciseSeed(id));
 
-const EXERCISE_UNIT_OVERRIDES_BY_NAME = {
+const EXERCISE_UNIT_OVERRIDES_BY_NAME: Record<string, string> = {
   '푸시업': 'reps',
   '데드버그': 'reps',
   '힙 브릿지': 'reps',
@@ -114,15 +247,15 @@ const EXERCISE_UNIT_OVERRIDES_BY_NAME = {
 };
 
 const EXERCISE_UNIT_OVERRIDES = new Map(Object.entries(EXERCISE_UNIT_OVERRIDES_BY_NAME));
-const EXERCISE_EQUIPMENT_OVERRIDES = {
+const EXERCISE_EQUIPMENT_OVERRIDES: Record<string, string> = {
   '마운틴 클라이머': '맨몸',
   '인버티드 로우': '맨몸',
   '밴드 스쿼트': '밴드',
 };
 
-export const getFallbackExerciseUnit = (name) => EXERCISE_UNIT_OVERRIDES.get(name) || 'kg';
+export const getFallbackExerciseUnit = (name: string) => EXERCISE_UNIT_OVERRIDES.get(name) || 'kg';
 
-export const EXERCISE_CATALOG = EXERCISE_DICTIONARY.map((exercise) => ({
+export const EXERCISE_CATALOG: DummyExercise[] = EXERCISE_DICTIONARY.map((exercise) => ({
   id: getExerciseCatalogId(exercise.id),
   name: exercise.name,
   englishName: exercise.englishName || null,
@@ -136,7 +269,13 @@ export const EXERCISE_CATALOG = EXERCISE_DICTIONARY.map((exercise) => ({
   user_id: null,
 }));
 
-function targetExercise(name, target_sets, target_record, rest_between_sets = 90, rest_after_exercise = 120) {
+function targetExercise(
+  name: string,
+  target_sets: number,
+  target_record: string | number,
+  rest_between_sets = 90,
+  rest_after_exercise = 120,
+): TargetExerciseBlueprint {
   return {
     name,
     target_sets,
@@ -146,7 +285,7 @@ function targetExercise(name, target_sets, target_record, rest_between_sets = 90
   };
 }
 
-const DUMMY_ROUTINE_BLUEPRINTS = [
+const DUMMY_ROUTINE_BLUEPRINTS: RoutineBlueprint[] = [
   {
     name: '퇴근 후 기초 홈트',
     sessions: [
@@ -336,20 +475,25 @@ const WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK = [
   [6, 5, 3, 0],
   [5, 3, 1, 0],
 ];
-const ROUTINE_PHASES = [
+const ROUTINE_PHASES: Array<{
+  routineIndex: number;
+  startWeek: number;
+  endWeek: number;
+  createdDaysAgo: number;
+}> = [
   { routineIndex: 0, startWeek: 0, endWeek: 2, createdDaysAgo: 56 },
   { routineIndex: 1, startWeek: 3, endWeek: 5, createdDaysAgo: 35 },
   { routineIndex: 2, startWeek: 6, endWeek: 7, createdDaysAgo: 14 },
 ];
 
-const CONDITION_SEQUENCE = [
+const CONDITION_SEQUENCE: LogCondition[] = [
   'normal', 'fresh', 'normal', 'tired',
   'normal', 'normal', 'fresh', 'normal',
   'tired', 'normal', 'normal', 'fresh',
   'normal', 'pressed', 'normal', 'normal',
 ];
 
-const EXERCISE_PROGRESS_PROFILES = {
+const EXERCISE_PROGRESS_PROFILES: Record<string, ProgressProfile> = {
   '덤벨 플로어 프레스': { weightStart: 8, weightEnd: 14, weightStep: 1, recordStart: 8, recordEnd: 11 },
   '덤벨 로우': { weightStart: 10, weightEnd: 18, weightStep: 1, recordStart: 9, recordEnd: 12 },
   '덤벨 숄더 프레스': { weightStart: 5, weightEnd: 9, weightStep: 1, recordStart: 7, recordEnd: 10 },
@@ -373,7 +517,7 @@ const EXERCISE_PROGRESS_PROFILES = {
   '사이드 레그 레이즈': { recordStart: 10, recordEnd: 18 },
 };
 
-const EXERCISE_MEMO_DETAILS = {
+const EXERCISE_MEMO_DETAILS: Record<string, string[]> = {
   '푸시업': [
     '손목이 살짝 싫어함',
     '가슴 깊이는 오늘 괜찮음',
@@ -457,7 +601,7 @@ const EXERCISE_MEMO_DETAILS = {
   '사이드 레그 레이즈': ['골반 고정 어렵다', '생각보다 옆구리도 탐', '오른쪽이 더 잘 올라감', '허리 꺾지 말기'],
 };
 
-const MEMO_CONTEXTS = {
+const MEMO_CONTEXTS: Record<LogCondition, string[]> = {
   normal: ['그냥 이대로 가자', '나쁘지 않음', '다음에도 확인', '욕심낼 정도는 아님'],
   fresh: ['오늘 몸 가볍다', '조금 더 해도 됐을 듯', '괜히 신남', '다음에 올려볼 만함'],
   tired: ['오늘은 여기까지', '폼만 챙기자', '억지로 밀지 말기', '컨디션 별로'],
@@ -476,11 +620,11 @@ function getDummyRequiredExerciseNames() {
   ];
 }
 
-function normalizeExerciseName(name) {
+function normalizeExerciseName(name: string) {
   return name.trim().toLowerCase();
 }
 
-function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
+function dictionaryExerciseToStoreExercise(dictionaryExercise: DictionaryExercise, timestamp: string): DummyExercise {
   return {
     id: getExerciseCatalogId(dictionaryExercise.id),
     name: dictionaryExercise.name,
@@ -498,7 +642,7 @@ function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
   };
 }
 
-function ensureDummyExercises(existingExercises, timestamp) {
+function ensureDummyExercises(existingExercises: DummyExercise[], timestamp: string) {
   const exercises = existingExercises.length > 0 ? [...existingExercises] : [...EXERCISE_CATALOG];
   const exercisesByName = new Map(exercises.map((exercise) => [normalizeExerciseName(exercise.name), exercise]));
   const dictionaryByName = new Map(EXERCISE_DICTIONARY.map((exercise) => [normalizeExerciseName(exercise.name), exercise]));
@@ -545,45 +689,45 @@ function ensureDummyExercises(existingExercises, timestamp) {
   return { exercises, exercisesByName };
 }
 
-function getPastDate(daysAgo, hour = 19, minute = 0) {
+function getPastDate(daysAgo: number, hour = 19, minute = 0) {
   const date = new Date();
   date.setDate(date.getDate() - daysAgo);
   date.setHours(hour, minute, 0, 0);
   return date;
 }
 
-function addMinutes(date, minutes) {
+function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
-function clamp(value, min, max) {
+function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
 
-function interpolate(start, end, ratio) {
+function interpolate(start: number, end: number, ratio: number) {
   return start + (end - start) * ratio;
 }
 
-function roundToStep(value, step = 1) {
+function roundToStep(value: number, step = 1) {
   return Math.round(value / step) * step;
 }
 
-function getRoutinePhaseForWeek(weekIndex) {
+function getRoutinePhaseForWeek(weekIndex: number) {
   return ROUTINE_PHASES.find((phase) => weekIndex >= phase.startWeek && weekIndex <= phase.endWeek) || ROUTINE_PHASES[0];
 }
 
-function getProgressRatio(daysAgo) {
+function getProgressRatio(daysAgo: number) {
   const oldestWeekOffset = Math.max(...WEEKLY_SESSION_DAY_OFFSETS_BY_WEEK[0]);
   const oldestDaysAgo = (DUMMY_WEEK_COUNT - 1) * 7 + oldestWeekOffset;
   return clamp((oldestDaysAgo - daysAgo) / oldestDaysAgo, 0, 1);
 }
 
-function isBodyweightRecordExercise(exercise) {
-  const unit = exercise?.unit || getFallbackExerciseUnit(exercise?.name);
+function isBodyweightRecordExercise(exercise: DummyExercise | undefined) {
+  const unit = exercise?.unit || getFallbackExerciseUnit(exercise?.name ?? '');
   return unit === 'reps' || unit === 'sec' || exercise?.equipment === '맨몸';
 }
 
-function getConditionRecordAdjustment(condition, unit) {
+function getConditionRecordAdjustment(condition: LogCondition, unit: string) {
   const isTimed = unit === 'sec';
   if (condition === 'fresh') return isTimed ? 5 : 1;
   if (condition === 'tired') return isTimed ? -6 : -2;
@@ -591,7 +735,7 @@ function getConditionRecordAdjustment(condition, unit) {
   return 0;
 }
 
-function getSetFatigueAdjustment(setIndex, unit) {
+function getSetFatigueAdjustment(setIndex: number, unit: string) {
   if (setIndex === 0) return 0;
   if (unit === 'sec') return setIndex === 1 ? -3 : -6;
   if (setIndex === 1) return 0;
@@ -599,7 +743,7 @@ function getSetFatigueAdjustment(setIndex, unit) {
   return -2;
 }
 
-function getSideRecordAdjustment(exercise, side, setIndex, logIndex) {
+function getSideRecordAdjustment(exercise: DummyExercise, side: SetSide, setIndex: number, logIndex: number) {
   if (!exercise.is_unilateral || side === 'both') return 0;
 
   const isTimed = exercise.unit === 'sec';
@@ -609,7 +753,23 @@ function getSideRecordAdjustment(exercise, side, setIndex, logIndex) {
   return 0;
 }
 
-function getSetRecordValue({ exercise, link, setIndex, side, daysAgo, condition, logIndex }) {
+function getSetRecordValue({
+  exercise,
+  link,
+  setIndex,
+  side,
+  daysAgo,
+  condition,
+  logIndex,
+}: {
+  exercise: DummyExercise;
+  link: DummySessionExercise;
+  setIndex: number;
+  side: SetSide;
+  daysAgo: number;
+  condition: LogCondition;
+  logIndex: number;
+}) {
   const profile = EXERCISE_PROGRESS_PROFILES[exercise.name] || {};
   const progressRatio = getProgressRatio(daysAgo);
   const targetRecord = Number(link.target_record) || profile.recordStart || 10;
@@ -628,7 +788,15 @@ function getSetRecordValue({ exercise, link, setIndex, side, daysAgo, condition,
   return Math.max(minimum, Math.round(adjustedRecord));
 }
 
-function getSetWeight({ exercise, daysAgo, condition }) {
+function getSetWeight({
+  exercise,
+  daysAgo,
+  condition,
+}: {
+  exercise: DummyExercise;
+  daysAgo: number;
+  condition: LogCondition;
+}) {
   if (isBodyweightRecordExercise(exercise)) return 0;
 
   const profile = EXERCISE_PROGRESS_PROFILES[exercise.name];
@@ -644,7 +812,7 @@ function getSetWeight({ exercise, daysAgo, condition }) {
   return Math.max(profile.weightStart, roundToStep(weight, step));
 }
 
-function getStartClock(weekIndex, sessionDayIndex) {
+function getStartClock(weekIndex: number, sessionDayIndex: number) {
   const clocks = [
     { hour: 19, minute: 10 },
     { hour: 20, minute: 0 },
@@ -658,11 +826,11 @@ function getStartClock(weekIndex, sessionDayIndex) {
   };
 }
 
-function getLogCondition(logIndex) {
+function getLogCondition(logIndex: number) {
   return CONDITION_SEQUENCE[logIndex % CONDITION_SEQUENCE.length];
 }
 
-function getMemoFallbackDetails(exercise) {
+function getMemoFallbackDetails(exercise: DummyExercise | undefined) {
   if (exercise?.equipment === '덤벨') {
     return [
       '핀 확인',
@@ -680,7 +848,19 @@ function getMemoFallbackDetails(exercise) {
   ];
 }
 
-function shouldWriteSetMemo({ exercise, setNumber, side, condition, logIndex }) {
+function shouldWriteSetMemo({
+  exercise,
+  setNumber,
+  side,
+  condition,
+  logIndex,
+}: {
+  exercise: DummyExercise;
+  setNumber: number;
+  side: SetSide;
+  condition: LogCondition;
+  logIndex: number;
+}) {
   const sideScore = side === 'L' ? 1 : side === 'R' ? 2 : 0;
   const score = exercise.name.length + setNumber + sideScore + logIndex;
 
@@ -689,7 +869,23 @@ function shouldWriteSetMemo({ exercise, setNumber, side, condition, logIndex }) 
   return score % 6 === 0;
 }
 
-function createUniqueSetMemo({ exercise, setNumber, side, condition, logIndex, usedMemos }) {
+function createUniqueSetMemo({
+  exercise,
+  setNumber,
+  side,
+  condition,
+  logIndex,
+  usedMemos,
+}: {
+  exercise: DummyExercise;
+  setNumber: number;
+  side: SetSide;
+  condition: LogCondition;
+  logIndex: number;
+  usedMemos: Set<string>;
+  weight?: number;
+  record?: number | string;
+}) {
   const details = EXERCISE_MEMO_DETAILS[exercise.name] || getMemoFallbackDetails(exercise);
   const memoIndex = usedMemos.size;
   const detail = details[(memoIndex + setNumber + logIndex) % details.length];
@@ -717,7 +913,12 @@ function createUniqueSetMemo({ exercise, setNumber, side, condition, logIndex, u
   return memo;
 }
 
-function estimateDurationMinutes(links, exercisesById, condition, sessionDayIndex) {
+function estimateDurationMinutes(
+  links: DummySessionExercise[],
+  exercisesById: Map<string, DummyExercise>,
+  condition: LogCondition,
+  sessionDayIndex: number,
+) {
   const totalRows = links.reduce((sum, link) => {
     const exercise = exercisesById.get(link.exercise_id);
     const sideMultiplier = exercise?.is_unilateral ? 2 : 1;
@@ -740,17 +941,26 @@ function createSetRecordsForExercise({
   condition,
   logIndex,
   usedMemos,
-}) {
+}: {
+  logId: string;
+  exercise: DummyExercise;
+  link: DummySessionExercise;
+  timestamp: string;
+  daysAgo: number;
+  condition: LogCondition;
+  logIndex: number;
+  usedMemos: Set<string>;
+}): DummySetRecord[] {
   const targetSets = Number(link.target_sets) || 3;
   const isUnilateral = exercise.is_unilateral ?? false;
-  const records = [];
+  const records: DummySetRecord[] = [];
 
   for (let index = 0; index < targetSets; index++) {
     const setNumber = index + 1;
     const weight = getSetWeight({ exercise, daysAgo, condition });
 
     if (isUnilateral) {
-      ['L', 'R'].forEach((side) => {
+      (['L', 'R'] satisfies SetSide[]).forEach((side) => {
         const recordValue = getSetRecordValue({ exercise, link, setIndex: index, side, daysAgo, condition, logIndex });
         const memo = shouldWriteSetMemo({ exercise, setNumber, side, condition, logIndex })
           ? createUniqueSetMemo({
@@ -809,19 +1019,25 @@ function createSetRecordsForExercise({
   return records;
 }
 
-export function createDummyWorkoutData({ userId, existingExercises }) {
+export function createDummyWorkoutData({
+  userId,
+  existingExercises = [],
+}: {
+  userId: string;
+  existingExercises?: DummyExercise[];
+}): DummyWorkoutData {
   const nowIso = new Date().toISOString();
   const { exercises, exercisesByName } = ensureDummyExercises(existingExercises, nowIso);
   const exercisesById = new Map(exercises.map((exercise) => [exercise.id, exercise]));
 
-  const routines = [];
-  const sessions = [];
-  const sessionExercises = [];
-  const sessionExerciseGroups = [];
-  const workoutLogs = [];
-  const setRecords = [];
-  const sessionEntriesByKey = new Map();
-  const usedMemos = new Set();
+  const routines: DummyRoutine[] = [];
+  const sessions: DummySession[] = [];
+  const sessionExercises: DummySessionExercise[] = [];
+  const sessionExerciseGroups: DummySessionExerciseGroup[] = [];
+  const workoutLogs: DummyWorkoutLog[] = [];
+  const setRecords: DummySetRecord[] = [];
+  const sessionEntriesByKey = new Map<string, SessionEntry>();
+  const usedMemos = new Set<string>();
 
   DUMMY_ROUTINE_BLUEPRINTS.forEach((routineBlueprint, routineIndex) => {
     const phase = ROUTINE_PHASES.find((candidate) => candidate.routineIndex === routineIndex);
@@ -858,10 +1074,12 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
         blueprint: sessionBlueprint,
       });
 
-      const sessionLinks = [];
+      const sessionLinks: DummySessionExercise[] = [];
       sessionBlueprint.exercises.forEach((exerciseTarget, exerciseIndex) => {
-        const exercise = exercisesByName.get(normalizeExerciseName(exerciseTarget.name));
-        const link = {
+      const exercise = exercisesByName.get(normalizeExerciseName(exerciseTarget.name));
+      if (!exercise) return;
+
+      const link: DummySessionExercise = {
           id: generateUUID(),
           session_id: sessionId,
           exercise_id: exercise.id,
@@ -916,6 +1134,16 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
     logIndex,
     sessionDayIndex,
     inProgress = false,
+  }: {
+    routineIndex: number;
+    sessionIndex: number;
+    daysAgo: number;
+    startHour: number;
+    startMinute: number;
+    condition: LogCondition;
+    logIndex: number;
+    sessionDayIndex: number;
+    inProgress?: boolean;
   }) => {
     const entry = sessionEntriesByKey.get(`${routineIndex}:${sessionIndex}`);
     if (!entry) return;
@@ -958,7 +1186,7 @@ export function createDummyWorkoutData({ userId, existingExercises }) {
   };
 
   let logIndex = 0;
-  const sessionCountByRoutine = new Map();
+  const sessionCountByRoutine = new Map<number, number>();
 
   for (let weekIndex = 0; weekIndex < DUMMY_WEEK_COUNT; weekIndex++) {
     const phase = getRoutinePhaseForWeek(weekIndex);

@@ -1,6 +1,20 @@
 // 100% 로컬 오프라인 작동을 위한 한국어 커스텀 운동 및 번역 딕셔너리
 // 이 사전은 기획상 엄선된 대중적인 프리웨이트/맨몸 운동으로 압축 큐레이션 되었습니다.
 
+export type ExerciseDictionaryEntry = {
+  id: string;
+  name: string;
+  englishName: string;
+  primaryMuscle: string;
+  secondaryMuscles: string[];
+  equipment: string;
+  synonyms: string[];
+  category: string;
+  unit: string;
+  is_unilateral: boolean;
+  user_id: null;
+};
+
 export const EXERCISE_DICTIONARY = [
   {
     "id": "3_4_Sit-Up",
@@ -17702,4 +17716,4 @@ export const EXERCISE_DICTIONARY = [
     "is_unilateral": false,
     "user_id": null
   }
-];
+] satisfies ExerciseDictionaryEntry[];
