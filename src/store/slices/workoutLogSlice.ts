@@ -5,19 +5,51 @@ import {
 } from "../../data/dummyGenerator.js";
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import { initialSeed } from "./authSlice.js";
+import type { Id, SetRecord, SetSide, WorkoutLog } from "../../types/workout.js";
+import type {
+  SetRecordUpdate,
+  StoreSlice,
+  WorkoutDataState,
+  WorkoutLogBlockDraft,
+  WorkoutLogSlice,
+} from "../types.js";
 
-export const createWorkoutLogSlice = (set, get) => ({
+type WorkoutLogStoreState = Pick<
+  WorkoutDataState,
+  "workoutLogs" | "setRecords"
+> &
+  WorkoutLogSlice;
+
+const catalogExercises = EXERCISE_CATALOG as unknown as WorkoutDataState["exercises"];
+
+const parseNonNegativeWeight = (
+  weight: string | number | null | undefined,
+): number => {
+  const parsedWeight = Number.parseFloat(String(weight ?? ""));
+  return Number.isFinite(parsedWeight) ? Math.max(0, parsedWeight) : 0;
+};
+
+const sanitizeRecord = (record: string | number | null | undefined): string =>
+  String(record || "0").trim().slice(0, 50) || "0";
+
+const sanitizeMemo = (memo: string | null | undefined): string | null =>
+  memo && typeof memo === "string" ? memo.trim().slice(0, 1000) || null : null;
+
+export const createWorkoutLogSlice: StoreSlice<WorkoutLogStoreState> = (
+  set,
+  get,
+) => ({
   // --- State ---
   workoutLogs: initialSeed.workoutLogs,
   setRecords: initialSeed.setRecords,
 
   // --- Actions ---
-  startWorkoutLog: (session_id) => {
+  startWorkoutLog: (session_id: Id): WorkoutLog => {
     if (!session_id) {
       throw new Error("session_id is required to start a workout log.");
     }
     const { currentUser } = get();
-    const newLog = {
+    const newLog: WorkoutLog = {
       id: generateUUID(),
       user_id: currentUser.id,
       session_id,
@@ -42,7 +74,7 @@ export const createWorkoutLogSlice = (set, get) => ({
     return newLog;
   },
 
-  finishWorkoutLog: (id) => {
+  finishWorkoutLog: (id: Id) => {
     const { currentUser } = get();
     const endTime = new Date().toISOString();
 
@@ -67,7 +99,7 @@ export const createWorkoutLogSlice = (set, get) => ({
     }
   },
 
-  deleteWorkoutLog: (id) => {
+  deleteWorkoutLog: (id: Id) => {
     const { currentUser } = get();
 
     set((state) => ({
@@ -86,7 +118,11 @@ export const createWorkoutLogSlice = (set, get) => ({
     }
   },
 
-  saveWorkoutLog: (session_id, blocks, start_time) => {
+  saveWorkoutLog: (
+    session_id: Id,
+    blocks: WorkoutLogBlockDraft[],
+    start_time?: string,
+  ): WorkoutLog => {
     if (!session_id) {
       throw new Error("session_id is required to save a workout log.");
     }
@@ -95,7 +131,7 @@ export const createWorkoutLogSlice = (set, get) => ({
     const endTime = new Date().toISOString();
     const actualStartTime = start_time || new Date().toISOString();
 
-    const newLog = {
+    const newLog: WorkoutLog = {
       id: logId,
       user_id: currentUser.id,
       session_id,
@@ -105,33 +141,20 @@ export const createWorkoutLogSlice = (set, get) => ({
       updated_at: endTime,
     };
 
-    const newSetRecords = [];
+    const newSetRecords: SetRecord[] = [];
     blocks.forEach((block) => {
       block.sets.forEach((set) => {
         const hasReps = String(set.reps ?? "").trim() !== "";
         if (hasReps) {
-          const parsedWeight = parseFloat(set.weight);
-          const safeWeight = isFinite(parsedWeight)
-            ? Math.max(0, parsedWeight)
-            : 0;
-          const safeRecord =
-            String(set.reps || "0")
-              .trim()
-              .slice(0, 50) || "0";
-          const safeMemo =
-            set.memo && typeof set.memo === "string"
-              ? set.memo.trim().slice(0, 1000) || null
-              : null;
-
           newSetRecords.push({
             id: generateUUID(),
             workout_log_id: logId,
             exercise_id: set.exercise_id || block.exercise_id,
             set_number: set.set_number,
-            weight: safeWeight,
-            record: safeRecord,
+            weight: parseNonNegativeWeight(set.weight),
+            record: sanitizeRecord(set.reps),
             side: set.side || "both",
-            memo: safeMemo,
+            memo: sanitizeMemo(set.memo),
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString(),
           });
@@ -159,35 +182,24 @@ export const createWorkoutLogSlice = (set, get) => ({
   },
 
   addSetRecord: (
-    workout_log_id,
-    exercise_id,
-    set_number,
-    weight,
-    record,
-    side = "both",
-    memo = null,
-  ) => {
+    workout_log_id: Id,
+    exercise_id: Id,
+    set_number: number,
+    weight: string | number,
+    record: string | number,
+    side: SetSide = "both",
+    memo: string | null = null,
+  ): SetRecord => {
     const { currentUser } = get();
-    const parsedWeight = parseFloat(weight);
-    const safeWeight = isFinite(parsedWeight) ? Math.max(0, parsedWeight) : 0;
-    const safeRecord =
-      String(record || "0")
-        .trim()
-        .slice(0, 50) || "0";
-    const safeMemo =
-      memo && typeof memo === "string"
-        ? memo.trim().slice(0, 1000) || null
-        : null;
-
-    const newSetRecord = {
+    const newSetRecord: SetRecord = {
       id: generateUUID(),
       workout_log_id,
       exercise_id,
       set_number,
-      weight: safeWeight,
-      record: safeRecord,
+      weight: parseNonNegativeWeight(weight),
+      record: sanitizeRecord(record),
       side,
-      memo: safeMemo,
+      memo: sanitizeMemo(memo),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -208,28 +220,19 @@ export const createWorkoutLogSlice = (set, get) => ({
     return newSetRecord;
   },
 
-  updateSetRecord: (id, updates) => {
+  updateSetRecord: (id: Id, updates: SetRecordUpdate) => {
     const { currentUser } = get();
     const updatedAt = new Date().toISOString();
 
     const cleanUpdates = { ...updates };
     if ("weight" in cleanUpdates) {
-      const parsedWeight = parseFloat(cleanUpdates.weight);
-      cleanUpdates.weight = isFinite(parsedWeight)
-        ? Math.max(0, parsedWeight)
-        : 0;
+      cleanUpdates.weight = parseNonNegativeWeight(cleanUpdates.weight);
     }
     if ("record" in cleanUpdates) {
-      cleanUpdates.record =
-        String(cleanUpdates.record || "0")
-          .trim()
-          .slice(0, 50) || "0";
+      cleanUpdates.record = sanitizeRecord(cleanUpdates.record);
     }
     if ("memo" in cleanUpdates) {
-      cleanUpdates.memo =
-        cleanUpdates.memo && typeof cleanUpdates.memo === "string"
-          ? cleanUpdates.memo.trim().slice(0, 1000) || null
-          : null;
+      cleanUpdates.memo = sanitizeMemo(cleanUpdates.memo);
     }
 
     set((state) => ({
@@ -251,7 +254,7 @@ export const createWorkoutLogSlice = (set, get) => ({
     }
   },
 
-  deleteSetRecord: (id) => {
+  deleteSetRecord: (id: Id) => {
     const { currentUser } = get();
     set((state) => ({
       setRecords: state.setRecords.filter((sr) => sr.id !== id),
@@ -272,10 +275,10 @@ export const createWorkoutLogSlice = (set, get) => ({
     const { exercises, currentUser } = get();
     set({
       exercises: currentUser.isGuest
-        ? EXERCISE_CATALOG
+        ? catalogExercises
         : exercises.length > 0
           ? exercises
-          : EXERCISE_CATALOG,
+          : catalogExercises,
       routines: [],
       sessions: [],
       sessionExercises: [],
@@ -299,14 +302,14 @@ export const createWorkoutLogSlice = (set, get) => ({
 
     const seedData = createDummyWorkoutData({
       userId: currentUser?.id || "00000000-0000-0000-0000-000000000000",
-      existingExercises: exercises,
-    });
+      existingExercises: exercises as unknown as typeof EXERCISE_CATALOG,
+    }) as unknown as WorkoutDataState;
 
     set({ ...seedData, hasClearedDemoData: false });
   },
 
   // --- Selectors ---
-  isRoutineReadOnly: (routineId) => {
+  isRoutineReadOnly: (routineId: Id | null | undefined) => {
     const { routines } = get();
     if (!routineId || routines.length === 0) return false;
 

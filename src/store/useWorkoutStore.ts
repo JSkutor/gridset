@@ -5,17 +5,7 @@ import { createAuthSlice } from './slices/authSlice.js';
 import { createExerciseSlice } from './slices/exerciseSlice.js';
 import { createRoutineSlice } from './slices/routineSlice.js';
 import { createWorkoutLogSlice } from './slices/workoutLogSlice.js';
-import type {
-  WorkoutDataState,
-  WorkoutLogSlice,
-  WorkoutStore,
-} from './types.js';
-
-type WorkoutLogStoreSlice = Pick<
-  WorkoutDataState,
-  'workoutLogs' | 'setRecords'
-> &
-  WorkoutLogSlice;
+import type { WorkoutStore } from './types.js';
 
 export const useWorkoutStore = create<WorkoutStore>()(
   persist<WorkoutStore, [], [], Partial<WorkoutStore>>(
@@ -23,7 +13,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
       ...createAuthSlice(set, get, store),
       ...createExerciseSlice(set, get, store),
       ...createRoutineSlice(set, get, store),
-      ...(createWorkoutLogSlice(set, get) as WorkoutLogStoreSlice),
+      ...createWorkoutLogSlice(set, get, store),
     }),
     {
       name: 'workout-tracker-storage',

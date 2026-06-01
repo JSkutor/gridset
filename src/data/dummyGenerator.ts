@@ -700,6 +700,17 @@ function addMinutes(date: Date, minutes: number) {
   return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
+function getInProgressStartDate(durationMin: number) {
+  const now = new Date();
+  const minutesSinceStartOfDay = now.getHours() * 60 + now.getMinutes();
+  const elapsedMinutes = Math.min(
+    durationMin,
+    35,
+    Math.max(0, minutesSinceStartOfDay - 1),
+  );
+  return addMinutes(now, -elapsedMinutes);
+}
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
 }
@@ -1152,7 +1163,9 @@ export function createDummyWorkoutData({
       .filter((link) => link.session_id === entry.session.id)
       .sort((a, b) => a.order - b.order);
     const durationMin = estimateDurationMinutes(links, exercisesById, condition, sessionDayIndex);
-    const start = inProgress ? addMinutes(new Date(), -Math.min(durationMin, 35)) : getPastDate(daysAgo, startHour, startMinute);
+    const start = inProgress
+      ? getInProgressStartDate(durationMin)
+      : getPastDate(daysAgo, startHour, startMinute);
     const end = inProgress ? null : addMinutes(start, durationMin);
     const timestamp = start.toISOString();
     const logId = generateUUID();
