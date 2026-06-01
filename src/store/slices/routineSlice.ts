@@ -23,8 +23,28 @@ import {
 import { generateUUID } from "../../data/dummyGenerator.js";
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import { initialSeed } from "./authSlice.js";
+import type {
+  Id,
+  Routine,
+  Session,
+  SessionExercise,
+  SessionExerciseGroup,
+} from "../../types/workout.js";
+import type {
+  RoutineSlice,
+  SessionExerciseGroupUpdate,
+  SessionExerciseUpdate,
+  StoreSlice,
+  WorkoutDataState,
+} from "../types.js";
 
-export const createRoutineSlice = (set, get) => ({
+type RoutineStoreState = Pick<
+  WorkoutDataState,
+  "routines" | "sessions" | "sessionExercises" | "sessionExerciseGroups"
+> &
+  RoutineSlice;
+
+export const createRoutineSlice: StoreSlice<RoutineStoreState> = (set, get) => ({
   // --- State ---
   routines: initialSeed.routines,
   sessions: initialSeed.sessions,
@@ -32,7 +52,7 @@ export const createRoutineSlice = (set, get) => ({
   sessionExerciseGroups: initialSeed.sessionExerciseGroups || [],
 
   // --- Actions ---
-  addRoutine: (name) => {
+  addRoutine: (name: string): Routine => {
     const { currentUser, routines } = get();
     const cleanName =
       (name || "").trim().slice(0, 100) || `새 루틴 ${routines.length + 1}`;
@@ -59,7 +79,7 @@ export const createRoutineSlice = (set, get) => ({
     return newRoutine;
   },
 
-  deleteRoutine: (id) => {
+  deleteRoutine: (id: Id) => {
     const { currentUser, sessions } = get();
     const sessionsToDelete = sessions.filter((s) => s.routine_id === id);
     const sessionIdsToDelete = sessionsToDelete.map((s) => s.id);
@@ -86,7 +106,7 @@ export const createRoutineSlice = (set, get) => ({
     }
   },
 
-  updateRoutine: (id, name) => {
+  updateRoutine: (id: Id, name: string) => {
     const { currentUser } = get();
     const cleanName = (name || "").trim().slice(0, 100) || "이름 없는 루틴";
     const updatedAt = new Date().toISOString();
@@ -110,7 +130,7 @@ export const createRoutineSlice = (set, get) => ({
     }
   },
 
-  duplicateRoutine: (sourceRoutineId) => {
+  duplicateRoutine: (sourceRoutineId: Id): Routine | null => {
     const { currentUser, routines, sessions, sessionExercises } = get();
     const sourceRoutine = routines.find((r) => r.id === sourceRoutineId);
     if (!sourceRoutine) return null;
@@ -127,10 +147,10 @@ export const createRoutineSlice = (set, get) => ({
     const sessionsToCopy = sessions.filter(
       (s) => s.routine_id === sourceRoutineId,
     );
-    const newSessions = [];
-    const newSessionExercises = [];
-    const newSessionExerciseGroups = [];
-    const sessionIdMap = new Map();
+    const newSessions: Session[] = [];
+    const newSessionExercises: SessionExercise[] = [];
+    const newSessionExerciseGroups: SessionExerciseGroup[] = [];
+    const sessionIdMap = new Map<Id, Id>();
 
     sessionsToCopy.forEach((s) => {
       const newSessionId = generateUUID();
@@ -167,10 +187,12 @@ export const createRoutineSlice = (set, get) => ({
     (get().sessionExerciseGroups || [])
       .filter((group) => sessionIdMap.has(group.session_id))
       .forEach((group) => {
+        const newSessionId = sessionIdMap.get(group.session_id);
+        if (!newSessionId) return;
         newSessionExerciseGroups.push({
           ...withGroupColor(group, get().sessionExerciseGroups || []),
           id: generateUUID(),
-          session_id: sessionIdMap.get(group.session_id),
+          session_id: newSessionId,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         });
@@ -208,7 +230,7 @@ export const createRoutineSlice = (set, get) => ({
     return newRoutine;
   },
 
-  addSession: (routine_id, name) => {
+  addSession: (routine_id: Id, name: string): Session | null => {
     const { currentUser, sessions } = get();
     const routineSessions = getRegularRoutineSessions(sessions, routine_id);
     if (routineSessions.length >= MAX_SESSIONS_PER_ROUTINE) return null;
@@ -242,7 +264,10 @@ export const createRoutineSlice = (set, get) => ({
     return newSession;
   },
 
-  createTemporarySession: (routine_id, name = "임시 세션") => {
+  createTemporarySession: (
+    routine_id: Id,
+    name = "임시 세션",
+  ): Session | null => {
     if (!routine_id) return null;
     const { currentUser, sessions } = get();
     const existingTemporarySession = getRoutineTemporarySession(
@@ -278,13 +303,13 @@ export const createRoutineSlice = (set, get) => ({
     return newSession;
   },
 
-  deleteSession: (id) => {
+  deleteSession: (id: Id) => {
     const { currentUser, sessions } = get();
     const sessionToDelete = sessions.find((s) => s.id === id);
     if (!sessionToDelete) return;
 
     const routineId = sessionToDelete.routine_id;
-    let finalSessions = [];
+    let finalSessions: Session[] = [];
 
     set((state) => {
       const remainingSessions = state.sessions.filter((sn) => sn.id !== id);
@@ -293,7 +318,7 @@ export const createRoutineSlice = (set, get) => ({
         .filter((s) => s.routine_id === routineId && !isTemporarySession(s))
         .sort((a, b) => (a.session_order || 0) - (b.session_order || 0));
 
-      const orderMap = new Map();
+      const orderMap = new Map<Id, number>();
       routineSessions.forEach((s, idx) => {
         orderMap.set(s.id, idx + 1);
       });
@@ -331,7 +356,7 @@ export const createRoutineSlice = (set, get) => ({
     }
   },
 
-  updateSession: (id, name) => {
+  updateSession: (id: Id, name: string) => {
     const { currentUser } = get();
     const cleanName = (name || "").trim().slice(0, 100) || "이름 없는 세션";
     const updatedAt = new Date().toISOString();
@@ -355,9 +380,9 @@ export const createRoutineSlice = (set, get) => ({
     }
   },
 
-  reorderSessions: (routine_id, orderedSessionIds) => {
+  reorderSessions: (routine_id: Id, orderedSessionIds: Id[]) => {
     const { currentUser } = get();
-    let updatedSessions = [];
+    let updatedSessions: Session[] = [];
 
     set((state) => {
       updatedSessions = state.sessions.map((s) => {
@@ -387,12 +412,12 @@ export const createRoutineSlice = (set, get) => ({
   },
 
   addSessionExercise: (
-    session_id,
-    exercise_id,
-    order,
-    target_sets,
-    target_record,
-  ) => {
+    session_id: Id,
+    exercise_id: Id,
+    order: number,
+    target_sets: number,
+    target_record: string | number,
+  ): SessionExercise => {
     const { currentUser } = get();
     const newSessionExercise = {
       id: generateUUID(),
@@ -427,16 +452,16 @@ export const createRoutineSlice = (set, get) => ({
     return newSessionExercise;
   },
 
-  deleteSessionExercise: (id) => {
+  deleteSessionExercise: (id: Id) => {
     const { currentUser, sessionExercises } = get();
     const exerciseToDelete = sessionExercises.find((se) => se.id === id);
     if (!exerciseToDelete) return;
 
     const sessionId = exerciseToDelete.session_id;
     const deletedOrder = Number(exerciseToDelete.order) || 0;
-    let finalExercises = [];
-    let finalGroups = [];
-    let deletedGroups = [];
+    let finalExercises: SessionExercise[] = [];
+    let finalGroups: SessionExerciseGroup[] = [];
+    let deletedGroups: SessionExerciseGroup[] = [];
 
     set((state) => {
       const remainingExercises = state.sessionExercises.filter(
@@ -447,7 +472,7 @@ export const createRoutineSlice = (set, get) => ({
         .filter((se) => se.session_id === sessionId)
         .sort((a, b) => (a.order || 0) - (b.order || 0));
 
-      const orderMap = new Map();
+      const orderMap = new Map<Id, number>();
       sessionExs.forEach((se, idx) => {
         orderMap.set(se.id, idx + 1);
       });
@@ -466,35 +491,38 @@ export const createRoutineSlice = (set, get) => ({
       const remainingCount = sessionExs.length;
       const updatedAt = new Date().toISOString();
       deletedGroups = [];
-      finalGroups = state.sessionExerciseGroups.reduce((groups, group) => {
-        if (group.session_id !== sessionId) {
-          groups.push(group);
+      finalGroups = state.sessionExerciseGroups.reduce<SessionExerciseGroup[]>(
+        (groups, group) => {
+          if (group.session_id !== sessionId) {
+            groups.push(group);
+            return groups;
+          }
+
+          let startOrder = Number(group.start_order) || 1;
+          let size = Number(group.size) || MIN_GROUP_SIZE;
+          const endOrder = startOrder + size - 1;
+
+          if (deletedOrder < startOrder) {
+            startOrder -= 1;
+          } else if (deletedOrder >= startOrder && deletedOrder <= endOrder) {
+            size -= 1;
+          }
+
+          const normalizedGroup = normalizeGroupPlacement(
+            { ...group, start_order: startOrder, size, updated_at: updatedAt },
+            remainingCount,
+          );
+
+          if (!normalizedGroup) {
+            deletedGroups.push(group);
+            return groups;
+          }
+
+          groups.push(normalizedGroup);
           return groups;
-        }
-
-        let startOrder = Number(group.start_order) || 1;
-        let size = Number(group.size) || MIN_GROUP_SIZE;
-        const endOrder = startOrder + size - 1;
-
-        if (deletedOrder < startOrder) {
-          startOrder -= 1;
-        } else if (deletedOrder >= startOrder && deletedOrder <= endOrder) {
-          size -= 1;
-        }
-
-        const normalizedGroup = normalizeGroupPlacement(
-          { ...group, start_order: startOrder, size, updated_at: updatedAt },
-          remainingCount,
-        );
-
-        if (!normalizedGroup) {
-          deletedGroups.push(group);
-          return groups;
-        }
-
-        groups.push(normalizedGroup);
-        return groups;
-      }, []);
+        },
+        [],
+      );
 
       return {
         sessionExercises: finalExercises,
@@ -532,7 +560,7 @@ export const createRoutineSlice = (set, get) => ({
     }
   },
 
-  updateSessionExercise: (id, updates) => {
+  updateSessionExercise: (id: Id, updates: SessionExerciseUpdate) => {
     const { currentUser, sessionExercises, sessionExerciseGroups } = get();
     const updatedAt = new Date().toISOString();
     const currentLink = sessionExercises.find((se) => se.id === id);
@@ -543,7 +571,7 @@ export const createRoutineSlice = (set, get) => ({
     const targetGroup = hasGroupConstrainedField
       ? findGroupForSessionExercise(sessionExerciseGroups, currentLink)
       : null;
-    let changedLinks = [];
+    const changedLinks: SessionExercise[] = [];
 
     set((state) => ({
       sessionExercises: state.sessionExercises.map((se) => {
@@ -595,9 +623,9 @@ export const createRoutineSlice = (set, get) => ({
     }
   },
 
-  reorderSessionExercises: (session_id, orderedExerciseLinkIds) => {
+  reorderSessionExercises: (session_id: Id, orderedExerciseLinkIds: Id[]) => {
     const { currentUser } = get();
-    let updatedExercises = [];
+    let updatedExercises: SessionExercise[] = [];
 
     set((state) => {
       const updatedAt = new Date().toISOString();
@@ -631,13 +659,21 @@ export const createRoutineSlice = (set, get) => ({
       );
       get().runRemoteSync(
         "reorderSessionExercises",
-        () => workoutRepository.upsertRows("session_exercises", exercisesToUpsert),
+        () =>
+          workoutRepository.upsertRows(
+            "session_exercises",
+            exercisesToUpsert,
+          ),
         { dedupKey: "session_exercises:session:" + session_id },
       );
     }
   },
 
-  addSessionExerciseGroup: (session_id, name, size = MIN_GROUP_SIZE) => {
+  addSessionExerciseGroup: (
+    session_id: Id,
+    name: string,
+    size: number | string = MIN_GROUP_SIZE,
+  ): SessionExerciseGroup | null => {
     const { currentUser, sessionExercises, sessionExerciseGroups } = get();
     const sessionLinks = getSessionExerciseLinks(sessionExercises, session_id);
     const existingGroups = getSessionGroups(sessionExerciseGroups, session_id);
@@ -645,7 +681,7 @@ export const createRoutineSlice = (set, get) => ({
 
     const exerciseCount = sessionLinks.length;
     if (exerciseCount < MIN_GROUP_SIZE) return null;
-    const rawSize = Number.parseInt(size, 10);
+    const rawSize = Number.parseInt(String(size), 10);
     const normalizedSize = Math.min(
       exerciseCount,
       Math.max(
@@ -680,7 +716,7 @@ export const createRoutineSlice = (set, get) => ({
 
     if (!normalizedGroup) return null;
 
-    let touchedLinks = [];
+    let touchedLinks: SessionExercise[] = [];
     set((state) => {
       const result = applyGroupTargetSets(
         state.sessionExercises,
@@ -713,7 +749,10 @@ export const createRoutineSlice = (set, get) => ({
     return normalizedGroup;
   },
 
-  updateSessionExerciseGroup: (id, updates) => {
+  updateSessionExerciseGroup: (
+    id: Id,
+    updates: SessionExerciseGroupUpdate,
+  ): SessionExerciseGroup | null => {
     const { currentUser, sessionExerciseGroups, sessionExercises } = get();
     const group = sessionExerciseGroups.find((item) => item.id === id);
     if (!group) return null;
@@ -752,7 +791,7 @@ export const createRoutineSlice = (set, get) => ({
 
     if (!normalizedGroup) return null;
 
-    let touchedLinks = [];
+    let touchedLinks: SessionExercise[] = [];
     set((state) => {
       const result = applyGroupTargetSets(
         state.sessionExercises,
@@ -784,7 +823,7 @@ export const createRoutineSlice = (set, get) => ({
     return normalizedGroup;
   },
 
-  deleteSessionExerciseGroup: (id) => {
+  deleteSessionExerciseGroup: (id: Id) => {
     const { currentUser, sessionExerciseGroups } = get();
     const groupToDelete = sessionExerciseGroups.find((group) => group.id === id);
     set((state) => ({

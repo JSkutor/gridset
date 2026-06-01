@@ -6,17 +6,10 @@ import { createExerciseSlice } from './slices/exerciseSlice.js';
 import { createRoutineSlice } from './slices/routineSlice.js';
 import { createWorkoutLogSlice } from './slices/workoutLogSlice.js';
 import type {
-  RoutineSlice,
   WorkoutDataState,
   WorkoutLogSlice,
   WorkoutStore,
 } from './types.js';
-
-type RoutineStoreSlice = Pick<
-  WorkoutDataState,
-  'routines' | 'sessions' | 'sessionExercises' | 'sessionExerciseGroups'
-> &
-  RoutineSlice;
 
 type WorkoutLogStoreSlice = Pick<
   WorkoutDataState,
@@ -29,7 +22,7 @@ export const useWorkoutStore = create<WorkoutStore>()(
     (set, get, store) => ({
       ...createAuthSlice(set, get, store),
       ...createExerciseSlice(set, get, store),
-      ...(createRoutineSlice(set, get) as RoutineStoreSlice),
+      ...createRoutineSlice(set, get, store),
       ...(createWorkoutLogSlice(set, get) as WorkoutLogStoreSlice),
     }),
     {
