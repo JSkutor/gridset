@@ -1,12 +1,90 @@
 import JSZip from "jszip";
 
+type CSVCell = string | number | boolean | null | undefined;
+export type CSVRow = Record<string, CSVCell>;
+
+type ExportRoutine = {
+  id: string;
+  name: string;
+};
+
+type ExportSession = {
+  id: string;
+  routine_id: string;
+  name: string;
+  session_order?: number | null;
+};
+
+type ExportSessionExercise = {
+  id?: string;
+  session_id: string;
+  exercise_id: string;
+  order?: number | null;
+  target_sets?: number | string | null;
+  target_record?: number | string | null;
+  rest_between_sets?: number | string | null;
+  rest_after_exercise?: number | string | null;
+};
+
+type ExportExercise = {
+  id: string;
+  name: string;
+  englishName?: string | null;
+  english_name?: string | null;
+  primary_muscle?: string | null;
+  primaryMuscle?: string | null;
+  secondaryMuscles?: string[] | null;
+  secondary_muscles?: string[] | null;
+  equipment?: string | null;
+  category?: string | null;
+  unit?: string | null;
+  is_unilateral?: boolean | null;
+  synonyms?: string[] | null;
+};
+
+type ExportSessionExerciseGroup = {
+  id?: string;
+  session_id?: string | null;
+  name?: string | null;
+  start_order?: number | null;
+  size?: number | null;
+  color?: string | null;
+};
+
+type ExportWorkoutLog = {
+  id: string;
+  session_id?: string | null;
+  start_time?: string | null;
+};
+
+type ExportSetRecord = {
+  id?: string;
+  workout_log_id: string;
+  exercise_id?: string | null;
+  set_number?: number | null;
+  weight?: number | string | null;
+  record?: number | string | null;
+  side?: "L" | "R" | "both" | string | null;
+  memo?: string | null;
+};
+
+export type ExportStoreData = {
+  routines: ExportRoutine[];
+  sessions: ExportSession[];
+  sessionExercises: ExportSessionExercise[];
+  sessionExerciseGroups?: ExportSessionExerciseGroup[];
+  exercises: ExportExercise[];
+  workoutLogs: ExportWorkoutLog[];
+  setRecords: ExportSetRecord[];
+};
+
 /**
  * 객체 배열을 CSV 문자열로 변환
  */
-export function toCSV(rows) {
+export function toCSV(rows?: CSVRow[] | null) {
   if (!rows || rows.length === 0) return "";
   const headers = Object.keys(rows[0]);
-  const escape = (val) => {
+  const escape = (val: CSVCell) => {
     if (val === null || val === undefined) return "";
     const str = String(val);
     if (str.includes(",") || str.includes('"') || str.includes("\n")) {
@@ -30,7 +108,7 @@ export function buildRoutinesExport({
   sessions,
   sessionExercises,
   exercises,
-}) {
+}: Pick<ExportStoreData, "routines" | "sessions" | "sessionExercises" | "exercises">): CSVRow[] {
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
 
   const rows = [];
@@ -88,18 +166,18 @@ export function buildWorkoutHistoryExport({
   sessions,
   routines,
   exercises,
-}) {
+}: Pick<ExportStoreData, "workoutLogs" | "setRecords" | "sessions" | "routines" | "exercises">): CSVRow[] {
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
   const sessionMap = new Map(sessions.map((s) => [s.id, s]));
   const routineMap = new Map(routines.map((r) => [r.id, r]));
 
   const sortedLogs = [...workoutLogs].sort(
-    (a, b) => new Date(b.start_time) - new Date(a.start_time),
+    (a, b) => new Date(b.start_time ?? 0).getTime() - new Date(a.start_time ?? 0).getTime(),
   );
 
-  const rows = [];
+  const rows: CSVRow[] = [];
   for (const log of sortedLogs) {
-    const session = sessionMap.get(log.session_id);
+    const session = log.session_id ? sessionMap.get(log.session_id) : undefined;
     const routine = session ? routineMap.get(session.routine_id) : null;
     const date = log.start_time
       ? new Date(log.start_time).toLocaleDateString("ko-KR", {
@@ -128,7 +206,7 @@ export function buildWorkoutHistoryExport({
     }
 
     for (const record of records) {
-      const exercise = exerciseMap.get(record.exercise_id);
+      const exercise = record.exercise_id ? exerciseMap.get(record.exercise_id) : undefined;
       rows.push({
         날짜: date,
         루틴명: routine?.name || "",
@@ -147,13 +225,13 @@ export function buildWorkoutHistoryExport({
   return rows;
 }
 
-export function buildExercisesExport({ exercises }) {
+export function buildExercisesExport({ exercises }: Pick<ExportStoreData, "exercises">): CSVRow[] {
   return exercises.map((ex) => ({
     운동명: ex.name,
     영문명: ex.englishName || ex.english_name || "",
     주동근: ex.primary_muscle || ex.primaryMuscle || "",
     보조근: Array.isArray(ex.secondaryMuscles ?? ex.secondary_muscles)
-      ? (ex.secondaryMuscles ?? ex.secondary_muscles).join(" / ")
+      ? (ex.secondaryMuscles ?? ex.secondary_muscles ?? []).join(" / ")
       : "",
     장비: ex.equipment || "",
     카테고리: ex.category || "",
@@ -163,7 +241,10 @@ export function buildExercisesExport({ exercises }) {
   }));
 }
 
-export function buildExerciseGroupsExport({ sessions, sessionExerciseGroups }) {
+export function buildExerciseGroupsExport({
+  sessions,
+  sessionExerciseGroups,
+}: Pick<ExportStoreData, "sessions" | "sessionExerciseGroups">): CSVRow[] {
   const sessionMap = new Map(sessions.map((s) => [s.id, s]));
 
   return (sessionExerciseGroups || [])
@@ -175,7 +256,7 @@ export function buildExerciseGroupsExport({ sessions, sessionExerciseGroups }) {
       return (a.start_order || 0) - (b.start_order || 0);
     })
     .map((group) => ({
-      세션명: sessionMap.get(group.session_id)?.name || "",
+      세션명: group.session_id ? sessionMap.get(group.session_id)?.name || "" : "",
       그룹명: group.name || "",
       시작순서: group.start_order,
       크기: group.size,
@@ -183,21 +264,25 @@ export function buildExerciseGroupsExport({ sessions, sessionExerciseGroups }) {
     }));
 }
 
-export function buildSummaryExport({ workoutLogs, setRecords, exercises }) {
+export function buildSummaryExport({
+  workoutLogs,
+  setRecords,
+  exercises,
+}: Pick<ExportStoreData, "workoutLogs" | "setRecords" | "exercises">): CSVRow[] {
   // 간단 통계: 운동별 총 수행 횟수
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
-  const exerciseCount = new Map();
+  const exerciseCount = new Map<string | null | undefined, number>();
 
   for (const sr of setRecords) {
     const exId = sr.exercise_id;
     exerciseCount.set(exId, (exerciseCount.get(exId) || 0) + 1);
   }
 
-  const rows = [];
+  const rows: CSVRow[] = [];
   for (const [exId, count] of [...exerciseCount.entries()].sort(
     (a, b) => b[1] - a[1],
   )) {
-    const exercise = exerciseMap.get(exId);
+    const exercise = exId ? exerciseMap.get(exId) : undefined;
     rows.push({
       운동명: exercise?.name || "(알 수 없음)",
       총수행세트수: count,
@@ -236,7 +321,7 @@ export function buildSummaryExport({ workoutLogs, setRecords, exercises }) {
  * @param {Array} storeData.workoutLogs
  * @param {Array} storeData.setRecords
  */
-export async function downloadDataAsCSV(storeData) {
+export async function downloadDataAsCSV(storeData: ExportStoreData) {
   const zip = new JSZip();
 
   // 1. workout_history.csv — 가장 중요한 데이터
@@ -278,7 +363,7 @@ export async function downloadDataAsCSV(storeData) {
 /**
  * CSV 문자열만 반환 (미리보기용 등)
  */
-export function generateCSVText(storeData) {
+export function generateCSVText(storeData: ExportStoreData) {
   return {
     workoutHistory: toCSV(buildWorkoutHistoryExport(storeData)),
     routines: toCSV(buildRoutinesExport(storeData)),

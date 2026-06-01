@@ -2,20 +2,113 @@ const NUMERIC_RE = /^[0-9.]*$/;
 const DEFAULT_REST_BETWEEN_SETS = 90;
 const DEFAULT_REST_AFTER_EXERCISE = 120;
 
-export function isNumericGridValue(value) {
+type SetGridSession = {
+  id: string;
+};
+
+type SetGridSessionExercise = {
+  id: string;
+  session_id: string;
+  exercise_id: string;
+  order?: number | null;
+  target_sets?: number | null;
+  rest_between_sets?: number | string | null;
+  rest_after_exercise?: number | string | null;
+};
+
+type SetGridExercise = {
+  id: string;
+  name?: string | null;
+  is_unilateral?: boolean | null;
+};
+
+type SetGridSessionExerciseGroup = {
+  id: string;
+  session_id?: string | null;
+  name?: string | null;
+  start_order?: number | null;
+  size?: number | null;
+  color?: string | null;
+};
+
+export type SetGridSet = {
+  id: string;
+  set_number?: number;
+  side?: 'L' | 'R' | 'both';
+  weight?: string | number | null;
+  reps?: string | number | null;
+  memo?: string | null;
+  exercise_id?: string;
+  exercise_name?: string;
+  session_exercise_id?: string;
+};
+
+type GroupExerciseInfo = {
+  linkId: string;
+  exercise_id: string;
+  name: string;
+  is_unilateral: boolean;
+  target_sets: number;
+};
+
+export type SetGridBlock = {
+  id: string;
+  exercise_id?: string;
+  exercise_name?: string;
+  is_unilateral?: boolean;
+  is_group?: boolean;
+  group_id?: string;
+  group_name?: string | null;
+  group_color?: string;
+  group_exercises?: GroupExerciseInfo[];
+  sets: SetGridSet[];
+};
+
+export type FlattenedSetGridRow = SetGridSet & {
+  blockIndex: number;
+  rowIndex: number;
+  globalIndex: number;
+  isLastSet: boolean;
+  exerciseId?: string;
+};
+
+export type RestTimerPayload =
+  | {
+      mode: 'set';
+      durationSeconds: number;
+      exerciseId?: string;
+      exerciseName?: string;
+      setNumber: number;
+    }
+  | {
+      mode: 'exercise';
+      durationSeconds: number;
+      exerciseId?: string;
+      exerciseName?: string;
+      nextExerciseId?: string;
+      nextExerciseName?: string;
+      setNumber: number;
+    };
+
+export function isNumericGridValue(value: string) {
   return NUMERIC_RE.test(value);
 }
 
-export function isCommittedNumericGridValue(value) {
+export function isCommittedNumericGridValue(value: unknown) {
   const normalizedValue = String(value ?? '').trim();
   return normalizedValue !== '' && isNumericGridValue(normalizedValue) && Number.isFinite(Number(normalizedValue));
 }
 
-export function isCompletedRepsValue(value) {
+export function isCompletedRepsValue(value: unknown) {
   return isCommittedNumericGridValue(value);
 }
 
-export function fillExerciseWeightsFromFirstSet(blocks, blockIndex, rowIndex, weight) {
+export function fillExerciseWeightsFromFirstSet<TBlock extends SetGridBlock>(
+  blocks: TBlock[],
+  blockIndex: number,
+  rowIndex: number,
+  weight: unknown,
+) {
   const normalizedWeight = String(weight ?? '').trim();
 
   const targetBlock = blocks[blockIndex];
@@ -53,16 +146,16 @@ export function fillExerciseWeightsFromFirstSet(blocks, blockIndex, rowIndex, we
  * template. The id factory is injectable so tests can stay deterministic.
  */
 export function buildInitialBlocks(
-  session,
-  sessionExercises,
-  exercises,
-  sessionExerciseGroupsOrIdFactory = [],
-  createSetIdFallback = () => crypto.randomUUID()
-) {
+  session: SetGridSession | null | undefined,
+  sessionExercises: SetGridSessionExercise[],
+  exercises: SetGridExercise[],
+  sessionExerciseGroupsOrIdFactory: SetGridSessionExerciseGroup[] | (() => string) = [],
+  createSetIdFallback = () => crypto.randomUUID(),
+): SetGridBlock[] {
   if (!session) return [];
 
-  let sessionExerciseGroups = [];
-  let createSetId = createSetIdFallback;
+  let sessionExerciseGroups: SetGridSessionExerciseGroup[] = [];
+  let createSetId: () => string = createSetIdFallback;
 
   if (typeof sessionExerciseGroupsOrIdFactory === 'function') {
     createSetId = sessionExerciseGroupsOrIdFactory;
@@ -80,12 +173,12 @@ export function buildInitialBlocks(
     .filter((group) => group.session_id === session.id)
     .sort((a, b) => (a.start_order || 0) - (b.start_order || 0));
 
-  const blocks = [];
+  const blocks: SetGridBlock[] = [];
   let index = 0;
 
   while (index < sessionLinks.length) {
     const se = sessionLinks[index];
-    const order = se.order;
+    const order = Number(se.order) || 0;
 
     // Check if the current exercise is part of any group
     const group = sessionGroups.find((g) => {
@@ -99,7 +192,7 @@ export function buildInitialBlocks(
       const start = Number(group.start_order) || 1;
       const end = start + (Number(group.size) || 2) - 1;
       const groupLinks = sessionLinks.filter((link) => {
-        const o = link.order;
+        const o = Number(link.order) || 0;
         return o >= start && o <= end;
       });
 
@@ -119,7 +212,7 @@ export function buildInitialBlocks(
       const targetSets = groupExercisesInfo[0]?.target_sets || 3;
       const exerciseNames = groupExercisesInfo.map((e) => e.name);
 
-      const sets = [];
+      const sets: SetGridSet[] = [];
       for (let i = 0; i < targetSets; i++) {
         const setNumber = i + 1;
         // Alternately push sets for each exercise in the group
@@ -186,12 +279,12 @@ export function buildInitialBlocks(
       const targetSets = se.target_sets || 3;
       const isUnilateral = exercise?.is_unilateral ?? false;
 
-      const sets = isUnilateral
+      const sets: SetGridSet[] = isUnilateral
         ? Array.from({ length: targetSets }, (_, i) => [
           {
             id: createSetId(),
             set_number: i + 1,
-            side: 'L',
+            side: 'L' as const,
             weight: '',
             reps: '',
             memo: '',
@@ -202,7 +295,7 @@ export function buildInitialBlocks(
           {
             id: createSetId(),
             set_number: i + 1,
-            side: 'R',
+            side: 'R' as const,
             weight: '',
             reps: '',
             memo: '',
@@ -214,7 +307,7 @@ export function buildInitialBlocks(
         : Array.from({ length: targetSets }, (_, i) => ({
           id: createSetId(),
           set_number: i + 1,
-          side: 'both',
+          side: 'both' as const,
           weight: '',
           reps: '',
           memo: '',
@@ -239,8 +332,8 @@ export function buildInitialBlocks(
   return blocks;
 }
 
-export function flattenBlocks(blocks) {
-  const rows = [];
+export function flattenBlocks(blocks: SetGridBlock[]): FlattenedSetGridRow[] {
+  const rows: FlattenedSetGridRow[] = [];
 
   blocks.forEach((block, blockIndex) => {
     block.sets.forEach((set, rowIndex) => {
@@ -258,7 +351,7 @@ export function flattenBlocks(blocks) {
   return rows;
 }
 
-export function computeNewGlobalIndex(blocks, blockIndex) {
+export function computeNewGlobalIndex(blocks: SetGridBlock[], blockIndex: number) {
   let idx = 0;
 
   for (let i = 0; i < blockIndex; i += 1) {
@@ -268,19 +361,29 @@ export function computeNewGlobalIndex(blocks, blockIndex) {
   return idx + blocks[blockIndex].sets.length;
 }
 
-export function getSetCompletionKey(block, set) {
+export function getSetCompletionKey(block: SetGridBlock | null | undefined, set: SetGridSet | null | undefined) {
   if (!block || !set) return '';
   const exercisePart = set.exercise_id ? `:${set.exercise_id}` : '';
   return `${block.id}:${set.set_number}:${set.side || 'both'}${exercisePart}`;
 }
 
-function normalizeRestDuration(value, fallbackSeconds) {
+function normalizeRestDuration(value: unknown, fallbackSeconds: number) {
   const seconds = Number(value ?? fallbackSeconds);
   if (!Number.isFinite(seconds)) return fallbackSeconds;
   return Math.max(0, Math.round(seconds));
 }
 
-export function getRestTimerPayloadForCompletedSet({ blocks, sessionExercises, blockIndex, rowIndex }) {
+export function getRestTimerPayloadForCompletedSet({
+  blocks,
+  sessionExercises,
+  blockIndex,
+  rowIndex,
+}: {
+  blocks: SetGridBlock[];
+  sessionExercises: SetGridSessionExercise[];
+  blockIndex: number;
+  rowIndex: number;
+}): RestTimerPayload | null {
   const block = blocks[blockIndex];
   const set = block?.sets?.[rowIndex];
 
@@ -289,8 +392,9 @@ export function getRestTimerPayloadForCompletedSet({ blocks, sessionExercises, b
   const setNumber = Number(set.set_number) || 0;
 
   if (block.is_group) {
+    const groupExercises = block.group_exercises ?? [];
     // 1. Check if unilateral exercise is finished (must finish 'R' if unilateral)
-    const isUnilateral = block.group_exercises.find((e) => e.exercise_id === set.exercise_id)?.is_unilateral ?? false;
+    const isUnilateral = groupExercises.find((e) => e.exercise_id === set.exercise_id)?.is_unilateral ?? false;
     const isFinalSideForExercise = !isUnilateral || set.side === 'R';
     
     if (!isFinalSideForExercise) {
@@ -298,8 +402,8 @@ export function getRestTimerPayloadForCompletedSet({ blocks, sessionExercises, b
     }
 
     // 2. Check if this is the last exercise in the current group round
-    const exerciseIndexInGroup = block.group_exercises.findIndex((e) => e.exercise_id === set.exercise_id);
-    const isLastExerciseInGroup = exerciseIndexInGroup === block.group_exercises.length - 1;
+    const exerciseIndexInGroup = groupExercises.findIndex((e) => e.exercise_id === set.exercise_id);
+    const isLastExerciseInGroup = exerciseIndexInGroup === groupExercises.length - 1;
 
     if (!isLastExerciseInGroup) {
       // Bypassing rest between switching exercises inside the same group
