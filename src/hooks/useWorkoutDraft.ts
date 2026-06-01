@@ -9,8 +9,43 @@ import {
   isCompletedRepsValue,
   isNumericGridValue,
 } from '../utils/setGridModel.js';
+import type {
+  FlattenedSetGridRow,
+  RestTimerPayload,
+  SetGridBlock,
+  SetGridExercise,
+  SetGridSession,
+  SetGridSessionExercise,
+  SetGridSessionExerciseGroup,
+  SetGridSet,
+} from '../utils/setGridModel.js';
 
-function hasTableInput(blocks) {
+type FocusedSet = {
+  blockIndex: number;
+  rowIndex: number;
+};
+
+type EditableSetField = 'weight' | 'reps';
+
+type SaveWorkoutLog = (
+  sessionId: string,
+  blocks: SetGridBlock[],
+  startTime: string,
+) => unknown;
+
+type UseWorkoutDraftOptions = {
+  session: SetGridSession | null | undefined;
+  sessionExercises: SetGridSessionExercise[];
+  exercises: SetGridExercise[];
+  sessionExerciseGroups?: SetGridSessionExerciseGroup[];
+  saveWorkoutLog: SaveWorkoutLog;
+  onRestStart?: (payload: RestTimerPayload) => void;
+  onSaveSuccess?: (createdLog: unknown) => void;
+};
+
+type WorkoutDraftRowTarget = Pick<FlattenedSetGridRow, 'blockIndex' | 'rowIndex'>;
+
+function hasTableInput(blocks: SetGridBlock[]): boolean {
   return blocks.some((block) =>
     block.sets.some((set) =>
       String(set.weight ?? '').trim() !== '' ||
@@ -27,17 +62,17 @@ export function useWorkoutDraft({
   saveWorkoutLog,
   onRestStart,
   onSaveSuccess,
-}) {
-  const [startTime, setStartTime] = useState(null);
+}: UseWorkoutDraftOptions) {
+  const [startTime, setStartTime] = useState<string | null>(null);
   const [blocks, setBlocks] = useState(() => buildInitialBlocks(session, sessionExercises, exercises, sessionExerciseGroups));
-  const [focusedSet, setFocusedSet] = useState({ blockIndex: 0, rowIndex: 0 });
-  const completedSetSignaturesRef = useRef(new Map());
+  const [focusedSet, setFocusedSet] = useState<FocusedSet>({ blockIndex: 0, rowIndex: 0 });
+  const completedSetSignaturesRef = useRef(new Map<string, string>());
 
   const currentMemo = blocks[focusedSet.blockIndex]?.sets[focusedSet.rowIndex]?.memo ?? '';
   const flatRows = useMemo(() => flattenBlocks(blocks), [blocks]);
   const totalRows = flatRows.length;
 
-  const updateRow = useCallback((blockIndex, rowIndex, field, value) => {
+  const updateRow = useCallback((blockIndex: number, rowIndex: number, field: EditableSetField, value: string) => {
     if (!isNumericGridValue(value)) return;
 
     if (field === 'reps' && !isCompletedRepsValue(value)) {
@@ -65,7 +100,7 @@ export function useWorkoutDraft({
     }
   }, [blocks]);
 
-  const updateMemo = useCallback((value) => {
+  const updateMemo = useCallback((value: string) => {
     const { blockIndex, rowIndex } = focusedSet;
     setBlocks((prev) =>
       prev.map((block, currentBlockIndex) =>
@@ -79,15 +114,15 @@ export function useWorkoutDraft({
     );
   }, [focusedSet]);
 
-  const handleSetFocus = useCallback((blockIndex, rowIndex) => {
+  const handleSetFocus = useCallback((blockIndex: number, rowIndex: number) => {
     setFocusedSet({ blockIndex, rowIndex });
   }, []);
 
-  const handleFirstWeightTab = useCallback((row, value) => {
+  const handleFirstWeightTab = useCallback((row: WorkoutDraftRowTarget, value: unknown) => {
     setBlocks((prev) => fillExerciseWeightsFromFirstSet(prev, row.blockIndex, row.rowIndex, value));
   }, []);
 
-  const handleRepsTab = useCallback((row, value) => {
+  const handleRepsTab = useCallback((row: WorkoutDraftRowTarget, value: unknown) => {
     if (!isCompletedRepsValue(value)) return;
 
     const block = blocks[row.blockIndex];
@@ -111,7 +146,7 @@ export function useWorkoutDraft({
     }
   }, [blocks, onRestStart, sessionExercises]);
 
-  const addRow = useCallback((blockIndex, requestFocus) => {
+  const addRow = useCallback((blockIndex: number, requestFocus: (rowIndex: number) => void) => {
     const newGlobalIndex = computeNewGlobalIndex(blocks, blockIndex);
     const newRowIndex = blocks[blockIndex].sets.length;
 
@@ -119,12 +154,12 @@ export function useWorkoutDraft({
       prev.map((b, currentBlockIndex) => {
         if (currentBlockIndex !== blockIndex) return b;
 
-        const maxSetNumber = b.sets.length > 0 ? Math.max(...b.sets.map((set) => set.set_number)) : 0;
+        const maxSetNumber = b.sets.length > 0 ? Math.max(...b.sets.map((set) => Number(set.set_number) || 0)) : 0;
         const nextSetNumber = maxSetNumber + 1;
 
-        let newSets = [];
+        let newSets: SetGridSet[] = [];
         if (b.is_group) {
-          b.group_exercises.forEach((exInfo) => {
+          (b.group_exercises ?? []).forEach((exInfo) => {
             if (exInfo.is_unilateral) {
               newSets.push({
                 id: crypto.randomUUID(),

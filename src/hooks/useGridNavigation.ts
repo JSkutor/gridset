@@ -1,13 +1,26 @@
 import { useRef, useState, useEffect, useCallback } from "react";
+import type { KeyboardEvent } from "react";
+
+type GridColumnField = "weight" | "reps";
+
+type GridColumn = {
+  colIndex: number;
+  field: GridColumnField;
+  header: string;
+};
+
+type GridCellPosition = {
+  row: number;
+  col: number;
+};
 
 /**
  * Column descriptors for the set-entry grid.
  * Add an entry here (and update your DB / state) to introduce a new column —
  * the header, cell rendering, and navigation will all adapt automatically.
  *
- * @type {{ colIndex: number; field: string; header: string }[]}
  */
-export const COLUMNS = [
+export const COLUMNS: GridColumn[] = [
   { colIndex: 0, field: "weight", header: "kg" },
   { colIndex: 1, field: "reps", header: "Reps" },
 ];
@@ -27,24 +40,22 @@ export const NUM_COLS = COLUMNS.length;
  *  • Enter                 — move down one row
  *  • Tab / Shift+Tab       — move forward / backward through all cells
  *
- * @param {number} totalRows - Total input rows currently rendered.
- * @returns {{ getCellRef, handleKeyDown, requestFocus, recordFocus }}
  */
-export function useGridNavigation(totalRows) {
+export function useGridNavigation(totalRows: number) {
   /** gridRefs.current[rowIndex][colIndex] → <input> DOM node */
-  const gridRefs = useRef([]);
+  const gridRefs = useRef<Array<Array<HTMLInputElement | null>>>([]);
 
   /**
    * Index of the row that should receive focus after the next render.
    * Set via requestFocus(); cleared once the element is found in the DOM.
    */
-  const [pendingFocusIndex, setPendingFocusIndex] = useState(null);
+  const [pendingFocusIndex, setPendingFocusIndex] = useState<number | null>(null);
 
   /** Track if user is navigating using the keyboard to temporarily suppress hover styles */
   const [isKeyboardActive, setIsKeyboardActive] = useState(false);
 
   /** Track the last focused cell so we can restore focus with the C key */
-  const lastFocusedCell = useRef({ row: 0, col: 0 });
+  const lastFocusedCell = useRef<GridCellPosition>({ row: 0, col: 0 });
 
   // Keep the refs array sized to the current row count.
   useEffect(() => {
@@ -86,12 +97,12 @@ export function useGridNavigation(totalRows) {
 
   // ── internals ───────────────────────────────────────────────────────────────
 
-  const recordFocus = useCallback((row, col) => {
+  const recordFocus = useCallback((row: number, col: number) => {
     lastFocusedCell.current = { row, col };
   }, []);
 
   const focusCell = useCallback(
-    (row, col) => {
+    (row: number, col: number) => {
       const el = gridRefs.current[row]?.[col];
       if (el) {
         el.focus({ preventScroll: true });
@@ -108,7 +119,7 @@ export function useGridNavigation(totalRows) {
    * Usage: <input ref={getCellRef(globalRowIndex, colIndex)} />
    */
   const getCellRef = useCallback(
-    (rowIndex, colIndex) => (el) => {
+    (rowIndex: number, colIndex: number) => (el: HTMLInputElement | null) => {
       if (!gridRefs.current[rowIndex]) gridRefs.current[rowIndex] = [];
       gridRefs.current[rowIndex][colIndex] = el;
     },
@@ -118,12 +129,9 @@ export function useGridNavigation(totalRows) {
   /**
    * Keyboard handler to attach to every grid <input>.
    *
-   * @param {React.KeyboardEvent} e
-   * @param {number} rowIndex     Global (flattened) row index of the focused cell.
-   * @param {number} colIndex     Column index of the focused cell.
    */
   const handleKeyDown = useCallback(
-    (e, rowIndex, colIndex) => {
+    (e: KeyboardEvent<HTMLInputElement>, rowIndex: number, colIndex: number) => {
       // Mark keyboard navigation active before moving focus, so the
       // keyboard-navigating CSS class is applied on the next render and
       // prevents hover styles from leaking on the row under the mouse cursor.
@@ -157,7 +165,7 @@ export function useGridNavigation(totalRows) {
           break;
 
         case "ArrowLeft":
-          if (e.target.selectionStart === 0) {
+          if (e.currentTarget.selectionStart === 0) {
             e.preventDefault();
             if (colIndex > 0) focusCell(rowIndex, colIndex - 1);
             else if (rowIndex > 0) focusCell(rowIndex - 1, NUM_COLS - 1);
@@ -165,7 +173,7 @@ export function useGridNavigation(totalRows) {
           break;
 
         case "ArrowRight":
-          if (e.target.selectionEnd === e.target.value.length) {
+          if (e.currentTarget.selectionEnd === e.currentTarget.value.length) {
             e.preventDefault();
             if (colIndex < NUM_COLS - 1) focusCell(rowIndex, colIndex + 1);
             else if (rowIndex < totalRows - 1) focusCell(rowIndex + 1, 0);
@@ -183,9 +191,8 @@ export function useGridNavigation(totalRows) {
    * Schedule focus on the first column of `rowIndex` after the next render.
    * Call this right after appending a new row to `blocks`.
    *
-   * @param {number} rowIndex - Global row index of the row to focus.
    */
-  const requestFocus = useCallback((rowIndex) => {
+  const requestFocus = useCallback((rowIndex: number) => {
     setPendingFocusIndex(rowIndex);
   }, []);
 

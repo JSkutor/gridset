@@ -6,20 +6,22 @@ import { useSyncExternalStore } from 'react';
  *
  * This avoids spawning one observer per ExerciseRow instance.
  */
-const subscribers = new Set();
+type KeyboardNavigationSubscriber = () => void;
+
+const subscribers = new Set<KeyboardNavigationSubscriber>();
 let currentValue = document.body.classList.contains('keyboard-navigating');
 
 const observer = new MutationObserver(() => {
   const next = document.body.classList.contains('keyboard-navigating');
   if (next !== currentValue) {
     currentValue = next;
-    subscribers.forEach((fn) => fn(next));
+    subscribers.forEach((notify) => notify());
   }
 });
 
 observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
-export function useIsKeyboardNavigating() {
+export function useIsKeyboardNavigating(): boolean {
   return useSyncExternalStore(
     (onStoreChange) => {
       subscribers.add(onStoreChange);

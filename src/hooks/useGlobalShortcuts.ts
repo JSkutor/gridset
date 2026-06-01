@@ -1,8 +1,24 @@
 import { useEffect } from 'react';
+import type { RefObject } from 'react';
 
 const RETIRED_NAV_SHORTCUT_KEYS = new Set(['1', '2', '3']);
 
-function isEditableTarget(target) {
+type WorkoutGridShortcutHandle = {
+  focusGrid: () => void;
+  focusNote: () => void;
+  isNoteFocused: () => boolean;
+};
+
+type RoutineDetailShortcutHandle = {
+  focusFirstSessionFirstExercise: () => void;
+};
+
+type GlobalShortcutOptions = {
+  workoutGridRef: RefObject<WorkoutGridShortcutHandle | null>;
+  routineDetailRef: RefObject<RoutineDetailShortcutHandle | null>;
+};
+
+function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
 
   const tagName = target.tagName.toLowerCase();
@@ -14,9 +30,12 @@ function isEditableTarget(target) {
   );
 }
 
-export function useGlobalShortcuts({ workoutGridRef, routineDetailRef }) {
+export function useGlobalShortcuts({
+  workoutGridRef,
+  routineDetailRef,
+}: GlobalShortcutOptions): void {
   useEffect(() => {
-    const handleGlobalKeyDown = (event) => {
+    const handleGlobalKeyDown = (event: KeyboardEvent) => {
       // Ignore all shortcuts if a help or auth modal is open.
       if (
         document.querySelector('.help-backdrop') ||
@@ -27,7 +46,7 @@ export function useGlobalShortcuts({ workoutGridRef, routineDetailRef }) {
 
       // ESC: blur any focused element so shortcuts become available again.
       if (event.key === 'Escape') {
-        if (document.activeElement && document.activeElement !== document.body) {
+        if (document.activeElement instanceof HTMLElement && document.activeElement !== document.body) {
           event.preventDefault();
           document.activeElement.blur();
         }
@@ -43,7 +62,7 @@ export function useGlobalShortcuts({ workoutGridRef, routineDetailRef }) {
         const routineDetail = routineDetailRef.current;
         if (grid) {
           const activeEl = document.activeElement;
-          const isInGrid = activeEl && activeEl.closest && activeEl.closest('.spreadsheet');
+          const isInGrid = activeEl instanceof HTMLElement && activeEl.closest('.spreadsheet');
           const isInNote = grid.isNoteFocused();
           if (isInNote) {
             grid.focusGrid();

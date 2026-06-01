@@ -2,11 +2,11 @@ const NUMERIC_RE = /^[0-9.]*$/;
 const DEFAULT_REST_BETWEEN_SETS = 90;
 const DEFAULT_REST_AFTER_EXERCISE = 120;
 
-type SetGridSession = {
+export type SetGridSession = {
   id: string;
 };
 
-type SetGridSessionExercise = {
+export type SetGridSessionExercise = {
   id: string;
   session_id: string;
   exercise_id: string;
@@ -16,13 +16,13 @@ type SetGridSessionExercise = {
   rest_after_exercise?: number | string | null;
 };
 
-type SetGridExercise = {
+export type SetGridExercise = {
   id: string;
   name?: string | null;
   is_unilateral?: boolean | null;
 };
 
-type SetGridSessionExerciseGroup = {
+export type SetGridSessionExerciseGroup = {
   id: string;
   session_id?: string | null;
   name?: string | null;

@@ -1,14 +1,18 @@
 import { useEffect } from 'react';
 import { startViewTransition } from './useViewTransition';
 
-/**
- * Checks whether the keyboard event target is an editable element
- * (input, textarea, select, or contenteditable).
- *
- * @param {EventTarget} target
- * @returns {boolean}
- */
-function isEditableTarget(target) {
+type TabNavigationOptions<TTabId extends string> = {
+  tabIds: TTabId[];
+  shortcuts: Record<string, TTabId>;
+  activeTab: TTabId;
+  setActiveTab: (id: TTabId) => void;
+  isActive?: boolean;
+  focusScopeSelector?: string;
+  focusTargetSelector?: string | ((id: TTabId) => string);
+  disableTransition?: boolean;
+};
+
+function isEditableTarget(target: EventTarget | null): boolean {
   if (!(target instanceof HTMLElement)) return false;
   const tag = target.tagName.toLowerCase();
   return (
@@ -19,7 +23,11 @@ function isEditableTarget(target) {
   );
 }
 
-function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelector) {
+function focusNavigationTarget<TTabId extends string>(
+  targetTab: TTabId,
+  focusScopeSelector: string | undefined,
+  focusTargetSelector: string | ((id: TTabId) => string) | undefined,
+): void {
   if (!focusTargetSelector) return;
 
   const activeElement = document.activeElement;
@@ -49,16 +57,6 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
  *    only fire while the relevant parent page/context is visible.
  *  - Wraps tab changes in a View Transition for smooth directional animation.
  *
- * @param {{
- *   tabIds: string[],
- *   shortcuts: Record<string, string>,
- *   activeTab: string,
- *   setActiveTab: (id: string) => void,
- *   isActive?: boolean,
- *   focusScopeSelector?: string,
- *   focusTargetSelector?: string | ((id: string) => string),
- * }} options
- *
  * @example
  * // Top-level app navigation: Q → routine, W → set, E → log
  * useTabNavigation({
@@ -79,7 +77,7 @@ function focusNavigationTarget(targetTab, focusScopeSelector, focusTargetSelecto
  *   isActive: activeTab === APP_NAV_TAB.LOG,
  * });
  */
-export function useTabNavigation({
+export function useTabNavigation<TTabId extends string>({
   tabIds,
   shortcuts,
   activeTab,
@@ -88,11 +86,11 @@ export function useTabNavigation({
   focusScopeSelector,
   focusTargetSelector,
   disableTransition = false,
-}) {
+}: TabNavigationOptions<TTabId>): void {
   useEffect(() => {
     if (!isActive) return;
 
-    const handleKeyDown = (event) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       // Ignore all shortcuts if a help or auth modal is open.
       if (
         document.querySelector('.help-backdrop') ||

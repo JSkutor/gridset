@@ -1,13 +1,20 @@
 import { useMemo, useState } from 'react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { getRegularRoutineSessions, getRoutineTemporarySession } from '../utils/sessionHelper';
+import type { Id, Routine, Session, WorkoutLog } from '../types/workout';
+
+type WorkoutSessionRotationStore = {
+  routines: Routine[];
+  sessions: Session[];
+  workoutLogs: WorkoutLog[];
+};
 
 export function useWorkoutSessionRotation() {
-  const routines = useWorkoutStore(state => state.routines);
-  const sessions = useWorkoutStore(state => state.sessions);
-  const workoutLogs = useWorkoutStore(state => state.workoutLogs);
+  const routines = useWorkoutStore((state: WorkoutSessionRotationStore) => state.routines);
+  const sessions = useWorkoutStore((state: WorkoutSessionRotationStore) => state.sessions);
+  const workoutLogs = useWorkoutStore((state: WorkoutSessionRotationStore) => state.workoutLogs);
 
-  const [selectedSessionId, setSelectedSessionId] = useState(null);
+  const [selectedSessionId, setSelectedSessionId] = useState<Id | null>(null);
 
   // 1. 최신 루틴 (생성일이 가장 최신인 루틴)
   const latestRoutine = useMemo(() => {
@@ -40,16 +47,16 @@ export function useWorkoutSessionRotation() {
   const nextDefaultSession = useMemo(() => {
     if (latestRoutineRegularSessions.length === 0) return null;
 
-    const sessionIds = new Set(latestRoutineRegularSessions.map(s => s.id));
+    const sessionIds = new Set(latestRoutineRegularSessions.map((s) => s.id));
     
     // 최신 루틴의 정규 세션들 중 최근 수행한 로그 조회. 임시 세션 기록은 순서를 넘기지 않는다.
     const routineLogs = workoutLogs
-      .filter(log => log.session_id && sessionIds.has(log.session_id))
+      .filter((log) => log.session_id && sessionIds.has(log.session_id))
       .sort((a, b) => new Date(b.start_time).getTime() - new Date(a.start_time).getTime());
 
     if (routineLogs.length > 0) {
       const lastSessionId = routineLogs[0].session_id;
-      const lastIndex = latestRoutineRegularSessions.findIndex(s => s.id === lastSessionId);
+      const lastIndex = latestRoutineRegularSessions.findIndex((s) => s.id === lastSessionId);
       if (lastIndex !== -1) {
         const nextIndex = (lastIndex + 1) % latestRoutineRegularSessions.length;
         return latestRoutineRegularSessions[nextIndex];
@@ -62,7 +69,7 @@ export function useWorkoutSessionRotation() {
   // 4. 활성화할 세션 결정
   const selectedSession = useMemo(() => {
     if (selectedSessionId) {
-      const found = latestRoutineSessions.find(s => s.id === selectedSessionId);
+      const found = latestRoutineSessions.find((s) => s.id === selectedSessionId);
       if (found) return found;
     }
     return nextDefaultSession || latestRoutineRegularSessions[0] || latestRoutineTemporarySession || null;
