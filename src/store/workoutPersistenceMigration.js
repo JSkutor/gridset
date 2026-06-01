@@ -1,7 +1,7 @@
 import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
-import { DEFAULT_EXERCISES, generateUUID, getDefaultExerciseUnit } from '../data/dummyGenerator.js';
+import { EXERCISE_CATALOG, generateUUID, getFallbackExerciseUnit } from '../data/dummyGenerator.js';
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
-import { DEFAULT_EXERCISE_BY_NAME, normalizeExerciseForApp } from '../api/supabaseWorkoutRepository.js';
+import { CATALOG_EXERCISE_BY_NAME, normalizeExerciseForApp } from '../api/supabaseWorkoutRepository.js';
 
 const GROUP_COLOR_PALETTE = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
 const DEMO_ROUTINE_NAMES = new Set([
@@ -90,7 +90,7 @@ export function migrateWorkoutPersistState(persistedState, version) {
   if (version < 3) {
     newState = {
       ...newState,
-      exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => ({
+      exercises: (newState.exercises || EXERCISE_CATALOG).map((exercise) => ({
         ...exercise,
         primary_muscle: normalizeMuscleLabel(exercise.primary_muscle) || '기타',
       })),
@@ -100,9 +100,9 @@ export function migrateWorkoutPersistState(persistedState, version) {
   if (version < 4) {
     newState = {
       ...newState,
-      exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => ({
+      exercises: (newState.exercises || EXERCISE_CATALOG).map((exercise) => ({
         ...exercise,
-        unit: exercise.unit || getDefaultExerciseUnit(exercise.name),
+        unit: exercise.unit || getFallbackExerciseUnit(exercise.name),
       })),
     };
   }
@@ -110,7 +110,7 @@ export function migrateWorkoutPersistState(persistedState, version) {
   if (version < 5) {
     newState = {
       ...newState,
-      exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => ({
+      exercises: (newState.exercises || EXERCISE_CATALOG).map((exercise) => ({
         ...exercise,
         is_unilateral: exercise.is_unilateral !== undefined ? exercise.is_unilateral : false,
       })),
@@ -128,7 +128,7 @@ export function migrateWorkoutPersistState(persistedState, version) {
   if (version < 6) {
     newState = {
       ...newState,
-      exercises: (newState.exercises || DEFAULT_EXERCISES).map((exercise) => {
+      exercises: (newState.exercises || EXERCISE_CATALOG).map((exercise) => {
         const dictEntry = EXERCISE_DICTIONARY.find((item) =>
           item.name.toLowerCase() === exercise.name.toLowerCase() ||
           (item.synonyms && item.synonyms.includes(exercise.name.toLowerCase())),
@@ -146,16 +146,16 @@ export function migrateWorkoutPersistState(persistedState, version) {
     const migratedExercises = [];
     const seenExerciseIds = new Set();
 
-    (newState.exercises || DEFAULT_EXERCISES).forEach((exercise) => {
-      const defaultExercise = DEFAULT_EXERCISE_BY_NAME.get((exercise.name || '').toLowerCase());
-      const nextExercise = normalizeExerciseForApp(defaultExercise ? {
+    (newState.exercises || EXERCISE_CATALOG).forEach((exercise) => {
+      const catalogExercise = CATALOG_EXERCISE_BY_NAME.get((exercise.name || '').toLowerCase());
+      const nextExercise = normalizeExerciseForApp(catalogExercise ? {
         ...exercise,
-        id: defaultExercise.id,
+        id: catalogExercise.id,
         user_id: null,
       } : exercise);
 
-      if (defaultExercise && exercise.id !== defaultExercise.id) {
-        idMap.set(exercise.id, defaultExercise.id);
+      if (catalogExercise && exercise.id !== catalogExercise.id) {
+        idMap.set(exercise.id, catalogExercise.id);
       }
 
       if (!seenExerciseIds.has(nextExercise.id)) {

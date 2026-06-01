@@ -1,6 +1,6 @@
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import {
-  DEFAULT_EXERCISES,
+  EXERCISE_CATALOG,
   createDummyWorkoutData,
 } from "../../data/dummyGenerator.js";
 
@@ -13,13 +13,13 @@ export const GUEST_USER = {
 export const initialSeed = {
   ...createDummyWorkoutData({
     userId: GUEST_USER.id,
-    existingExercises: DEFAULT_EXERCISES,
+    existingExercises: EXERCISE_CATALOG,
   }),
   hasClearedDemoData: false,
 };
 
 const createEmptyWorkoutState = ({
-  exercises = DEFAULT_EXERCISES,
+  exercises = EXERCISE_CATALOG,
   hasClearedDemoData = false,
 } = {}) => ({
   exercises,

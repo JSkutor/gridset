@@ -3,26 +3,106 @@ import { normalizeMuscleLabel } from './muscleGroups.js';
 
 export const generateUUID = () => crypto.randomUUID();
 
-export const DEFAULT_EXERCISE_IDS = {
-  '벤치프레스': '00000000-0000-4000-8000-000000000001',
-  '스쿼트': '00000000-0000-4000-8000-000000000002',
-  '데드리프트': '00000000-0000-4000-8000-000000000003',
-  '풀업': '00000000-0000-4000-8000-000000000004',
-  '바벨 로우': '00000000-0000-4000-8000-000000000005',
-  '덤벨 숄더 프레스': '00000000-0000-4000-8000-000000000006',
-  '불가리안 스플릿 스쿼트': '00000000-0000-4000-8000-000000000011',
-  '플랭크': '00000000-0000-4000-8000-000000000010',
-};
+function rotateLeft(value, bits) {
+  return (value << bits) | (value >>> (32 - bits));
+}
 
-const DEFAULT_EXERCISE_UNITS = {
-  '벤치프레스': 'kg',
-  '스쿼트': 'kg',
-  '데드리프트': 'kg',
-  '풀업': 'reps',
-  '바벨 로우': 'kg',
-  '덤벨 숄더 프레스': 'kg',
-  '불가리안 스플릿 스쿼트': 'kg',
-  '플랭크': 'sec',
+function sha1Bytes(input) {
+  const message = [...new TextEncoder().encode(input)];
+  const bitLength = message.length * 8;
+  message.push(0x80);
+
+  while ((message.length % 64) !== 56) {
+    message.push(0);
+  }
+
+  for (let shift = 56; shift >= 0; shift -= 8) {
+    message.push((bitLength / (2 ** shift)) & 0xff);
+  }
+
+  let h0 = 0x67452301;
+  let h1 = 0xefcdab89;
+  let h2 = 0x98badcfe;
+  let h3 = 0x10325476;
+  let h4 = 0xc3d2e1f0;
+
+  for (let offset = 0; offset < message.length; offset += 64) {
+    const words = new Array(80).fill(0);
+
+    for (let i = 0; i < 16; i += 1) {
+      const index = offset + i * 4;
+      words[i] = (
+        (message[index] << 24) |
+        (message[index + 1] << 16) |
+        (message[index + 2] << 8) |
+        message[index + 3]
+      ) >>> 0;
+    }
+
+    for (let i = 16; i < 80; i += 1) {
+      words[i] = rotateLeft(words[i - 3] ^ words[i - 8] ^ words[i - 14] ^ words[i - 16], 1) >>> 0;
+    }
+
+    let a = h0;
+    let b = h1;
+    let c = h2;
+    let d = h3;
+    let e = h4;
+
+    for (let i = 0; i < 80; i += 1) {
+      let f;
+      let k;
+
+      if (i < 20) {
+        f = (b & c) | (~b & d);
+        k = 0x5a827999;
+      } else if (i < 40) {
+        f = b ^ c ^ d;
+        k = 0x6ed9eba1;
+      } else if (i < 60) {
+        f = (b & c) | (b & d) | (c & d);
+        k = 0x8f1bbcdc;
+      } else {
+        f = b ^ c ^ d;
+        k = 0xca62c1d6;
+      }
+
+      const temp = (rotateLeft(a, 5) + f + e + k + words[i]) >>> 0;
+      e = d;
+      d = c;
+      c = rotateLeft(b, 30) >>> 0;
+      b = a;
+      a = temp;
+    }
+
+    h0 = (h0 + a) >>> 0;
+    h1 = (h1 + b) >>> 0;
+    h2 = (h2 + c) >>> 0;
+    h3 = (h3 + d) >>> 0;
+    h4 = (h4 + e) >>> 0;
+  }
+
+  return [h0, h1, h2, h3, h4].flatMap((word) => [
+    (word >>> 24) & 0xff,
+    (word >>> 16) & 0xff,
+    (word >>> 8) & 0xff,
+    word & 0xff,
+  ]);
+}
+
+function uuidFromExerciseSeed(seed) {
+  const bytes = sha1Bytes(`gridset-exercise:${seed}`).slice(0, 16);
+  bytes[6] = (bytes[6] & 0x0f) | 0x50;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = bytes.map((byte) => byte.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const getExerciseCatalogId = (id) => (UUID_REGEX.test(id) ? id : uuidFromExerciseSeed(id));
+
+const EXERCISE_UNIT_OVERRIDES_BY_NAME = {
   '푸시업': 'reps',
   '데드버그': 'reps',
   '힙 브릿지': 'reps',
@@ -33,26 +113,28 @@ const DEFAULT_EXERCISE_UNITS = {
   '사이드 레그 레이즈': 'reps',
 };
 
-const EXERCISE_UNIT_OVERRIDES = new Map(Object.entries(DEFAULT_EXERCISE_UNITS));
+const EXERCISE_UNIT_OVERRIDES = new Map(Object.entries(EXERCISE_UNIT_OVERRIDES_BY_NAME));
 const EXERCISE_EQUIPMENT_OVERRIDES = {
   '마운틴 클라이머': '맨몸',
   '인버티드 로우': '맨몸',
   '밴드 스쿼트': '밴드',
 };
 
-export const getDefaultExerciseUnit = (name) => EXERCISE_UNIT_OVERRIDES.get(name) || 'kg';
+export const getFallbackExerciseUnit = (name) => EXERCISE_UNIT_OVERRIDES.get(name) || 'kg';
 
-// Default seed exercises with muscle and equipment info
-export const DEFAULT_EXERCISES = [
-  { id: DEFAULT_EXERCISE_IDS['벤치프레스'], name: '벤치프레스', englishName: 'Bench Press', primary_muscle: '대흉근', secondaryMuscles: ['삼각근', '상완삼두근'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['스쿼트'], name: '스쿼트', englishName: 'Squat', primary_muscle: '대퇴사두', secondaryMuscles: ['둔근', '햄스트링'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['데드리프트'], name: '데드리프트', englishName: 'Deadlift', primary_muscle: '척추기립근', secondaryMuscles: ['둔근', '햄스트링'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['풀업'], name: '풀업', englishName: 'Pull Up', primary_muscle: '광배근', secondaryMuscles: ['상완이두근'], equipment: '맨몸', category: 'strength', unit: 'reps', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['바벨 로우'], name: '바벨 로우', englishName: 'Barbell Row', primary_muscle: '광배근', secondaryMuscles: ['상완이두근', '삼각근'], equipment: '바벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['덤벨 숄더 프레스'], name: '덤벨 숄더 프레스', englishName: 'Dumbbell Shoulder Press', primary_muscle: '삼각근', secondaryMuscles: ['상완삼두근'], equipment: '덤벨', category: 'strength', unit: 'kg', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['불가리안 스플릿 스쿼트'], name: '불가리안 스플릿 스쿼트', englishName: 'Bulgarian Split Squat', primary_muscle: '대퇴사두', secondaryMuscles: ['둔근', '햄스트링'], equipment: '덤벨', category: 'strength', unit: 'kg', is_unilateral: true, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-  { id: DEFAULT_EXERCISE_IDS['플랭크'], name: '플랭크', englishName: 'Plank', primary_muscle: '복근', secondaryMuscles: [], equipment: '맨몸', category: 'strength', unit: 'sec', is_unilateral: false, user_id: null, created_at: new Date().toISOString(), updated_at: new Date().toISOString() },
-];
+export const EXERCISE_CATALOG = EXERCISE_DICTIONARY.map((exercise) => ({
+  id: getExerciseCatalogId(exercise.id),
+  name: exercise.name,
+  englishName: exercise.englishName || null,
+  primary_muscle: normalizeMuscleLabel(exercise.primaryMuscle) || '기타',
+  secondaryMuscles: exercise.secondaryMuscles || [],
+  equipment: EXERCISE_EQUIPMENT_OVERRIDES[exercise.name] || exercise.equipment || '기타',
+  category: exercise.category || 'strength',
+  unit: EXERCISE_UNIT_OVERRIDES.get(exercise.name) || exercise.unit || getFallbackExerciseUnit(exercise.name),
+  is_unilateral: exercise.is_unilateral ?? false,
+  synonyms: exercise.synonyms || [],
+  user_id: null,
+}));
 
 function targetExercise(name, target_sets, target_record, rest_between_sets = 90, rest_after_exercise = 120) {
   return {
@@ -400,14 +482,14 @@ function normalizeExerciseName(name) {
 
 function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
   return {
-    id: generateUUID(),
+    id: getExerciseCatalogId(dictionaryExercise.id),
     name: dictionaryExercise.name,
     englishName: dictionaryExercise.englishName || null,
     primary_muscle: normalizeMuscleLabel(dictionaryExercise.primaryMuscle) || '기타',
     secondaryMuscles: dictionaryExercise.secondaryMuscles || [],
     equipment: EXERCISE_EQUIPMENT_OVERRIDES[dictionaryExercise.name] || dictionaryExercise.equipment || '기타',
     category: dictionaryExercise.category || 'strength',
-    unit: EXERCISE_UNIT_OVERRIDES.get(dictionaryExercise.name) || dictionaryExercise.unit || getDefaultExerciseUnit(dictionaryExercise.name),
+    unit: EXERCISE_UNIT_OVERRIDES.get(dictionaryExercise.name) || dictionaryExercise.unit || getFallbackExerciseUnit(dictionaryExercise.name),
     is_unilateral: dictionaryExercise.is_unilateral ?? false,
     synonyms: dictionaryExercise.synonyms || [],
     user_id: dictionaryExercise.user_id ?? null,
@@ -417,7 +499,7 @@ function dictionaryExerciseToStoreExercise(dictionaryExercise, timestamp) {
 }
 
 function ensureDummyExercises(existingExercises, timestamp) {
-  const exercises = existingExercises.length > 0 ? [...existingExercises] : [...DEFAULT_EXERCISES];
+  const exercises = existingExercises.length > 0 ? [...existingExercises] : [...EXERCISE_CATALOG];
   const exercisesByName = new Map(exercises.map((exercise) => [normalizeExerciseName(exercise.name), exercise]));
   const dictionaryByName = new Map(EXERCISE_DICTIONARY.map((exercise) => [normalizeExerciseName(exercise.name), exercise]));
 
@@ -425,11 +507,10 @@ function ensureDummyExercises(existingExercises, timestamp) {
     const key = normalizeExerciseName(name);
     if (exercisesByName.has(key)) return;
 
-    // 만약 마스터 DEFAULT_EXERCISES에 있으면 거기로 매핑
-    const defaultEx = DEFAULT_EXERCISES.find(ex => normalizeExerciseName(ex.name) === key);
-    if (defaultEx) {
-      exercises.push(defaultEx);
-      exercisesByName.set(key, defaultEx);
+    const catalogExercise = EXERCISE_CATALOG.find(ex => normalizeExerciseName(ex.name) === key);
+    if (catalogExercise) {
+      exercises.push(catalogExercise);
+      exercisesByName.set(key, catalogExercise);
       return;
     }
 
@@ -444,7 +525,7 @@ function ensureDummyExercises(existingExercises, timestamp) {
         secondaryMuscles: [],
         equipment: '기타',
         category: 'strength',
-        unit: getDefaultExerciseUnit(name),
+        unit: getFallbackExerciseUnit(name),
         is_unilateral: name.includes('스쿼트') || name.includes('런지'),
         synonyms: [name],
         user_id: null,
@@ -498,7 +579,7 @@ function getProgressRatio(daysAgo) {
 }
 
 function isBodyweightRecordExercise(exercise) {
-  const unit = exercise?.unit || getDefaultExerciseUnit(exercise?.name);
+  const unit = exercise?.unit || getFallbackExerciseUnit(exercise?.name);
   return unit === 'reps' || unit === 'sec' || exercise?.equipment === '맨몸';
 }
 
@@ -532,7 +613,7 @@ function getSetRecordValue({ exercise, link, setIndex, side, daysAgo, condition,
   const profile = EXERCISE_PROGRESS_PROFILES[exercise.name] || {};
   const progressRatio = getProgressRatio(daysAgo);
   const targetRecord = Number(link.target_record) || profile.recordStart || 10;
-  const unit = exercise.unit || getDefaultExerciseUnit(exercise.name);
+  const unit = exercise.unit || getFallbackExerciseUnit(exercise.name);
   const baseRecord = profile.recordStart && profile.recordEnd
     ? interpolate(profile.recordStart, profile.recordEnd, progressRatio)
     : targetRecord;

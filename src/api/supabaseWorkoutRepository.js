@@ -1,11 +1,11 @@
-import { DEFAULT_EXERCISES, getDefaultExerciseUnit } from '../data/dummyGenerator.js';
+import { EXERCISE_CATALOG, getFallbackExerciseUnit } from '../data/dummyGenerator.js';
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
 import { supabase } from '../utils/supabaseClient.js';
 
-const DEFAULT_EXERCISE_ID_SET = new Set(DEFAULT_EXERCISES.map((exercise) => exercise.id));
+const CATALOG_EXERCISE_ID_SET = new Set(EXERCISE_CATALOG.map((exercise) => exercise.id));
 
-export const DEFAULT_EXERCISE_BY_NAME = new Map(
-  DEFAULT_EXERCISES.map((exercise) => [exercise.name.toLowerCase(), exercise]),
+export const CATALOG_EXERCISE_BY_NAME = new Map(
+  EXERCISE_CATALOG.map((exercise) => [exercise.name.toLowerCase(), exercise]),
 );
 
 export function normalizeExerciseForApp(exercise) {
@@ -16,7 +16,7 @@ export function normalizeExerciseForApp(exercise) {
     primary_muscle: normalizeMuscleLabel(exercise.primary_muscle ?? exercise.primaryMuscle) || '기타',
     equipment: exercise.equipment || '기타',
     category: exercise.category || 'strength',
-    unit: exercise.unit || getDefaultExerciseUnit(exercise.name),
+    unit: exercise.unit || getFallbackExerciseUnit(exercise.name),
     is_unilateral: exercise.is_unilateral ?? false,
     synonyms: exercise.synonyms || [],
   };
@@ -61,8 +61,8 @@ function exerciseUpdatesForSupabase(updates, updatedAt) {
   return dbUpdates;
 }
 
-function mergeDefaultAndServerExercises(serverExercises = []) {
-  const byName = new Map(DEFAULT_EXERCISES.map((exercise) => [
+function mergeCatalogAndServerExercises(serverExercises = []) {
+  const byName = new Map(EXERCISE_CATALOG.map((exercise) => [
     exercise.name.toLowerCase(),
     normalizeExerciseForApp(exercise),
   ]));
@@ -89,7 +89,7 @@ function throwIfSupabaseError(result) {
 }
 
 export function isPublicMasterExercise(exercise) {
-  return exercise?.user_id === null || DEFAULT_EXERCISE_ID_SET.has(exercise?.id);
+  return exercise?.user_id === null || CATALOG_EXERCISE_ID_SET.has(exercise?.id);
 }
 
 export async function fetchPublicExerciseCatalog() {
@@ -100,7 +100,7 @@ export async function fetchPublicExerciseCatalog() {
     .order('name', { ascending: true });
 
   if (error) throw error;
-  return mergeDefaultAndServerExercises(data || []);
+  return mergeCatalogAndServerExercises(data || []);
 }
 
 export async function fetchUserWorkoutData(userId) {
@@ -138,7 +138,10 @@ export async function fetchUserWorkoutData(userId) {
   const sessionExerciseGroupResult = sessionIds.length > 0
     ? await supabase.from('session_exercise_groups').select('*').in('session_id', sessionIds)
     : { data: [], error: null };
-  if (sessionExerciseGroupResult.error) throw sessionExerciseGroupResult.error;
+  // PGRST205: table not yet created in DB — treat as empty until migration runs
+  if (sessionExerciseGroupResult.error && sessionExerciseGroupResult.error.code !== 'PGRST205') {
+    throw sessionExerciseGroupResult.error;
+  }
 
   const { data: serverLogs, error: wlError } = await supabase
     .from('workout_logs')
@@ -154,7 +157,7 @@ export async function fetchUserWorkoutData(userId) {
   if (setRecordResult.error) throw setRecordResult.error;
 
   return {
-    exercises: mergeDefaultAndServerExercises(sortedServerExercises),
+    exercises: mergeCatalogAndServerExercises(sortedServerExercises),
     routines: serverRoutines || [],
     sessions: serverSessions || [],
     sessionExercises: sessionExerciseResult.data || [],

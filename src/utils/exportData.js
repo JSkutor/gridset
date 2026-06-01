@@ -21,14 +21,6 @@ export function toCSV(rows) {
   return lines.join("\n");
 }
 
-/**
- * CSV Blob 생성
- */
-function makeCSVBlob(csv) {
-  // BOM을 추가해 Excel에서 한글 깨짐 방지
-  return new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
-}
-
 // ─────────────────────────────────────────────
 // 각 CSV 데이터셋 생성 함수
 // ─────────────────────────────────────────────
@@ -40,8 +32,6 @@ export function buildRoutinesExport({
   exercises,
 }) {
   const exerciseMap = new Map(exercises.map((e) => [e.id, e]));
-  const sessionMap = new Map(sessions.map((s) => [s.id, s]));
-  const routineMap = new Map(routines.map((r) => [r.id, r]));
 
   const rows = [];
   // routine_id 순으로 정렬

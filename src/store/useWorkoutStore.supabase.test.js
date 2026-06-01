@@ -1,6 +1,6 @@
 import { beforeEach, describe, test, vi } from 'vitest';
 import assert from 'node:assert/strict';
-import { DEFAULT_EXERCISES } from '../data/dummyGenerator.js';
+import { EXERCISE_CATALOG } from '../data/dummyGenerator.js';
 
 const supabaseMock = vi.hoisted(() => ({
   from: vi.fn(),
@@ -32,7 +32,7 @@ function resetStore() {
   useWorkoutStore.getState().clearRemoteSyncError();
   useWorkoutStore.setState({
     currentUser: guestUser,
-    exercises: DEFAULT_EXERCISES,
+    exercises: EXERCISE_CATALOG,
     routines: [],
     sessions: [],
     sessionExercises: [],
@@ -278,7 +278,7 @@ describe('Workout Store: Supabase exercise master sync', () => {
 
   test('syncExercisesForReferences uploads only custom exercises, not public master rows', async () => {
     const publicDefault = {
-      ...DEFAULT_EXERCISES[0],
+      ...EXERCISE_CATALOG[0],
       user_id: null,
     };
     const publicDbExercise = {
@@ -343,12 +343,12 @@ describe('Workout Store: Supabase exercise master sync', () => {
   test('syncExercisesForReferences skips Supabase when every referenced exercise is public', async () => {
     useWorkoutStore.setState({
       currentUser: memberUser,
-      exercises: DEFAULT_EXERCISES.map((exercise) => ({ ...exercise, user_id: null })),
+      exercises: EXERCISE_CATALOG.map((exercise) => ({ ...exercise, user_id: null })),
     });
 
     await useWorkoutStore
       .getState()
-      .syncExercisesForReferences([DEFAULT_EXERCISES[0].id, DEFAULT_EXERCISES[1].id], memberUser.id);
+      .syncExercisesForReferences([EXERCISE_CATALOG[0].id, EXERCISE_CATALOG[1].id], memberUser.id);
 
     assert.equal(supabaseMock.from.mock.calls.length, 0);
   });

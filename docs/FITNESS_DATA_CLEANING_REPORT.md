@@ -95,7 +95,7 @@ node scratch/sync_exercises.mjs
 * **정제 완료 최종 데이터:** [scratch/extracted_exercises.json](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/extracted_exercises.json)  
   > [!IMPORTANT]
   > **이 JSON 파일이 전체 운동 데이터의 마스터(Source of Truth)입니다.**  
-  > 기본 운동 사전을 수정하거나 새로운 운동을 추가할 때에는 DB를 직접 수정하지 않고, **이 JSON 파일을 먼저 수정**해야 합니다. 수정 후 아래의 터미널 명령어를 통해 서버 DB로 즉시 반영(Upsert) 동기화할 수 있습니다.
+  > 내장 운동 사전을 수정하거나 새로운 운동을 추가할 때에는 DB를 직접 수정하지 않고, **이 JSON 파일을 먼저 수정**해야 합니다. 수정 후 아래의 터미널 명령어를 통해 서버 DB로 즉시 반영(Upsert) 동기화할 수 있습니다.
 * **안전 백업 원본 파일:** [scratch/extracted_exercises.json.bak](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/extracted_exercises.json.bak)
 * **초경량 DB 실시간 동기화 스크립트:** [scratch/sync_exercises.mjs](file:///Users/kutor/Documents/Projects_Kutor/gridset/scratch/sync_exercises.mjs)
   > [!TIP]

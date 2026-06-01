@@ -45,7 +45,7 @@ CREATE TABLE public.exercises (
     unit TEXT DEFAULT 'kg' NOT NULL,
     is_unilateral BOOLEAN DEFAULT false NOT NULL,
     synonyms TEXT[] DEFAULT '{}'::TEXT[] NOT NULL,
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- NULL means public/default exercise
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE, -- NULL means public catalog exercise
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

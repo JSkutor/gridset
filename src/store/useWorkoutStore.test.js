@@ -2,7 +2,7 @@ import { test, describe, beforeEach } from 'vitest';
 import assert from 'node:assert/strict';
 import { MAX_SESSIONS_PER_ROUTINE } from '../utils/sessionHelper.js';
 import { buildInitialBlocks } from '../utils/setGridModel.js';
-import { DEFAULT_EXERCISES } from '../data/dummyGenerator.js';
+import { EXERCISE_CATALOG } from '../data/dummyGenerator.js';
 
 const { useWorkoutStore } = await import('./useWorkoutStore.js');
 
@@ -11,6 +11,19 @@ const guestUser = {
   name: '게스트',
   isGuest: true,
 };
+
+function exerciseByLabel(label) {
+  const normalized = label.toLowerCase();
+  const compact = normalized.replace(/\s+/g, '');
+  return useWorkoutStore.getState().exercises.find((exercise) =>
+    exercise.name.toLowerCase() === normalized ||
+    exercise.name.toLowerCase().replace(/\s+/g, '') === compact ||
+    exercise.synonyms?.some((synonym) => (
+      synonym.toLowerCase() === normalized ||
+      synonym.toLowerCase().replace(/\s+/g, '') === compact
+    )),
+  );
+}
 
 beforeEach(() => {
   window.localStorage.clear();
@@ -42,7 +55,7 @@ describe('Workout Store: Routine & Session Templates', () => {
     const routine = useWorkoutStore.getState().addRoutine('PPL');
     const push = useWorkoutStore.getState().addSession(routine.id, 'Push');
     const pull = useWorkoutStore.getState().addSession(routine.id, 'Pull');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
     const link = useWorkoutStore.getState().addSessionExercise(push.id, bench.id, 1, 4, '8');
 
     assert.deepEqual(
@@ -76,7 +89,7 @@ describe('Workout Store: Routine & Session Templates', () => {
     const upper = useWorkoutStore.getState().addSession(routine.id, 'Upper');
     const lower = useWorkoutStore.getState().addSession(routine.id, 'Lower');
     const extra = useWorkoutStore.getState().addSession(routine.id, 'Extra');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
 
     useWorkoutStore.getState().addSessionExercise(lower.id, bench.id, 1, 3, '10');
     useWorkoutStore.getState().deleteSession(lower.id);
@@ -95,7 +108,7 @@ describe('Workout Store: Routine & Session Templates', () => {
     const routine = useWorkoutStore.getState().addRoutine('Strength');
     const session = useWorkoutStore.getState().addSession(routine.id, 'A');
     const [bench, squat, deadlift] = ['벤치프레스', '스쿼트', '데드리프트'].map((name) =>
-      useWorkoutStore.getState().exercises.find((exercise) => exercise.name === name),
+      exerciseByLabel(name),
     );
     const first = useWorkoutStore.getState().addSessionExercise(session.id, bench.id, 1, 3, '10');
     const second = useWorkoutStore.getState().addSessionExercise(session.id, squat.id, 2, 3, '10');
@@ -115,7 +128,7 @@ describe('Workout Store: Routine & Session Templates', () => {
   test('duplicateRoutine copies sessions and exercise targets with new IDs', () => {
     const routine = useWorkoutStore.getState().addRoutine('Base');
     const session = useWorkoutStore.getState().addSession(routine.id, 'Day A');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
     const link = useWorkoutStore.getState().addSessionExercise(session.id, bench.id, 1, 4, '8');
 
     useWorkoutStore.getState().updateSessionExercise(link.id, {
@@ -154,7 +167,7 @@ describe('Workout Store: Routine & Session Templates', () => {
   test('deleteRoutine removes child sessions and session exercises', () => {
     const routine = useWorkoutStore.getState().addRoutine('To Remove');
     const session = useWorkoutStore.getState().addSession(routine.id, 'Only Day');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
 
     useWorkoutStore.getState().addSessionExercise(session.id, bench.id, 1, 3, '10');
     useWorkoutStore.getState().deleteRoutine(routine.id);
@@ -168,7 +181,7 @@ describe('Workout Store: Routine & Session Templates', () => {
     const routine = useWorkoutStore.getState().addRoutine('Superset Base');
     const session = useWorkoutStore.getState().addSession(routine.id, 'Day A');
     const [bench, squat, deadlift] = ['벤치프레스', '스쿼트', '데드리프트'].map((name) =>
-      useWorkoutStore.getState().exercises.find((exercise) => exercise.name === name),
+      exerciseByLabel(name),
     );
     const first = useWorkoutStore.getState().addSessionExercise(session.id, bench.id, 1, 4, '8');
     const second = useWorkoutStore.getState().addSessionExercise(session.id, squat.id, 2, 3, '10');
@@ -277,7 +290,7 @@ describe('Workout Store: Routine & Session Templates', () => {
     const routine = useWorkoutStore.getState().addRoutine('Delete Group');
     const session = useWorkoutStore.getState().addSession(routine.id, 'Day A');
     const [bench, squat] = ['벤치프레스', '스쿼트'].map((name) =>
-      useWorkoutStore.getState().exercises.find((exercise) => exercise.name === name),
+      exerciseByLabel(name),
     );
     const first = useWorkoutStore.getState().addSessionExercise(session.id, bench.id, 1, 3, '8');
     const second = useWorkoutStore.getState().addSessionExercise(session.id, squat.id, 2, 3, '10');
@@ -294,7 +307,7 @@ describe('Workout Store: Workout Log Persistence & Flow Integration', () => {
   test('deleteWorkoutLog removes its set records', () => {
     const routine = useWorkoutStore.getState().addRoutine('테스트 루틴');
     const session = useWorkoutStore.getState().addSession(routine.id, '테스트 세션');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
     const log = useWorkoutStore.getState().startWorkoutLog(session.id);
     const setRecord = useWorkoutStore.getState().addSetRecord(log.id, bench.id, 1, 80, '8', 'both');
 
@@ -307,7 +320,7 @@ describe('Workout Store: Workout Log Persistence & Flow Integration', () => {
   test('saveWorkoutLog persists entered sets to workoutLogs and setRecords', () => {
     const routine = useWorkoutStore.getState().addRoutine('루틴 A');
     const session = useWorkoutStore.getState().addSession(routine.id, '세션 B');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
     
     const startTime = new Date(Date.now() - 3600 * 1000).toISOString();
     const blocks = [
@@ -495,7 +508,7 @@ describe('Workout Store: Seed Data & Resets', () => {
     assert.equal(state.sessionExerciseGroups.length, 0);
     assert.equal(state.workoutLogs.length, 0);
     assert.equal(state.setRecords.length, 0);
-    assert.equal(state.exercises.length, DEFAULT_EXERCISES.length);
+    assert.equal(state.exercises.length, EXERCISE_CATALOG.length);
     assert.equal(state.hasClearedDemoData, true);
   });
 });
@@ -549,7 +562,7 @@ describe('Workout Store: Security and Defensive Validation Boundaries', () => {
   test('validates and cleanses set records weight, reps record, and memo boundaries', () => {
     const routine = useWorkoutStore.getState().addRoutine('보안 테스트');
     const session = useWorkoutStore.getState().addSession(routine.id, '세션');
-    const bench = useWorkoutStore.getState().exercises.find((exercise) => exercise.name === '벤치프레스');
+    const bench = exerciseByLabel('벤치프레스');
     
     const longMemo = 'M'.repeat(1200);
     const longRecord = 'R'.repeat(60);

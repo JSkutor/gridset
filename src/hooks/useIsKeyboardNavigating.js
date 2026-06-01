@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 
 /**
  * Tracks whether body.keyboard-navigating is currently set,
@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
  *
  * This avoids spawning one observer per ExerciseRow instance.
  */
-let subscribers = new Set();
+const subscribers = new Set();
 let currentValue = document.body.classList.contains('keyboard-navigating');
 
 const observer = new MutationObserver(() => {
@@ -20,16 +20,14 @@ const observer = new MutationObserver(() => {
 observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
 export function useIsKeyboardNavigating() {
-  const [isKeyboardNav, setIsKeyboardNav] = useState(() => currentValue);
-
-  useEffect(() => {
-    // Sync in case the class changed between render and effect
-    setIsKeyboardNav(document.body.classList.contains('keyboard-navigating'));
-    subscribers.add(setIsKeyboardNav);
-    return () => {
-      subscribers.delete(setIsKeyboardNav);
-    };
-  }, []);
-
-  return isKeyboardNav;
+  return useSyncExternalStore(
+    (onStoreChange) => {
+      subscribers.add(onStoreChange);
+      return () => {
+        subscribers.delete(onStoreChange);
+      };
+    },
+    () => currentValue,
+    () => false,
+  );
 }

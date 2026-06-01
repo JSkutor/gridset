@@ -1,5 +1,5 @@
 import {
-  DEFAULT_EXERCISES,
+  EXERCISE_CATALOG,
   createDummyWorkoutData,
   generateUUID,
 } from "../../data/dummyGenerator.js";
@@ -272,10 +272,10 @@ export const createWorkoutLogSlice = (set, get) => ({
     const { exercises, currentUser } = get();
     set({
       exercises: currentUser.isGuest
-        ? DEFAULT_EXERCISES
+        ? EXERCISE_CATALOG
         : exercises.length > 0
           ? exercises
-          : DEFAULT_EXERCISES,
+          : EXERCISE_CATALOG,
       routines: [],
       sessions: [],
       sessionExercises: [],
