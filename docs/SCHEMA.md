@@ -101,35 +101,45 @@ workout_logs (실제 수행 기록, 세션 참조)
 운동 사전(`src/data/exerciseDictionary.js`)과 추출 원본(`scratch/extracted_exercises.json`)은 전체 873개 운동 목록을 완벽하게 공유하며 상호 정합성(Sync)이 유지됩니다.
 
 #### 1. 한글화 및 번역 표준 (Translation Standards)
+
 - 어색한 직역이나 영문 단어가 혼재되지 않은 **자연스러운 한글 헬스 용어** 사용을 원칙으로 합니다.
 - **영어 단어 표기 제한**: `EZ`, `SMR`, `T바`, `V바`, `JM` 등 피트니스 커뮤니티에서 통용되는 표준 약어/아크로님 외의 일반 영어 단어(`Circles`, `Against`, `Rollout` 등)는 명칭 내에 노출할 수 없으며 전부 표준 한국어 표현으로 번역하여 정제해야 합니다.
-  - *예*: `앵클 Circles` ➔ `발목 돌리기`, `바벨 Rollout` ➔ `바벨 롤아웃`, `Bicycling Stationary` ➔ `실내 자전거`
+  - _예_: `앵클 Circles` ➔ `발목 돌리기`, `바벨 Rollout` ➔ `바벨 롤아웃`, `Bicycling Stationary` ➔ `실내 자전거`
 - **동의어 표준**: `synonyms` 배열의 **첫 번째 원소(index 0)는 항상 운동의 한글 `name`**이어야 하며, 검색 최적화용 동의어 목록(초성 검색 포함)은 중복이 없는 순수한 유니크 배열 상태를 유지합니다.
 
 #### 2. 근육명 표준 (Muscle Standards)
+
 대표 주동근(`primaryMuscle`) 및 보조근(`secondaryMuscles`) 목록은 설명형 라벨(예: "허벅지 앞") 대신 해부학적 표준 명칭을 사용하여 저장합니다.
+
 - **허용 근육 표준 목록 (17개)**:
   `대흉근`, `광배근`, `승모근`, `삼각근`, `상완이두근`, `상완삼두근`, `전완근`, `복근`, `척추기립근`, `둔근`, `대퇴사두`, `햄스트링`, `내전근`, `외전근`, `하퇴삼두근`, `경부근`, `기타`
 - `primaryMuscle`과 `secondaryMuscles` 간에 중복된 근육이 포함되어서는 안 됩니다.
 
 #### 3. 장비명 표준 (Equipment Standards)
+
 사용 장비(`equipment`)는 다음 12개의 표준값만을 가집니다.
+
 - **허용 장비 표준 목록 (12개)**:
   `맨몸`, `바벨`, `덤벨`, `머신`, `케틀벨`, `밴드`, `케이블`, `폼롤러`, `짐볼`, `메디신볼`, `e-z curl bar`, `기타`
 
 #### 4. 카테고리 표준 (Category Standards)
+
 운동 유형(`category`)은 데이터베이스 정합성을 위해 다음 5개 분류로 엄격하게 통일합니다.
+
 - **허용 카테고리 목록 (5개)**:
   `strength` (근력 운동), `stretching` (스트레칭), `cardio` (유산소), `plyometrics` (플라이오메트릭), `powerlifting` (파워리프팅)
-- *주의*: 원본 데이터의 `olympic weightlifting`(역도) 및 `strongman` 운동은 모두 `strength`로 정합 재분류하여 처리합니다.
+- _주의_: 원본 데이터의 `olympic weightlifting`(역도) 및 `strongman` 운동은 모두 `strength`로 정합 재분류하여 처리합니다.
 
 #### 5. 측정 단위 표준 (Unit Standards)
+
 운동 진행 시 세트별 목표치 기록 단위(`unit`)는 카테고리와 성격에 맞춰 다음과 같이 적용합니다.
+
 - `sec` (초): `stretching` 전체 종목, 유산소(`cardio`) 일부 종목, 버티는 정적 코어 운동(예: 플랭크, 홀드).
 - `reps` (회): 맨몸 근력 운동(`맨몸` + `strength` / `plyometrics`).
 - `kg` (무게): 중량/기구 근력 운동(`바벨`, `덤벨`, `머신`, `케이블` 등 + `strength` / `powerlifting`).
 
 #### 6. 편측성 운동 표준 (Unilateral Standards)
+
 - 좌/우 운동을 별도로 기록하고 관리해야 하는 모든 종목(예: 싱글레그 스쿼트, 런지, 스텝업, 얼터네이트 덤벨 컬, 원암 로우 등)은 반드시 `is_unilateral: true`로 지정합니다.
 - 양측성(Bilateral) 근력 운동에는 `is_unilateral: false`를 지정하며, 편측성 관련 동의어가 synonyms에 실수로 유입되지 않도록 교차 검수해야 합니다.
 
@@ -163,3 +173,15 @@ workout_logs (실제 수행 기록, 세션 참조)
 - `side` (String): 수행 방향 ('L', 'R', 'both' 중 하나, 기본값 'both')
 - `memo` (String, Nullable): 세트별 메모 (예: "너무 무거움")
 - `created_at` / `updated_at`
+
+---
+
+## Supabase 배포·운영 메모
+
+현재 supabase 자동화 세팅은 없음. 스키마 수정하면 supabase 사이트 들어가서 복붙해야 함.
+
+- **원격 DB에 테이블이 없을 때**: 레포 DDL만으로 자동 반영되지 않음. `supabase/migrations/` 없음 → 증분 SQL은 `docs/migrations/` (예: `create_session_exercise_groups.sql`)를 **Supabase SQL Editor에서 수동 실행**, 또는 최초 구축 시 `scratch/supabase_schema.sql` 전체 실행(이미 운영 중이면 전체 재실행 지양).
+- **`session_exercise_groups`**: 슈퍼세트/서킷 그룹용. 스키마에 문서화·앱 연동됨. 서버를 그룹 기능 이전 스키마로 올렸다면 위 증분 마이그레이션 한 번 필요.
+- **Supabase CLI `db push`**: `supabase/migrations/*.sql`의 **스키마(DDL)** 를 `supabase link`된 원격에 적용. 대시보드 복붙 대신 쓰려면 `supabase init` + 마이그레이션 파일 관리 선행.
+- **특정 행 수정**: `db push` 아님. `UPDATE`/`SELECT` 등은 SQL Editor, CLI `supabase db query "..." --linked`(v2.79+), Table Editor, 또는 앱/시드 스크립트.
+- **설치 판단**: 스키마 변경이 거의 없으면 CLI·migrations 세팅은 선택. 가끔 원격 SQL만 돌릴 거면 `login` + `link` + `db query`만 해도 됨.

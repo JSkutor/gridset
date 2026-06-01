@@ -9,5 +9,6 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.routines TO authenticated, servic
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.sessions TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.exercises TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_exercises TO authenticated, service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.session_exercise_groups TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.workout_logs TO authenticated, service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.set_records TO authenticated, service_role;

@@ -16,6 +16,9 @@ create table if not exists public.session_exercise_groups (
 create index if not exists idx_session_exercise_groups_session_id
   on public.session_exercise_groups(session_id);
 
+-- API grants
+grant select, insert, update, delete on public.session_exercise_groups to authenticated, service_role;
+
 -- RLS
 alter table public.session_exercise_groups enable row level security;
 
