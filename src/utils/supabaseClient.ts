@@ -4,7 +4,7 @@ const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
 let supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 
 // URL을 클렌징하고 검증하는 함수
-const sanitizeUrl = (url) => {
+const sanitizeUrl = (url: string): string => {
   if (!url) return '';
   let clean = url.trim();
   // 슬래시 및 서픽스 제거
@@ -16,8 +16,8 @@ const sanitizeUrl = (url) => {
 
 let supabaseUrl = sanitizeUrl(rawUrl);
 
-const isValidUrl = (url) => {
-  return url && (url.startsWith('http://') || url.startsWith('https://'));
+const isValidUrl = (url: string): boolean => {
+  return Boolean(url) && (url.startsWith('http://') || url.startsWith('https://'));
 };
 
 if (!isValidUrl(supabaseUrl) || !supabaseAnonKey || supabaseUrl.includes('your_supabase_project_url')) {

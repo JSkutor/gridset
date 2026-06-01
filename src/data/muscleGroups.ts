@@ -16,9 +16,11 @@ export const MUSCLE_GROUPS = [
   '하퇴삼두근',
   '경부근',
   '기타',
-];
+] as const;
 
-const MUSCLE_ALIASES = {
+export type MuscleGroup = typeof MUSCLE_GROUPS[number];
+
+const MUSCLE_ALIASES: Record<string, MuscleGroup> = {
   가슴: '대흉근',
   어깨: '삼각근',
   이두: '상완이두근',
@@ -37,10 +39,9 @@ const MUSCLE_ALIASES = {
   승모: '승모근',
   traps: '승모근',
   trapezius: '승모근',
-};
+} as const satisfies Record<string, MuscleGroup>;
 
-export function normalizeMuscleLabel(label) {
+export function normalizeMuscleLabel<T extends string | null | undefined>(label: T): T | MuscleGroup {
   if (!label) return label;
   return MUSCLE_ALIASES[label] ?? label;
 }
-

@@ -9,9 +9,9 @@ export const ROUTINE_ROW_LAYOUT_TRANSITION = {
   stiffness: 350,
   damping: 30,
   layout: { type: 'spring', stiffness: 460, damping: 36 },
-};
+} as const;
 
-export function getRoutineRowAnimation(isHighlighted) {
+export function getRoutineRowAnimation(isHighlighted: boolean) {
   return {
     scale: isHighlighted ? 1.025 : 1,
     y: isHighlighted ? -2 : 0,
@@ -22,6 +22,6 @@ export function getRoutineRowAnimation(isHighlighted) {
   };
 }
 
-export function getRoutineRowHoverAnimation(isHighlighted) {
+export function getRoutineRowHoverAnimation(isHighlighted: boolean) {
   return isHighlighted ? undefined : { backgroundColor: HOVER_BACKGROUND };
 }

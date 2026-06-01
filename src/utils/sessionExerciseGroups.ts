@@ -1,27 +1,48 @@
+import type { Id, SessionExercise, Timestamp } from '../types/workout';
+
 export const MIN_GROUP_SIZE = 2;
 export const MAX_GROUPS_PER_SESSION = 4;
 export const GROUP_COLOR_PALETTE = ['#7aa2f7', '#9ece6a', '#e0af68', '#f7768e'];
 
-export function cleanGroupName(name, fallback = '그룹') {
+type NumericLike = number | string;
+
+type SessionExerciseGroupLike = {
+  id?: Id | null;
+  session_id: Id;
+  name?: string;
+  start_order: NumericLike;
+  size: NumericLike;
+  color?: string | null;
+};
+
+type GroupPlacement = Pick<SessionExerciseGroupLike, 'start_order' | 'size'>;
+
+export function cleanGroupName(name: string | null | undefined, fallback = '그룹'): string {
   return (name || '').trim().slice(0, 40) || fallback;
 }
 
-export function getSessionExerciseLinks(sessionExercises, sessionId) {
+export function getSessionExerciseLinks<T extends Pick<SessionExercise, 'session_id' | 'order'>>(
+  sessionExercises: T[],
+  sessionId: Id,
+): T[] {
   return sessionExercises
     .filter((sessionExercise) => sessionExercise.session_id === sessionId)
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 }
 
-export function normalizeGroupPlacement(group, exerciseCount) {
+export function normalizeGroupPlacement<T extends GroupPlacement>(
+  group: T,
+  exerciseCount: number,
+): (T & { start_order: number; size: number }) | null {
   if (exerciseCount < MIN_GROUP_SIZE) return null;
 
-  const rawSize = Number.parseInt(group.size, 10);
+  const rawSize = Number.parseInt(String(group.size), 10);
   const size = Math.min(
     exerciseCount,
     Math.max(MIN_GROUP_SIZE, Number.isFinite(rawSize) ? rawSize : MIN_GROUP_SIZE),
   );
   const maxStart = Math.max(1, exerciseCount - size + 1);
-  const rawStart = Number.parseInt(group.start_order, 10);
+  const rawStart = Number.parseInt(String(group.start_order), 10);
   const startOrder = Math.min(
     maxStart,
     Math.max(1, Number.isFinite(rawStart) ? rawStart : 1),
@@ -34,21 +55,29 @@ export function normalizeGroupPlacement(group, exerciseCount) {
   };
 }
 
-export function getGroupEnd(group) {
+export function getGroupEnd(group: GroupPlacement): number {
   return (Number(group.start_order) || 1) + (Number(group.size) || MIN_GROUP_SIZE) - 1;
 }
 
-export function groupsOverlap(a, b) {
+export function groupsOverlap(a: GroupPlacement, b: GroupPlacement): boolean {
   return (Number(a.start_order) || 1) <= getGroupEnd(b) && (Number(b.start_order) || 1) <= getGroupEnd(a);
 }
 
-export function getSessionGroups(sessionExerciseGroups, sessionId, excludeId = null) {
+export function getSessionGroups<T extends SessionExerciseGroupLike>(
+  sessionExerciseGroups: T[],
+  sessionId: Id,
+  excludeId: Id | null = null,
+): T[] {
   return sessionExerciseGroups
     .filter(group => group.session_id === sessionId && group.id !== excludeId)
-    .sort((a, b) => (a.start_order || 0) - (b.start_order || 0));
+    .sort((a, b) => (Number(a.start_order) || 0) - (Number(b.start_order) || 0));
 }
 
-export function findFirstAvailableGroupStart(size, otherGroups, exerciseCount) {
+export function findFirstAvailableGroupStart(
+  size: number,
+  otherGroups: GroupPlacement[],
+  exerciseCount: number,
+): number | null {
   const maxStart = exerciseCount - size + 1;
   if (maxStart < 1) return null;
 
@@ -63,14 +92,20 @@ export function findFirstAvailableGroupStart(size, otherGroups, exerciseCount) {
   return startOrder <= maxStart ? startOrder : null;
 }
 
-export function findNonOverlappingGroupStart(candidateStart, size, otherGroups, exerciseCount, direction = 0) {
+export function findNonOverlappingGroupStart(
+  candidateStart: NumericLike,
+  size: number,
+  otherGroups: GroupPlacement[],
+  exerciseCount: number,
+  direction = 0,
+): number | null {
   const maxStart = exerciseCount - size + 1;
   if (maxStart < 1) return null;
 
   const normalizedStart = Math.min(maxStart, Math.max(1, Number(candidateStart) || 1));
-  const sortedGroups = [...otherGroups].sort((a, b) => (a.start_order || 0) - (b.start_order || 0));
+  const sortedGroups = [...otherGroups].sort((a, b) => (Number(a.start_order) || 0) - (Number(b.start_order) || 0));
 
-  const overlapsAt = (startOrder) => sortedGroups.find(group =>
+  const overlapsAt = (startOrder: number) => sortedGroups.find(group =>
     groupsOverlap({ start_order: startOrder, size }, group)
   );
 
@@ -105,7 +140,12 @@ export function findNonOverlappingGroupStart(candidateStart, size, otherGroups, 
   return null;
 }
 
-export function normalizeGroupPlacementWithoutOverlap(group, exerciseCount, otherGroups, direction = 0) {
+export function normalizeGroupPlacementWithoutOverlap<T extends GroupPlacement>(
+  group: T,
+  exerciseCount: number,
+  otherGroups: GroupPlacement[],
+  direction = 0,
+): (T & { start_order: number; size: number }) | null {
   const normalizedGroup = normalizeGroupPlacement(group, exerciseCount);
   if (!normalizedGroup) return null;
 
@@ -121,10 +161,10 @@ export function normalizeGroupPlacementWithoutOverlap(group, exerciseCount, othe
   return { ...normalizedGroup, start_order: startOrder };
 }
 
-export function getLargestAvailableGroupSize(exerciseCount, groups = []) {
+export function getLargestAvailableGroupSize(exerciseCount: number, groups: GroupPlacement[] = []): number {
   if (exerciseCount < MIN_GROUP_SIZE) return 0;
 
-  const sortedGroups = [...groups].sort((a, b) => (a.start_order || 0) - (b.start_order || 0));
+  const sortedGroups = [...groups].sort((a, b) => (Number(a.start_order) || 0) - (Number(b.start_order) || 0));
   let cursor = 1;
   let largestGap = 0;
 
@@ -139,7 +179,10 @@ export function getLargestAvailableGroupSize(exerciseCount, groups = []) {
   return Math.max(largestGap, exerciseCount - cursor + 1);
 }
 
-export function getNextGroupColor(sessionExerciseGroups, sessionId) {
+export function getNextGroupColor(
+  sessionExerciseGroups: Array<Pick<SessionExerciseGroupLike, 'session_id' | 'color'>>,
+  sessionId: Id,
+): string {
   const usedColors = new Set(
     sessionExerciseGroups
       .filter(group => group.session_id === sessionId)
@@ -149,14 +192,20 @@ export function getNextGroupColor(sessionExerciseGroups, sessionId) {
   return GROUP_COLOR_PALETTE.find(color => !usedColors.has(color)) || GROUP_COLOR_PALETTE[0];
 }
 
-export function withGroupColor(group, sessionExerciseGroups = []) {
-  if (group.color) return group;
+export function withGroupColor<T extends SessionExerciseGroupLike>(
+  group: T,
+  sessionExerciseGroups: SessionExerciseGroupLike[] = [],
+): T & { color: string } {
+  if (group.color) return { ...group, color: group.color };
   const sessionGroups = sessionExerciseGroups.filter(item => item.session_id === group.session_id);
   const paletteIndex = Math.max(0, sessionGroups.findIndex(item => item.id === group.id));
   return { ...group, color: GROUP_COLOR_PALETTE[paletteIndex % GROUP_COLOR_PALETTE.length] };
 }
 
-export function getLinksCoveredByGroup(sessionExercises, group) {
+export function getLinksCoveredByGroup<T extends SessionExercise>(
+  sessionExercises: T[],
+  group: SessionExerciseGroupLike,
+): T[] {
   const normalizedGroup = normalizeGroupPlacement(
     group,
     getSessionExerciseLinks(sessionExercises, group.session_id).length,
@@ -169,7 +218,11 @@ export function getLinksCoveredByGroup(sessionExercises, group) {
   );
 }
 
-export function applyGroupTargetSets(sessionExercises, group, updatedAt) {
+export function applyGroupTargetSets<T extends SessionExercise>(
+  sessionExercises: T[],
+  group: SessionExerciseGroupLike,
+  updatedAt: Timestamp,
+): { sessionExercises: T[]; touchedLinks: T[] } {
   const coveredLinks = getLinksCoveredByGroup(sessionExercises, group);
   if (coveredLinks.length < MIN_GROUP_SIZE) {
     return { sessionExercises, touchedLinks: [] };
@@ -180,7 +233,7 @@ export function applyGroupTargetSets(sessionExercises, group, updatedAt) {
   const restAfterExercise = coveredLinks[0].rest_after_exercise !== undefined ? coveredLinks[0].rest_after_exercise : 120;
 
   const coveredIds = new Set(coveredLinks.map((link) => link.id));
-  const touchedLinks = [];
+  const touchedLinks: T[] = [];
   const nextSessionExercises = sessionExercises.map((sessionExercise) => {
     if (!coveredIds.has(sessionExercise.id)) return sessionExercise;
     const nextLink = {
@@ -189,7 +242,7 @@ export function applyGroupTargetSets(sessionExercises, group, updatedAt) {
       rest_between_sets: restBetweenSets,
       rest_after_exercise: restAfterExercise,
       updated_at: updatedAt,
-    };
+    } as T;
     touchedLinks.push(nextLink);
     return nextLink;
   });
@@ -197,7 +250,10 @@ export function applyGroupTargetSets(sessionExercises, group, updatedAt) {
   return { sessionExercises: nextSessionExercises, touchedLinks };
 }
 
-export function findGroupForSessionExercise(sessionExerciseGroups, sessionExercise) {
+export function findGroupForSessionExercise<T extends SessionExerciseGroupLike>(
+  sessionExerciseGroups: T[],
+  sessionExercise: Pick<SessionExercise, 'session_id' | 'order'> | null | undefined,
+): T | null {
   if (!sessionExercise) return null;
   const order = Number(sessionExercise.order) || 0;
   return sessionExerciseGroups.find((group) => {

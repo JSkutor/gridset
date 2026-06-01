@@ -1,7 +1,21 @@
 import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
 import { disassembleHangul, extractChosung, isChosungOnly, matchHangul } from './hangul.js';
 
-export function getExerciseSuggestions(query, exercises = EXERCISE_DICTIONARY, limit = 8) {
+type SearchableExercise = {
+  id: string;
+  name: string;
+  englishName?: string | null;
+  english_name?: string | null;
+  synonyms?: readonly string[] | null;
+};
+
+const DEFAULT_EXERCISES = EXERCISE_DICTIONARY as readonly SearchableExercise[];
+
+export function getExerciseSuggestions<T extends SearchableExercise>(
+  query: string,
+  exercises: readonly T[] = DEFAULT_EXERCISES as unknown as readonly T[],
+  limit = 8,
+): T[] {
   if (!query.trim()) return [];
 
   const q = query.trim().toLowerCase();
@@ -52,8 +66,9 @@ export function getExerciseSuggestions(query, exercises = EXERCISE_DICTIONARY, l
         }
       }
 
-      if (exercise.synonyms?.length > 0) {
-        for (const syn of exercise.synonyms) {
+      const synonyms = exercise.synonyms ?? [];
+      if (synonyms.length > 0) {
+        for (const syn of synonyms) {
           const synLower = syn.toLowerCase();
           const synDisassembled = disassembleHangul(synLower);
 

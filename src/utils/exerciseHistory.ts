@@ -1,24 +1,53 @@
-export function isBodyweightUnit(unit) {
+import type { ExerciseUnit, Id, SetRecord, WorkoutLog } from '../types/workout';
+
+type ExerciseHistoryParams = {
+  exerciseId: Id | null | undefined;
+  setRecords: SetRecord[];
+  workoutLogs: WorkoutLog[];
+  unit: ExerciseUnit | string | null | undefined;
+};
+
+type DailyRecord = {
+  dateObj: Date;
+  dateStr: string;
+  formattedDate: string;
+  value: number;
+  weight: number;
+  reps: number;
+};
+
+export type ExerciseHistoryStats = {
+  totalVolume: number;
+  chartData: DailyRecord[];
+  heatmapData: number[];
+};
+
+export function isBodyweightUnit(unit: ExerciseUnit | string | null | undefined): boolean {
   return unit === 'reps' || unit === 'sec';
 }
 
-export function getExerciseDisplayUnitByUnit(unit) {
+export function getExerciseDisplayUnitByUnit(unit: ExerciseUnit | string | null | undefined): string {
   if (unit === 'sec') return '초';
   if (unit === 'reps') return '개';
   return 'kg';
 }
 
-export function getExerciseTotalLabelByUnit(unit) {
+export function getExerciseTotalLabelByUnit(unit: ExerciseUnit | string | null | undefined): string {
   if (unit === 'sec') return 'Total Time (All Time)';
   if (unit === 'reps') return 'Total Count (All Time)';
   return 'Total Volume (All Time)';
 }
 
-function getLocalDateKey(date) {
+function getLocalDateKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export function buildExerciseHistoryStats({ exerciseId, setRecords, workoutLogs, unit }) {
+export function buildExerciseHistoryStats({
+  exerciseId,
+  setRecords,
+  workoutLogs,
+  unit,
+}: ExerciseHistoryParams): ExerciseHistoryStats {
   const emptyHeatmap = Array.from({ length: 70 }).map(() => 0);
   if (!exerciseId) {
     return {
@@ -38,8 +67,8 @@ export function buildExerciseHistoryStats({ exerciseId, setRecords, workoutLogs,
     return acc + (isBodyweight ? reps : weight * reps);
   }, 0);
 
-  const dailyRecords = {};
-  const volumeByDate = {};
+  const dailyRecords: Record<string, DailyRecord> = {};
+  const volumeByDate: Record<string, number> = {};
 
   exerciseSets.forEach((record) => {
     const log = logsById.get(record.workout_log_id);
@@ -66,9 +95,9 @@ export function buildExerciseHistoryStats({ exerciseId, setRecords, workoutLogs,
     volumeByDate[dateStr] = (volumeByDate[dateStr] || 0) + volumeValue;
   });
 
-  const chartData = Object.values(dailyRecords).sort((a, b) => a.dateObj - b.dateObj);
+  const chartData = Object.values(dailyRecords).sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
   const maxVolume = Math.max(0, ...Object.values(volumeByDate));
-  const heatmapData = [];
+  const heatmapData: number[] = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
