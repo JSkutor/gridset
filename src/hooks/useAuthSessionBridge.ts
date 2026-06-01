@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import type { Session } from '@supabase/supabase-js';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import { useWorkoutStore } from '../store/useWorkoutStore';
 import { supabase } from '../utils/supabaseClient';
 
 type AuthSessionBridgeStore = {
-  setAuthSession: (session: Session | null, event?: string) => void;
+  setAuthSession: (session: Session | null, event?: AuthChangeEvent) => Promise<void>;
 };
 
 export function useAuthSessionBridge(): void {

@@ -4,8 +4,33 @@ import {
   createDummyWorkoutData,
 } from "../../data/dummyGenerator.js";
 import { appLogger } from "../../utils/logger.js";
+import type { AppUser } from "../../types/workout.js";
+import type {
+  AuthSlice,
+  RemoteSyncError,
+  RemoteSyncOptions,
+  RemoteSyncTask,
+  StoreSlice,
+  WorkoutDataState,
+} from "../types.js";
 
-export const GUEST_USER = {
+type SyncErrorLike = {
+  message?: string;
+  status?: number;
+  code?: string | number;
+};
+
+type FailedRemoteSyncTask = {
+  id: string;
+  label: string;
+  task: RemoteSyncTask;
+  error: unknown;
+  dedupKey?: string;
+  createdAt: number;
+  retryCount: number;
+};
+
+export const GUEST_USER: AppUser = {
   id: "00000000-0000-0000-0000-000000000000",
   name: "게스트",
   isGuest: true,
@@ -17,13 +42,13 @@ export const initialSeed = {
     existingExercises: EXERCISE_CATALOG,
   }),
   hasClearedDemoData: false,
-};
+} as unknown as WorkoutDataState;
 
 const createEmptyWorkoutState = ({
-  exercises = EXERCISE_CATALOG,
+  exercises = EXERCISE_CATALOG as WorkoutDataState["exercises"],
   hasClearedDemoData = false,
-} = {}) => ({
-  exercises,
+}: Partial<Pick<WorkoutDataState, "exercises" | "hasClearedDemoData">> = {}): WorkoutDataState => ({
+  exercises: exercises as WorkoutDataState["exercises"],
   routines: [],
   sessions: [],
   sessionExercises: [],
@@ -33,7 +58,7 @@ const createEmptyWorkoutState = ({
   hasClearedDemoData,
 });
 
-const hasLocalWorkoutData = (state) =>
+const hasLocalWorkoutData = (state: WorkoutDataState) =>
   state.routines.length > 0 ||
   state.sessions.length > 0 ||
   state.sessionExercises.length > 0 ||
@@ -41,7 +66,10 @@ const hasLocalWorkoutData = (state) =>
   state.workoutLogs.length > 0 ||
   state.setRecords.length > 0;
 
-const hasServerWorkoutData = (data, userId) =>
+const hasServerWorkoutData = (
+  data: Omit<WorkoutDataState, "hasClearedDemoData">,
+  userId: string,
+) =>
   data.routines.length > 0 ||
   data.sessions.length > 0 ||
   data.sessionExercises.length > 0 ||
@@ -50,7 +78,7 @@ const hasServerWorkoutData = (data, userId) =>
   data.setRecords.length > 0 ||
   data.exercises.some((exercise) => exercise.user_id === userId);
 
-const createGuestDataSnapshot = (state) => ({
+const createGuestDataSnapshot = (state: WorkoutDataState): WorkoutDataState => ({
   exercises: state.exercises,
   routines: state.routines,
   sessions: state.sessions,
@@ -61,9 +89,14 @@ const createGuestDataSnapshot = (state) => ({
   hasClearedDemoData: state.hasClearedDemoData,
 });
 
-export const createAuthSlice = (set, get) => {
-  const failedRemoteSyncTasks = new Map();
-  const inFlightRemoteSyncByDedupKey = new Map();
+const toSyncErrorLike = (error: unknown): SyncErrorLike =>
+  error && typeof error === "object" ? (error as SyncErrorLike) : {};
+
+export const createAuthSlice: StoreSlice<
+  AuthSlice & Pick<WorkoutDataState, "hasClearedDemoData">
+> = (set, get) => {
+  const failedRemoteSyncTasks = new Map<string, FailedRemoteSyncTask>();
+  const inFlightRemoteSyncByDedupKey = new Map<string, Promise<void>>();
   let remoteSyncTaskId = 0;
 
   // 최대 보관할 실패 작업 수
@@ -73,24 +106,26 @@ export const createAuthSlice = (set, get) => {
   // 작업 자동 폐기 시간 (5분 이상 지난 작업은 제거)
   const TASK_TTL_MS = 5 * 60 * 1000;
 
-  const getRemoteSyncErrorMessage = (error) => {
-    if (typeof error?.message === "string" && error.message.trim()) {
-      return error.message;
+  const getRemoteSyncErrorMessage = (error: unknown) => {
+    const syncError = toSyncErrorLike(error);
+    if (typeof syncError.message === "string" && syncError.message.trim()) {
+      return syncError.message;
     }
     return "원격 동기화 중 문제가 발생했습니다.";
   };
 
   // 재시도 불가능한 에러인지 판단 (클라이언트 에러 = 재시도 무의미)
-  const isNonRetryableError = (error) => {
-    if (error?.status && error.status >= 400 && error.status < 500) {
+  const isNonRetryableError = (error: unknown) => {
+    const syncError = toSyncErrorLike(error);
+    if (syncError.status && syncError.status >= 400 && syncError.status < 500) {
       // 409 Conflict / 404 Not Found / 401 Unauthorized 등은
       // 재시도해도 성공할 가능성이 낮음
-      return error.status !== 429 && error.status !== 408;
+      return syncError.status !== 429 && syncError.status !== 408;
     }
     // Supabase 에러 코드 체크
-    if (error?.code) {
+    if (syncError.code) {
       const nonRetryableCodes = ["23505", "PGRST116", "401", "403", "404"];
-      return nonRetryableCodes.includes(String(error.code));
+      return nonRetryableCodes.includes(String(syncError.code));
     }
     return false;
   };
@@ -126,7 +161,11 @@ export const createAuthSlice = (set, get) => {
     return removedCount;
   };
 
-  const updateRemoteSyncError = (label, error, overrides = {}) => {
+  const updateRemoteSyncError = (
+    label: string,
+    error: unknown,
+    overrides: Partial<RemoteSyncError> = {},
+  ) => {
     cleanupStaleTasks();
     const pendingCount = failedRemoteSyncTasks.size;
     if (pendingCount === 0) {
@@ -160,7 +199,11 @@ export const createAuthSlice = (set, get) => {
    *        같은 키로 이미 실패한 작업이 있으면 교체합니다.
    *        예: 'updateSetRecord:xxx-xxx' — 같은 레코드 업데이트는 최신만 유지
    */
-  const runRemoteSync = (label, task, options = {}) => {
+  const runRemoteSync = (
+    label: string,
+    task: RemoteSyncTask,
+    options: RemoteSyncOptions = {},
+  ) => {
     const { dedupKey } = options;
 
     // 중복 키가 있으면 이전 실패 작업을 제거 (최신 작업으로 대체)
@@ -188,7 +231,7 @@ export const createAuthSlice = (set, get) => {
         if (isNonRetryableError(error)) {
           console.warn(
             `[Sync] ${label} — 재시도 불가능한 에러, 저장 안 함:`,
-            error.message || error,
+            toSyncErrorLike(error).message || error,
           );
           return;
         }
@@ -209,7 +252,7 @@ export const createAuthSlice = (set, get) => {
 
         console.error(
           `[Sync] ${label} 실패 (대기: ${failedRemoteSyncTasks.size}개):`,
-          error.message || error,
+          toSyncErrorLike(error).message || error,
         );
       }
     };
@@ -278,23 +321,23 @@ export const createAuthSlice = (set, get) => {
         if (isNonRetryableError(error)) {
           failedRemoteSyncTasks.delete(queuedTask.id);
           discardedCount++;
-          console.warn(
-            `[Sync] ${queuedTask.label} — 재시도 불가능 에러, 폐기:`,
-            error.message || error,
-          );
-        } else {
+            console.warn(
+              `[Sync] ${queuedTask.label} — 재시도 불가능 에러, 폐기:`,
+              toSyncErrorLike(error).message || error,
+            );
+          } else {
           // 재시도 가능 — 횟수 증가 후 다시 저장
           failedRemoteSyncTasks.set(queuedTask.id, {
             ...queuedTask,
             error,
             retryCount: queuedTask.retryCount + 1,
           });
-          console.error(
-            `[Sync] 재시도 실패 ${queuedTask.label} (${queuedTask.retryCount + 1}/${MAX_RETRIES_PER_TASK}):`,
-            error.message || error,
-          );
+            console.error(
+              `[Sync] 재시도 실패 ${queuedTask.label} (${queuedTask.retryCount + 1}/${MAX_RETRIES_PER_TASK}):`,
+              toSyncErrorLike(error).message || error,
+            );
+          }
         }
-      }
     }
 
     const remainingTasks = [...failedRemoteSyncTasks.values()];
@@ -370,6 +413,7 @@ export const createAuthSlice = (set, get) => {
         }
 
         if (previousUser.isGuest) {
+          const guestSnapshot = guestDataSnapshot ?? createGuestDataSnapshot(previousState);
           set({
             authSession: session,
             currentUser,
@@ -381,15 +425,15 @@ export const createAuthSlice = (set, get) => {
               user.id,
             );
             const shouldUploadGuestData =
-              guestDataSnapshot.hasClearedDemoData &&
-              hasLocalWorkoutData(guestDataSnapshot) &&
+              guestSnapshot.hasClearedDemoData &&
+              hasLocalWorkoutData(guestSnapshot) &&
               !hasServerWorkoutData(serverData, user.id);
 
             if (shouldUploadGuestData) {
               appLogger.info("Server is empty. Migrating guest local data...");
               await workoutRepository.migrateLocalDataToSupabase({
                 authUserId: user.id,
-                ...guestDataSnapshot,
+                ...guestSnapshot,
               });
               set({
                 ...(await workoutRepository.fetchUserWorkoutData(user.id)),

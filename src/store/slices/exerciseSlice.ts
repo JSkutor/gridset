@@ -3,19 +3,28 @@ import { normalizeMuscleLabel } from "../../data/muscleGroups.js";
 import { generateUUID } from "../../data/dummyGenerator.js";
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import { initialSeed, GUEST_USER } from "./authSlice.js";
+import type { Exercise, ExerciseUnit, Id } from "../../types/workout.js";
+import type {
+  ExerciseSlice,
+  ExerciseUpdate,
+  StoreSlice,
+  WorkoutDataState,
+} from "../types.js";
 
-export const createExerciseSlice = (set, get) => ({
+export const createExerciseSlice: StoreSlice<
+  Pick<WorkoutDataState, "exercises"> & ExerciseSlice
+> = (set, get) => ({
   // --- State ---
   exercises: initialSeed.exercises,
 
   // --- Actions ---
   addExercise: (
-    name,
-    primary_muscle = null,
-    equipment = null,
-    unit = "kg",
-    is_unilateral = false,
-  ) => {
+    name: string,
+    primary_muscle: string | null = null,
+    equipment: string | null = null,
+    unit: ExerciseUnit = "kg",
+    is_unilateral: boolean = false,
+  ): Exercise => {
     const { currentUser, exercises } = get();
     const cleanName = (name || "").trim().slice(0, 100) || "이름 없는 운동";
 
@@ -42,13 +51,17 @@ export const createExerciseSlice = (set, get) => ({
       }
     }
 
-    const newExercise = {
+    const newExercise: Exercise = {
       id: generateUUID(),
       name: cleanName,
+      secondaryMuscles: [],
+      secondary_muscles: [],
       primary_muscle: normalizeMuscleLabel(muscle) || "기타",
       equipment: equip || "기타",
+      category: "strength",
       unit,
       is_unilateral: isUnilateral,
+      synonyms: [],
       user_id: currentUser.id,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -69,7 +82,7 @@ export const createExerciseSlice = (set, get) => ({
     return newExercise;
   },
 
-  deleteExercise: (id) => {
+  deleteExercise: (id: Id) => {
     const { currentUser } = get();
     set((state) => ({
       exercises: state.exercises.filter((ex) => ex.id !== id),
@@ -86,7 +99,7 @@ export const createExerciseSlice = (set, get) => ({
     }
   },
 
-  updateExercise: (id, updates) => {
+  updateExercise: (id: Id, updates: ExerciseUpdate) => {
     const { currentUser } = get();
     const updatedAt = new Date().toISOString();
 
@@ -122,7 +135,10 @@ export const createExerciseSlice = (set, get) => ({
     }
   },
 
-  syncExercisesForReferences: async (exerciseIds, userId) => {
+  syncExercisesForReferences: async (
+    exerciseIds: Array<Id | null | undefined>,
+    userId: Id | null | undefined,
+  ) => {
     if (!userId || userId === GUEST_USER.id) return;
     await workoutRepository.syncExercisesForReferences({
       exercises: get().exercises,
