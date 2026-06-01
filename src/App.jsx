@@ -217,7 +217,11 @@ function App() {
   });
 
   // ── Miscellaneous global shortcuts (Escape, Backquote, Cmd+Arrow, retired 1/2/3) ──
-  useGlobalShortcuts({ workoutGridRef, routineDetailRef });
+  useGlobalShortcuts({
+    workoutGridRef,
+    routineDetailRef,
+    isWorkoutGridActive: activeTab === APP_NAV_TAB.SET,
+  });
 
   const handleSaveSuccess = useCallback((newLog) => {
     setCompletedWorkoutLog(newLog);
@@ -264,22 +268,25 @@ function App() {
       <div
         className={`page-content-frame ${activeTab === APP_NAV_TAB.ROUTINE ? "page-content-frame--routine" : ""}`}
       >
-        {activeTab === APP_NAV_TAB.SET && (
-          <main className="main-grid">
-            <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
-            <WorkoutGrid
-              ref={workoutGridRef}
-              key={setGridKey}
-              session={selectedSession}
-              latestRoutineSessions={latestRoutineSessions}
-              onSessionChange={setSelectedSessionId}
-              onExerciseFocus={setActiveExerciseId}
-              onRestStart={handleRestStart}
-              onSaveSuccess={handleSaveSuccess}
-            />
-            <ExercisePastLogs activeExerciseId={effectiveActiveExerciseId} />
-          </main>
-        )}
+        <main
+          className="main-grid"
+          hidden={activeTab !== APP_NAV_TAB.SET}
+          inert={activeTab !== APP_NAV_TAB.SET ? "" : undefined}
+          aria-hidden={activeTab !== APP_NAV_TAB.SET}
+        >
+          <ExerciseInfo activeExerciseId={effectiveActiveExerciseId} />
+          <WorkoutGrid
+            ref={workoutGridRef}
+            key={setGridKey}
+            session={selectedSession}
+            latestRoutineSessions={latestRoutineSessions}
+            onSessionChange={setSelectedSessionId}
+            onExerciseFocus={setActiveExerciseId}
+            onRestStart={handleRestStart}
+            onSaveSuccess={handleSaveSuccess}
+          />
+          <ExercisePastLogs activeExerciseId={effectiveActiveExerciseId} />
+        </main>
 
         {activeTab === APP_NAV_TAB.ROUTINE && (
           <main className="page-main page-main--routine">

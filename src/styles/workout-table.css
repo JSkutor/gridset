@@ -128,6 +128,15 @@ body.keyboard-navigating .spreadsheet td.cell-input:hover:not(:focus-within) {
   font-weight: 400;
 }
 
+.spreadsheet td.cell-input--weight-disabled input {
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.spreadsheet td.cell-input--weight-disabled:focus-within {
+  box-shadow: inset 0 0 0 1.5px rgba(142, 152, 190, 0.35);
+}
+
 /* Add-row button */
 .add-row-btn {
   width: 100%;

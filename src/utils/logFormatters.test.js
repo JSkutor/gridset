@@ -13,6 +13,7 @@ import {
   getExerciseDisplayUnit,
   getMetricLabel,
   isBodyweightMetric,
+  isBodyweightEquipment,
   getRecordMetric,
   formatMetric,
   formatSetCellValue,
@@ -105,6 +106,12 @@ describe('logFormatters Exercise Metric Utilities', () => {
     assert.equal(isBodyweightMetric({ unit: 'reps' }), true);
     assert.equal(isBodyweightMetric({ unit: 'sec' }), true);
     assert.equal(isBodyweightMetric({ unit: 'kg' }), false);
+  });
+
+  test('isBodyweightEquipment identifies 맨몸 equipment only', () => {
+    assert.equal(isBodyweightEquipment({ equipment: '맨몸' }), true);
+    assert.equal(isBodyweightEquipment({ equipment: '바벨' }), false);
+    assert.equal(isBodyweightEquipment(null), false);
   });
 
   test('getRecordMetric computes volume or raw record', () => {

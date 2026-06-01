@@ -3,11 +3,14 @@ import React from 'react';
 import { test, describe, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { useGridNavigation } from './useGridNavigation.js';
+import { useGridNavigation, resolveBlockJumpTarget } from './useGridNavigation.js';
 
 // Mock component to bind the hook
-function GridMock({ totalRows }) {
-  const { getCellRef, handleKeyDown, focusLastOrFirst, isKeyboardActive, recordFocus } = useGridNavigation(totalRows);
+function GridMock({ totalRows, shouldSkipCellForTab, resolveBlockJump, onFocusCell }) {
+  const { getCellRef, handleKeyDown, focusLastOrFirst, isKeyboardActive, recordFocus } = useGridNavigation(
+    totalRows,
+    { shouldSkipCellForTab, resolveBlockJump, onFocusCell },
+  );
 
   return (
     <div>
@@ -183,6 +186,150 @@ describe('useGridNavigation Keyboard Navigation Hook', () => {
     // Click focusBtn to trigger focusLastOrFirst
     await user.click(focusBtn);
     expect(document.activeElement).toBe(cell11);
+  });
+
+  test('Tab skips cells marked by shouldSkipCellForTab', async () => {
+    const user = userEvent.setup();
+    const shouldSkipCellForTab = (_rowIndex, colIndex) => colIndex === 0;
+
+    render(<GridMock totalRows={2} shouldSkipCellForTab={shouldSkipCellForTab} />);
+
+    const cell01 = screen.getByTestId('input-0-1');
+    const cell11 = screen.getByTestId('input-1-1');
+
+    cell01.focus();
+    await user.keyboard('{Tab}');
+    expect(document.activeElement).toBe(cell11);
+  });
+
+  test('Shift+Tab skips cells marked by shouldSkipCellForTab', async () => {
+    const user = userEvent.setup();
+    const shouldSkipCellForTab = (_rowIndex, colIndex) => colIndex === 0;
+
+    render(<GridMock totalRows={2} shouldSkipCellForTab={shouldSkipCellForTab} />);
+
+    const cell11 = screen.getByTestId('input-1-1');
+    const cell01 = screen.getByTestId('input-0-1');
+
+    cell11.focus();
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    expect(document.activeElement).toBe(cell01);
+  });
+
+  test('ArrowDown still focuses skipped Tab cells in the same column', async () => {
+    const user = userEvent.setup();
+    const shouldSkipCellForTab = (_rowIndex, colIndex) => colIndex === 0;
+
+    render(<GridMock totalRows={2} shouldSkipCellForTab={shouldSkipCellForTab} />);
+
+    const cell00 = screen.getByTestId('input-0-0');
+    const cell10 = screen.getByTestId('input-1-0');
+
+    cell00.focus();
+    await user.keyboard('{ArrowDown}');
+    expect(document.activeElement).toBe(cell10);
+  });
+
+  test('Meta+ArrowDown jumps to the last row of the exercise block', async () => {
+    const user = userEvent.setup();
+    const resolveBlockJump = (rowIndex, colIndex, direction) =>
+      resolveBlockJumpTarget(rowIndex, colIndex, direction, { start: 0, end: 2 });
+
+    render(<GridMock totalRows={4} resolveBlockJump={resolveBlockJump} />);
+
+    const cell00 = screen.getByTestId('input-0-0');
+    const cell20 = screen.getByTestId('input-2-0');
+
+    cell00.focus();
+    await user.keyboard('{Meta>}{ArrowDown}{/Meta}');
+    expect(document.activeElement).toBe(cell20);
+  });
+
+  test('Meta+ArrowUp jumps to the first row of the exercise block', async () => {
+    const user = userEvent.setup();
+    const resolveBlockJump = (rowIndex, colIndex, direction) =>
+      resolveBlockJumpTarget(rowIndex, colIndex, direction, { start: 1, end: 3 });
+
+    render(<GridMock totalRows={4} resolveBlockJump={resolveBlockJump} />);
+
+    const cell30 = screen.getByTestId('input-3-1');
+    const cell10 = screen.getByTestId('input-1-1');
+
+    cell30.focus();
+    await user.keyboard('{Meta>}{ArrowUp}{/Meta}');
+    expect(document.activeElement).toBe(cell10);
+  });
+
+  test('Meta+ArrowDown at block bottom moves to the next row like ArrowDown', async () => {
+    const user = userEvent.setup();
+    const resolveBlockJump = (rowIndex, colIndex, direction) =>
+      resolveBlockJumpTarget(rowIndex, colIndex, direction, { start: 0, end: 2 });
+
+    render(<GridMock totalRows={4} resolveBlockJump={resolveBlockJump} />);
+
+    const cell20 = screen.getByTestId('input-2-0');
+    const cell30 = screen.getByTestId('input-3-0');
+
+    cell20.focus();
+    await user.keyboard('{Meta>}{ArrowDown}{/Meta}');
+    expect(document.activeElement).toBe(cell30);
+  });
+
+  test('Meta+ArrowUp at block top moves to the previous row like ArrowUp', async () => {
+    const user = userEvent.setup();
+    const resolveBlockJump = (rowIndex, colIndex, direction) =>
+      resolveBlockJumpTarget(rowIndex, colIndex, direction, { start: 1, end: 3 });
+
+    render(<GridMock totalRows={4} resolveBlockJump={resolveBlockJump} />);
+
+    const cell10 = screen.getByTestId('input-1-0');
+    const cell00 = screen.getByTestId('input-0-0');
+
+    cell10.focus();
+    await user.keyboard('{Meta>}{ArrowUp}{/Meta}');
+    expect(document.activeElement).toBe(cell00);
+  });
+
+  test('Meta+ArrowLeft jumps to the leftmost column when not already there', async () => {
+    const user = userEvent.setup();
+    const resolveBlockJump = (rowIndex, colIndex, direction) =>
+      resolveBlockJumpTarget(rowIndex, colIndex, direction, { start: 0, end: 2 });
+
+    render(<GridMock totalRows={3} resolveBlockJump={resolveBlockJump} />);
+
+    const cell01 = screen.getByTestId('input-1-1');
+    const cell10 = screen.getByTestId('input-1-0');
+
+    cell01.focus();
+    await user.keyboard('{Meta>}{ArrowLeft}{/Meta}');
+    expect(document.activeElement).toBe(cell10);
+  });
+
+  test('Meta+ArrowRight at row right edge moves to the next cell like ArrowRight', async () => {
+    const user = userEvent.setup();
+    const resolveBlockJump = (rowIndex, colIndex, direction) =>
+      resolveBlockJumpTarget(rowIndex, colIndex, direction, { start: 0, end: 2 });
+
+    render(<GridMock totalRows={3} resolveBlockJump={resolveBlockJump} />);
+
+    const cell01 = screen.getByTestId('input-1-1');
+    const cell20 = screen.getByTestId('input-2-0');
+
+    cell01.focus();
+    await user.keyboard('{Meta>}{ArrowRight}{/Meta}');
+    expect(document.activeElement).toBe(cell20);
+  });
+
+  test('resolveBlockJumpTarget skips disabled weight column on vertical jumps', () => {
+    const shouldSkipCellForTab = (_rowIndex, colIndex) => colIndex === 0;
+
+    expect(
+      resolveBlockJumpTarget(2, 0, 'up', { start: 0, end: 2 }, shouldSkipCellForTab),
+    ).toEqual({ row: 0, col: 1 });
+
+    expect(
+      resolveBlockJumpTarget(0, 1, 'down', { start: 0, end: 2 }, shouldSkipCellForTab),
+    ).toEqual({ row: 2, col: 1 });
   });
 
   test('focusLastOrFirst remembers cells focused without keyboard navigation', async () => {

@@ -16,6 +16,7 @@ type RoutineDetailShortcutHandle = {
 type GlobalShortcutOptions = {
   workoutGridRef: RefObject<WorkoutGridShortcutHandle | null>;
   routineDetailRef: RefObject<RoutineDetailShortcutHandle | null>;
+  isWorkoutGridActive?: boolean;
 };
 
 function isEditableTarget(target: EventTarget | null): boolean {
@@ -33,6 +34,7 @@ function isEditableTarget(target: EventTarget | null): boolean {
 export function useGlobalShortcuts({
   workoutGridRef,
   routineDetailRef,
+  isWorkoutGridActive = true,
 }: GlobalShortcutOptions): void {
   useEffect(() => {
     const handleGlobalKeyDown = (event: KeyboardEvent) => {
@@ -58,7 +60,7 @@ export function useGlobalShortcuts({
       if (!hasModifier && event.code === 'Backquote') {
         event.preventDefault();
         event.stopImmediatePropagation();
-        const grid = workoutGridRef.current;
+        const grid = isWorkoutGridActive ? workoutGridRef.current : null;
         const routineDetail = routineDetailRef.current;
         if (grid) {
           const activeEl = document.activeElement;
@@ -90,5 +92,5 @@ export function useGlobalShortcuts({
     return () => {
       window.removeEventListener('keydown', handleGlobalKeyDown, true);
     };
-  }, [workoutGridRef, routineDetailRef]);
+  }, [isWorkoutGridActive, workoutGridRef, routineDetailRef]);
 }

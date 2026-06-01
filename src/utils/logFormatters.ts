@@ -3,6 +3,7 @@ import type { Exercise, Session, SetRecord, WorkoutLog } from '../types/workout'
 
 type DateInput = Date | string | number | null | undefined;
 type ExerciseMetric = Pick<Exercise, 'unit'> | null | undefined;
+type ExerciseEquipment = Pick<Exercise, 'equipment'> | null | undefined;
 type SetRecordMetric = Pick<SetRecord, 'record' | 'weight'>;
 type CalendarLog = Pick<WorkoutLog, 'session_id'>;
 type CalendarSession = Pick<Session, 'id' | 'session_order'>;
@@ -92,6 +93,10 @@ export function getMetricLabel(exercise: ExerciseMetric): string {
 export function isBodyweightMetric(exercise: ExerciseMetric): boolean {
   const unit = getExerciseUnit(exercise);
   return unit === 'reps' || unit === 'sec';
+}
+
+export function isBodyweightEquipment(exercise: ExerciseEquipment): boolean {
+  return exercise?.equipment === '맨몸';
 }
 
 export function getRecordMetric(record: SetRecordMetric, exercise: ExerciseMetric): number {

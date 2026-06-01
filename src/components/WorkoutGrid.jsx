@@ -1,13 +1,33 @@
-import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState } from 'react';
+import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { Plus, ChevronDown, Check } from 'lucide-react';
 import { useWorkoutStore } from '../store/useWorkoutStore';
-import { useGridNavigation, COLUMNS } from '../hooks/useGridNavigation';
+import { useGridNavigation, COLUMNS, resolveBlockJumpTarget } from '../hooks/useGridNavigation';
 import { useWorkoutDraft } from '../hooks/useWorkoutDraft';
 import { getFormattedSessionName, isTemporarySession } from '../utils/sessionHelper';
+import { isBodyweightEquipment } from '../utils/logFormatters';
+import { scrollElementWithinContainer } from '../utils/focusUtils';
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
-function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, onSetFocus, onCellFocus, onRepsTab, onFirstWeightTab, isScrolling }) {
+const NAVIGATION_KEYS = new Set([
+  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Shift',
+  'Home', 'End', 'Escape',
+]);
+
+function SetRow({
+  row,
+  getCellRef,
+  handleKeyDown,
+  updateRow,
+  onExerciseFocus,
+  onSetFocus,
+  onCellFocus,
+  onRepsTab,
+  onFirstWeightTab,
+  isScrolling,
+  weightDisabled,
+  onScrollCellIntoView,
+}) {
   const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
 
   return (
@@ -21,40 +41,65 @@ function SetRow({ row, getCellRef, handleKeyDown, updateRow, onExerciseFocus, on
         )}
       </td>
 
-      {COLUMNS.map(({ colIndex, field }) => (
-        <td key={field} className="cell-input">
-          <input
-            ref={getCellRef(globalIndex, colIndex)}
-            type="text"
-            inputMode="decimal"
-            value={row[field]}
-            onChange={(e) => updateRow(blockIndex, rowIndex, field, e.target.value)}
-            maxLength={10}
-            onKeyDown={(e) => {
-              if (isScrolling && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) {
-                e.preventDefault();
-                return;
-              }
+      {COLUMNS.map(({ colIndex, field }) => {
+        const isWeightCell = field === 'weight';
+        const isDisabledWeight = isWeightCell && weightDisabled;
 
-              if (field === 'weight' && e.key === 'Tab' && !e.shiftKey) {
-                onFirstWeightTab?.(row, e.currentTarget.value);
-              }
+        return (
+          <td
+            key={field}
+            className={`cell-input${isDisabledWeight ? ' cell-input--weight-disabled' : ''}`}
+          >
+            <input
+              ref={getCellRef(globalIndex, colIndex)}
+              type="text"
+              inputMode="decimal"
+              value={row[field]}
+              readOnly={isDisabledWeight}
+              tabIndex={isDisabledWeight ? -1 : undefined}
+              aria-disabled={isDisabledWeight || undefined}
+              onChange={(e) => {
+                if (isDisabledWeight) return;
+                updateRow(blockIndex, rowIndex, field, e.target.value);
+              }}
+              maxLength={10}
+              onKeyDown={(e) => {
+                if (
+                  isScrolling &&
+                  ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) &&
+                  !e.metaKey &&
+                  !e.ctrlKey
+                ) {
+                  e.preventDefault();
+                  return;
+                }
 
-              if (field === 'reps' && e.key === 'Tab' && !e.shiftKey) {
-                onRepsTab?.(row, e.currentTarget.value);
-              }
+                if (isDisabledWeight && !NAVIGATION_KEYS.has(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                  e.preventDefault();
+                  return;
+                }
 
-              handleKeyDown(e, globalIndex, colIndex);
-            }}
-            onFocus={() => {
-              onCellFocus?.(globalIndex, colIndex);
-              onExerciseFocus?.(exerciseId);
-              onSetFocus?.(blockIndex, rowIndex);
-            }}
-            placeholder="—"
-          />
-        </td>
-      ))}
+                if (field === 'weight' && e.key === 'Tab' && !e.shiftKey && !isDisabledWeight) {
+                  onFirstWeightTab?.(row, e.currentTarget.value);
+                }
+
+                if (field === 'reps' && e.key === 'Tab' && !e.shiftKey) {
+                  onRepsTab?.(row, e.currentTarget.value);
+                }
+
+                handleKeyDown(e, globalIndex, colIndex);
+              }}
+              onFocus={(e) => {
+                onCellFocus?.(globalIndex, colIndex);
+                onExerciseFocus?.(exerciseId);
+                onSetFocus?.(blockIndex, rowIndex);
+                onScrollCellIntoView?.(e.currentTarget);
+              }}
+              placeholder="—"
+            />
+          </td>
+        );
+      })}
     </tr>
   );
 }
@@ -92,9 +137,76 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
     onSaveSuccess,
   });
 
-  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus } = useGridNavigation(totalRows + 1);
+  const exerciseById = useMemo(
+    () => new Map(exercises.map((exercise) => [exercise.id, exercise])),
+    [exercises],
+  );
+
+  const isWeightDisabledForRow = useCallback((globalIndex) => {
+    const row = flatRows[globalIndex];
+    if (!row?.exerciseId) return false;
+    return isBodyweightEquipment(exerciseById.get(row.exerciseId));
+  }, [exerciseById, flatRows]);
+
+  const shouldSkipCellForTab = useCallback(
+    (rowIndex, colIndex) => colIndex === 0 && isWeightDisabledForRow(rowIndex),
+    [isWeightDisabledForRow],
+  );
 
   const scrollContainerRef = useRef(null);
+
+  const blockRowRangeByGlobalIndex = useMemo(() => {
+    const ranges = [];
+    let start = 0;
+
+    for (let i = 0; i < flatRows.length; i += 1) {
+      const isBlockEnd =
+        i === flatRows.length - 1 ||
+        flatRows[i + 1].blockIndex !== flatRows[i].blockIndex;
+
+      if (isBlockEnd) {
+        for (let j = start; j <= i; j += 1) {
+          ranges[j] = { start, end: i };
+        }
+        start = i + 1;
+      }
+    }
+
+    return ranges;
+  }, [flatRows]);
+
+  const scrollFocusedCellIntoView = useCallback((element) => {
+    scrollElementWithinContainer(element, scrollContainerRef.current, { padding: 12 });
+  }, []);
+
+  const resolveBlockJump = useCallback(
+    (rowIndex, colIndex, direction) => {
+      const range = blockRowRangeByGlobalIndex[rowIndex];
+      if (!range) return null;
+      return resolveBlockJumpTarget(
+        rowIndex,
+        colIndex,
+        direction,
+        range,
+        shouldSkipCellForTab,
+      );
+    },
+    [blockRowRangeByGlobalIndex, shouldSkipCellForTab],
+  );
+
+  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus } = useGridNavigation(
+    totalRows + 1,
+    {
+      shouldSkipCellForTab,
+      resolveBlockJump,
+      onFocusCell: scrollFocusedCellIntoView,
+    },
+  );
+
+  const requestFocusForRow = useCallback((globalIndex) => {
+    requestFocus(globalIndex, isWeightDisabledForRow(globalIndex) ? 1 : 0);
+  }, [isWeightDisabledForRow, requestFocus]);
+
   const exerciseHeaderRefs = useRef(new Map());
   const lastScrolledBlockIndexRef = useRef(-1);
   const noteRef = useRef(null);
@@ -183,6 +295,20 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
           top: targetScrollTop,
           behavior: 'smooth',
         });
+
+        // Header scroll is async; re-check that the focused cell is still visible afterward.
+        const revealFocusedCell = () => {
+          const active = document.activeElement;
+          if (active instanceof HTMLElement && container.contains(active)) {
+            scrollElementWithinContainer(active, container, { padding: 12 });
+          }
+        };
+
+        if (isFirstScroll) {
+          requestAnimationFrame(revealFocusedCell);
+        } else {
+          window.setTimeout(revealFocusedCell, 160);
+        }
       }
     }
   }, [focusedSet.blockIndex]);
@@ -360,6 +486,8 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                         onRepsTab={handleRepsTab}
                         onFirstWeightTab={handleFirstWeightTab}
                         isScrolling={isScrolling}
+                        weightDisabled={isWeightDisabledForRow(row.globalIndex)}
+                        onScrollCellIntoView={scrollFocusedCellIntoView}
                       />
                     ))}
 
@@ -367,7 +495,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                     <tr>
                       <td colSpan={3} className="workout-grid-table-cell-add-row">
                         <button
-                          onClick={() => addRow(blockIndex, requestFocus)}
+                          onClick={() => addRow(blockIndex, requestFocusForRow)}
                           className="add-set-row-btn-minimal"
                           type="button"
                           title="세트 추가"
@@ -390,8 +518,17 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                       getCellRef(totalRows, 1)(el);
                     }}
                     onClick={saveWorkout}
+                    onFocus={(e) => {
+                      recordFocus(totalRows, 0);
+                      scrollFocusedCellIntoView(e.currentTarget);
+                    }}
                     onKeyDown={(e) => {
-                      if (isScrolling && ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key)) {
+                      if (
+                        isScrolling &&
+                        ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) &&
+                        !e.metaKey &&
+                        !e.ctrlKey
+                      ) {
                         e.preventDefault();
                         return;
                       }

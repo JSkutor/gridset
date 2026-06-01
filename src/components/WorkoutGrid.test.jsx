@@ -97,6 +97,47 @@ describe('WorkoutGrid workout start timing', () => {
   });
 });
 
+describe('WorkoutGrid bodyweight equipment', () => {
+  test('disables kg input for 맨몸 exercises and Tab skips to reps', async () => {
+    const user = userEvent.setup();
+    const state = useWorkoutStore.getState();
+    const routine = state.addRoutine('테스트 루틴');
+    const session = state.addSession(routine.id, '상체 A');
+    const pullup = state.addExercise('턱걸이', '등', '맨몸', 'reps', false);
+
+    state.addSessionExercise(session.id, pullup.id, 1, 2, '8');
+
+    render(React.createElement(WorkoutGrid, {
+      session,
+      onExerciseFocus: vi.fn(),
+      onRestStart: vi.fn(),
+      onSaveSuccess: vi.fn(),
+    }));
+
+    const setRows = getSetRows();
+    const [weightInput, repsInput] = within(setRows[0]).getAllByRole('textbox');
+
+    expect(weightInput.readOnly).toBe(true);
+    expect(weightInput.tabIndex).toBe(-1);
+
+    await user.click(repsInput);
+    expect(document.activeElement).toBe(repsInput);
+
+    await user.keyboard('{ArrowLeft}');
+    expect(document.activeElement).toBe(weightInput);
+
+    await user.keyboard('12');
+    expect(weightInput.value).toBe('');
+    expect(repsInput.value).toBe('');
+
+    await user.keyboard('{ArrowRight}');
+    expect(document.activeElement).toBe(repsInput);
+
+    await user.type(repsInput, '10');
+    expect(repsInput.value).toBe('10');
+  });
+});
+
 describe('WorkoutGrid memo entry', () => {
   test('saves memo typed in the set memo textarea with the focused set record', async () => {
     const user = userEvent.setup();
