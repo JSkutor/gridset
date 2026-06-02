@@ -16,8 +16,11 @@ const guestUser = {
 
 beforeEach(() => {
   window.localStorage.clear();
-  useWorkoutStore.getState().clearAllData();
+  // Reset to guest BEFORE clearAllData to prevent non-guest remote sync calls
   useWorkoutStore.setState({ currentUser: guestUser });
+  useWorkoutStore.getState().clearAllData();
+  // Ensure no leftover sync errors
+  useWorkoutStore.getState().clearRemoteSyncError();
 });
 
 /**
