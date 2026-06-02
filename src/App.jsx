@@ -29,6 +29,34 @@ import {
   APP_NAV_TAB_IDS,
   APP_NAV_SHORTCUTS,
 } from "./constants/appNavTabs";
+
+// ── Persist activeTab in localStorage (independent of Zustand store) ──────
+// The Zustand store undergoes full state replacements during seedDemoData,
+// clearAllData, setAuthSession, etc., which would wipe out any tab state
+// stored there. Using localStorage directly keeps the tab choice stable
+// across hydration cycles and data seeding.
+const ACTIVE_TAB_STORAGE_KEY = "gridset-active-tab";
+
+function loadPersistedActiveTab() {
+  try {
+    const saved = localStorage.getItem(ACTIVE_TAB_STORAGE_KEY);
+    const validTabs = Object.values(APP_NAV_TAB);
+    if (saved && validTabs.includes(saved)) {
+      return saved;
+    }
+  } catch {
+    // localStorage unavailable (private browsing, storage full, etc.)
+  }
+  return APP_NAV_TAB.SET;
+}
+
+function persistActiveTab(tab) {
+  try {
+    localStorage.setItem(ACTIVE_TAB_STORAGE_KEY, tab);
+  } catch {
+    // Silently fail if localStorage is unavailable
+  }
+}
 const NAV_FOCUS_SCOPE_SELECTOR = '[data-tab-navigation="main"]';
 const getNavFocusTargetSelector = (tabId) =>
   `${NAV_FOCUS_SCOPE_SELECTOR} [data-tab-id="${tabId}"]`;
@@ -46,7 +74,13 @@ const getWorkoutStoreHydrationSnapshot = () =>
   useWorkoutStore.persist.hasHydrated();
 
 function App() {
-  const [activeTab, setActiveTab] = useState(APP_NAV_TAB.SET);
+  const [activeTab, setActiveTab] = useState(loadPersistedActiveTab);
+
+  // Persist activeTab to localStorage whenever it changes
+  const handleSetActiveTab = useCallback((tabId) => {
+    setActiveTab(tabId);
+    persistActiveTab(tabId);
+  }, []);
   const [activeExerciseId, setActiveExerciseId] = useState(null);
   const [restTimer, setRestTimer] = useState(null);
   const [completedWorkoutLog, setCompletedWorkoutLog] = useState(null);
@@ -211,7 +245,7 @@ function App() {
     tabIds: APP_NAV_TAB_IDS,
     shortcuts: APP_NAV_SHORTCUTS,
     activeTab,
-    setActiveTab,
+    setActiveTab: handleSetActiveTab,
     focusScopeSelector: NAV_FOCUS_SCOPE_SELECTOR,
     focusTargetSelector: getNavFocusTargetSelector,
   });
@@ -243,7 +277,9 @@ function App() {
   return (
     <div ref={appContainerRef} className="app-container" tabIndex={-1}>
       <div className="top-right-header-actions">
-        {showDemoClearButton && <DemoClearAction onConfirm={handleClearDemoData} />}
+        {showDemoClearButton && (
+          <DemoClearAction onConfirm={handleClearDemoData} />
+        )}
         <button
           className="help-trigger-btn"
           onClick={() => setIsHelpOpen(true)}
@@ -257,7 +293,7 @@ function App() {
       </div>
       <SyncStatusBanner />
 
-      <Navigation activeTab={activeTab} setActiveTab={setActiveTab} />
+      <Navigation activeTab={activeTab} setActiveTab={handleSetActiveTab} />
       <RestTimer
         timer={restTimer}
         isVisible={activeTab === APP_NAV_TAB.SET}
@@ -309,7 +345,7 @@ function App() {
           setCompletedWorkoutLog(null);
           setSelectedSessionId(null);
           setActiveExerciseId(null);
-          setActiveTab(APP_NAV_TAB.LOG);
+          handleSetActiveTab(APP_NAV_TAB.LOG);
         }}
       />
     </div>
