@@ -1,6 +1,4 @@
-import { EXERCISE_DICTIONARY } from "../../data/exerciseDictionary.js";
 import { normalizeMuscleLabel } from "../../data/muscleGroups.js";
-import { generateUUID } from "../../data/dummyGenerator.js";
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import { initialSeed, GUEST_USER } from "./authSlice.js";
 import type { Exercise, ExerciseUnit, Id } from "../../types/workout.js";
@@ -34,25 +32,25 @@ export const createExerciseSlice: StoreSlice<
     );
     if (existing) return existing;
 
-    // 로컬 사전에 주동근/장비가 정의되어 있다면 가져옴
+    // 이미 로드된 exercises 카탈로그에서 주동근/장비 정보를 가져옴
     let muscle = primary_muscle;
     let equip = equipment;
     let isUnilateral = is_unilateral;
     if (!muscle || !equip || !is_unilateral) {
-      const dictEntry = EXERCISE_DICTIONARY.find(
+      const catalogEntry = exercises.find(
         (ex) =>
           ex.name.toLowerCase() === cleanName.toLowerCase() ||
-          (ex.synonyms && ex.synonyms.includes(cleanName.toLowerCase())),
+          ex.synonyms?.some((syn) => syn.toLowerCase() === cleanName.toLowerCase()),
       );
-      if (dictEntry) {
-        muscle = muscle || dictEntry.primaryMuscle;
-        equip = equip || dictEntry.equipment;
-        isUnilateral = is_unilateral || dictEntry.is_unilateral || false;
+      if (catalogEntry) {
+        muscle = muscle || catalogEntry.primary_muscle;
+        equip = equip || catalogEntry.equipment;
+        isUnilateral = is_unilateral || catalogEntry.is_unilateral || false;
       }
     }
 
     const newExercise: Exercise = {
-      id: generateUUID(),
+      id: crypto.randomUUID(),
       name: cleanName,
       secondaryMuscles: [],
       secondary_muscles: [],

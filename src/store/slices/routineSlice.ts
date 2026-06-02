@@ -20,7 +20,7 @@ import {
   normalizeGroupPlacementWithoutOverlap,
   withGroupColor,
 } from "../../utils/sessionExerciseGroups.js";
-import { generateUUID } from "../../data/dummyGenerator.js";
+import { generateUUID } from "../../data/exerciseUtils.js";
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import { initialSeed } from "./authSlice.js";
 import type {

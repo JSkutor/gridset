@@ -16,8 +16,8 @@ export const useWorkoutStore = create<WorkoutStore>()(
       ...createWorkoutLogSlice(set, get, store),
     }),
     {
-      name: 'workout-tracker-storage',
-      version: 11,
+      name: 'gridset-workout-v1',
+      version: 1,
       migrate: migrateWorkoutPersistState,
       partialize: (state) => {
         const persistedState: Partial<WorkoutStore> = { ...state };
@@ -27,3 +27,15 @@ export const useWorkoutStore = create<WorkoutStore>()(
     }
   )
 );
+
+// hydration 완료 후, 데이터가 없는 새 게스트 유저에게만 demo 데이터를 async로 주입한다.
+// exerciseDictionary (17k줄) + dummyGenerator는 이 시점에 처음 로드된다.
+useWorkoutStore.persist.onFinishHydration((state) => {
+  if (
+    state.currentUser.isGuest &&
+    !state.hasClearedDemoData &&
+    state.routines.length === 0
+  ) {
+    void useWorkoutStore.getState().seedDemoData();
+  }
+});

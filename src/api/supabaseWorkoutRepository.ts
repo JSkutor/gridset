@@ -1,4 +1,4 @@
-import { EXERCISE_CATALOG, getFallbackExerciseUnit } from '../data/dummyGenerator.js';
+import { getFallbackExerciseUnit } from '../data/exerciseUtils.js';
 import { normalizeMuscleLabel } from '../data/muscleGroups.js';
 import type {
   Exercise,
@@ -14,8 +14,6 @@ import type {
   WorkoutLog,
 } from '../types/workout.js';
 import { supabase } from '../utils/supabaseClient.js';
-
-const CATALOG_EXERCISE_ID_SET = new Set(EXERCISE_CATALOG.map((exercise) => exercise.id));
 
 const EXERCISE_CATEGORIES = new Set<ExerciseCategory>([
   'strength',
@@ -137,10 +135,6 @@ const toExerciseUnit = (name: string, unit: Nullable<string>): ExerciseUnit => {
 
 const asRows = <T>(data: T[] | null | undefined): T[] => data || [];
 
-export const CATALOG_EXERCISE_BY_NAME = new Map(
-  EXERCISE_CATALOG.map((exercise) => [exercise.name.toLowerCase(), exercise]),
-);
-
 export function normalizeExerciseForApp(exercise: RawExercise): Exercise {
   const secondaryMuscles = exercise.secondaryMuscles ?? exercise.secondary_muscles ?? [];
   const englishName = exercise.englishName ?? exercise.english_name ?? null;
@@ -203,10 +197,14 @@ function exerciseUpdatesForSupabase(updates: ExerciseUpdateInput, updatedAt: Tim
   return dbUpdates;
 }
 
-function mergeCatalogAndServerExercises(serverExercises: RawExercise[] = []): Exercise[] {
+async function mergeCatalogAndServerExercises(serverExercises: RawExercise[] = []): Promise<Exercise[]> {
+  const { EXERCISE_CATALOG } = await import(
+    
+    '../data/dummyGenerator.js'
+  );
   const byName = new Map(EXERCISE_CATALOG.map((exercise) => [
     exercise.name.toLowerCase(),
-    normalizeExerciseForApp(exercise),
+    normalizeExerciseForApp(exercise as unknown as RawExercise),
   ]));
 
   serverExercises.forEach((exercise) => {
@@ -231,7 +229,7 @@ function throwIfSupabaseError<T extends SupabaseResult>(result: T): T {
 }
 
 export function isPublicMasterExercise(exercise: { user_id?: Nullable<Id>; id?: Nullable<Id> } | null | undefined): boolean {
-  return exercise?.user_id === null || Boolean(exercise?.id && CATALOG_EXERCISE_ID_SET.has(exercise.id));
+  return exercise?.user_id === null;
 }
 
 export async function fetchPublicExerciseCatalog(): Promise<Exercise[]> {
@@ -242,7 +240,7 @@ export async function fetchPublicExerciseCatalog(): Promise<Exercise[]> {
     .order('name', { ascending: true });
 
   if (error) throw error;
-  return mergeCatalogAndServerExercises(asRows<RawExercise>(data));
+  return await mergeCatalogAndServerExercises(asRows<RawExercise>(data));
 }
 
 export async function fetchUserWorkoutData(userId: Id): Promise<UserWorkoutData> {
@@ -302,7 +300,7 @@ export async function fetchUserWorkoutData(userId: Id): Promise<UserWorkoutData>
   if (setRecordResult.error) throw setRecordResult.error;
 
   return {
-    exercises: mergeCatalogAndServerExercises(sortedServerExercises as RawExercise[]),
+    exercises: await mergeCatalogAndServerExercises(sortedServerExercises as RawExercise[]),
     routines: asRows<Routine>(serverRoutines),
     sessions: asRows<Session>(serverSessions),
     sessionExercises: asRows<SessionExercise>(sessionExerciseResult.data),

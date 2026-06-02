@@ -1,4 +1,3 @@
-import { EXERCISE_DICTIONARY } from '../data/exerciseDictionary.js';
 import { disassembleHangul, extractChosung, isChosungOnly, matchHangul } from './hangul.js';
 
 type SearchableExercise = {
@@ -9,7 +8,7 @@ type SearchableExercise = {
   synonyms?: readonly string[] | null;
 };
 
-const DEFAULT_EXERCISES = EXERCISE_DICTIONARY as readonly SearchableExercise[];
+const DEFAULT_EXERCISES: readonly SearchableExercise[] = [];
 
 export function getExerciseSuggestions<T extends SearchableExercise>(
   query: string,

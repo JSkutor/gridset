@@ -59,11 +59,11 @@ If an existing account already has server data, guest-local data from the curren
 
 ## Current Implementation
 
-- `src/store/slices/authSlice.js`
+- `src/store/slices/authSlice.ts`
   - `setAuthSession()` owns guest-to-user transition logic.
   - `createGuestDataSnapshot()` captures guest data before login state changes.
   - `hasServerWorkoutData()` decides whether the server is empty.
-- `src/store/slices/workoutLogSlice.js`
+- `src/store/slices/workoutLogSlice.ts`
   - `clearAllData()` marks guest demo data as cleared.
   - `generateDummyData()` marks the workspace as demo-derived.
 - `src/components/AuthModal.jsx`
@@ -132,11 +132,11 @@ Supabase 가입 API를 호출하기 전에 해당 게스트 로컬 데이터를 
 
 ## 현재 구현
 
-- `src/store/slices/authSlice.js`
+- `src/store/slices/authSlice.ts`
   - `setAuthSession()` — 게스트→사용자 전환 로직을 담당합니다.
   - `createGuestDataSnapshot()` — 로그인 상태 변경 전 게스트 데이터를 캡처합니다.
   - `hasServerWorkoutData()` — 서버가 비어 있는지 판단합니다.
-- `src/store/slices/workoutLogSlice.js`
+- `src/store/slices/workoutLogSlice.ts`
   - `clearAllData()` — 게스트 데모 데이터가 지워졌음을 표시합니다.
   - `generateDummyData()` — 워크스페이스를 데모 파생으로 표시합니다.
 - `src/components/AuthModal.jsx`

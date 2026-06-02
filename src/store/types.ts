@@ -58,6 +58,7 @@ export type AuthSlice = {
   ) => Promise<void>;
   fetchUserData: () => Promise<void>;
   discardGuestLocalDataForSignUp: () => void;
+  seedDemoData: () => Promise<void>;
 };
 
 export type ExerciseUpdate = Partial<
@@ -185,7 +186,7 @@ export type WorkoutLogSlice = {
   updateSetRecord: (id: Id, updates: SetRecordUpdate) => void;
   deleteSetRecord: (id: Id) => void;
   clearAllData: () => void;
-  generateDummyData: () => void;
+  generateDummyData: () => Promise<void>;
   isRoutineReadOnly: (routineId: Id | null | undefined) => boolean;
 };
 

@@ -1,8 +1,4 @@
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
-import {
-  EXERCISE_CATALOG,
-  createDummyWorkoutData,
-} from "../../data/dummyGenerator.js";
 import { appLogger } from "../../utils/logger.js";
 import type { AppUser } from "../../types/workout.js";
 import type {
@@ -36,19 +32,24 @@ export const GUEST_USER: AppUser = {
   isGuest: true,
 };
 
-export const initialSeed = {
-  ...createDummyWorkoutData({
-    userId: GUEST_USER.id,
-    existingExercises: EXERCISE_CATALOG,
-  }),
+export const initialSeed: WorkoutDataState = {
+  exercises: [],
+  routines: [],
+  sessions: [],
+  sessionExercises: [],
+  sessionExerciseGroups: [],
+  workoutLogs: [],
+  setRecords: [],
   hasClearedDemoData: false,
-} as unknown as WorkoutDataState;
+};
 
 const createEmptyWorkoutState = ({
-  exercises = EXERCISE_CATALOG as WorkoutDataState["exercises"],
+  exercises = [] as WorkoutDataState["exercises"],
   hasClearedDemoData = false,
-}: Partial<Pick<WorkoutDataState, "exercises" | "hasClearedDemoData">> = {}): WorkoutDataState => ({
-  exercises: exercises as WorkoutDataState["exercises"],
+}: Partial<
+  Pick<WorkoutDataState, "exercises" | "hasClearedDemoData">
+> = {}): WorkoutDataState => ({
+  exercises,
   routines: [],
   sessions: [],
   sessionExercises: [],
@@ -78,7 +79,9 @@ const hasServerWorkoutData = (
   data.setRecords.length > 0 ||
   data.exercises.some((exercise) => exercise.user_id === userId);
 
-const createGuestDataSnapshot = (state: WorkoutDataState): WorkoutDataState => ({
+const createGuestDataSnapshot = (
+  state: WorkoutDataState,
+): WorkoutDataState => ({
   exercises: state.exercises,
   routines: state.routines,
   sessions: state.sessions,
@@ -260,7 +263,8 @@ export const createAuthSlice: StoreSlice<
     // 같은 dedupKey의 작업은 순서를 보장해 실행한다.
     // (예: 생성 upsert 직후 취소 delete가 오면 delete가 항상 나중에 실행되어 서버 상태가 정합해짐)
     if (dedupKey) {
-      const previous = inFlightRemoteSyncByDedupKey.get(dedupKey) || Promise.resolve();
+      const previous =
+        inFlightRemoteSyncByDedupKey.get(dedupKey) || Promise.resolve();
       const chained = previous
         .catch(() => {})
         .then(() => executeTask())
@@ -321,23 +325,23 @@ export const createAuthSlice: StoreSlice<
         if (isNonRetryableError(error)) {
           failedRemoteSyncTasks.delete(queuedTask.id);
           discardedCount++;
-            console.warn(
-              `[Sync] ${queuedTask.label} — 재시도 불가능 에러, 폐기:`,
-              toSyncErrorLike(error).message || error,
-            );
-          } else {
+          console.warn(
+            `[Sync] ${queuedTask.label} — 재시도 불가능 에러, 폐기:`,
+            toSyncErrorLike(error).message || error,
+          );
+        } else {
           // 재시도 가능 — 횟수 증가 후 다시 저장
           failedRemoteSyncTasks.set(queuedTask.id, {
             ...queuedTask,
             error,
             retryCount: queuedTask.retryCount + 1,
           });
-            console.error(
-              `[Sync] 재시도 실패 ${queuedTask.label} (${queuedTask.retryCount + 1}/${MAX_RETRIES_PER_TASK}):`,
-              toSyncErrorLike(error).message || error,
-            );
-          }
+          console.error(
+            `[Sync] 재시도 실패 ${queuedTask.label} (${queuedTask.retryCount + 1}/${MAX_RETRIES_PER_TASK}):`,
+            toSyncErrorLike(error).message || error,
+          );
         }
+      }
     }
 
     const remainingTasks = [...failedRemoteSyncTasks.values()];
@@ -375,6 +379,18 @@ export const createAuthSlice: StoreSlice<
       clearRemoteSyncFailures();
     },
 
+    seedDemoData: async () => {
+      const { EXERCISE_CATALOG, createDummyWorkoutData } =
+        await import("../../data/dummyGenerator.js");
+      set({
+        ...(createDummyWorkoutData({
+          userId: GUEST_USER.id,
+          existingExercises: EXERCISE_CATALOG,
+        }) as unknown as WorkoutDataState),
+        hasClearedDemoData: false,
+      });
+    },
+
     setAuthSession: async (session, event) => {
       const previousState = get();
       const previousUser = previousState.currentUser;
@@ -406,14 +422,15 @@ export const createAuthSlice: StoreSlice<
         const isTokenOnlyRefresh =
           !previousUser.isGuest &&
           previousState.authSession?.user?.id === user.id &&
-          (event === 'TOKEN_REFRESHED' || event === 'USER_UPDATED');
+          (event === "TOKEN_REFRESHED" || event === "USER_UPDATED");
         if (isTokenOnlyRefresh) {
           set({ authSession: session, currentUser });
           return;
         }
 
         if (previousUser.isGuest) {
-          const guestSnapshot = guestDataSnapshot ?? createGuestDataSnapshot(previousState);
+          const guestSnapshot =
+            guestDataSnapshot ?? createGuestDataSnapshot(previousState);
           set({
             authSession: session,
             currentUser,

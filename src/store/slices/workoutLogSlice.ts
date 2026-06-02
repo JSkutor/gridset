@@ -1,8 +1,4 @@
-import {
-  EXERCISE_CATALOG,
-  createDummyWorkoutData,
-  generateUUID,
-} from "../../data/dummyGenerator.js";
+import { generateUUID } from "../../data/exerciseUtils.js";
 import * as workoutRepository from "../../api/supabaseWorkoutRepository.js";
 import { initialSeed } from "./authSlice.js";
 import type { Id, SetRecord, SetSide, WorkoutLog } from "../../types/workout.js";
@@ -19,8 +15,6 @@ type WorkoutLogStoreState = Pick<
   "workoutLogs" | "setRecords"
 > &
   WorkoutLogSlice;
-
-const catalogExercises = EXERCISE_CATALOG as unknown as WorkoutDataState["exercises"];
 
 const parseNonNegativeWeight = (
   weight: string | number | null | undefined,
@@ -274,11 +268,7 @@ export const createWorkoutLogSlice: StoreSlice<WorkoutLogStoreState> = (
   clearAllData: () => {
     const { exercises, currentUser } = get();
     set({
-      exercises: currentUser.isGuest
-        ? catalogExercises
-        : exercises.length > 0
-          ? exercises
-          : catalogExercises,
+      exercises,
       routines: [],
       sessions: [],
       sessionExercises: [],
@@ -296,13 +286,19 @@ export const createWorkoutLogSlice: StoreSlice<WorkoutLogStoreState> = (
     }
   },
 
-  generateDummyData: () => {
+  generateDummyData: async () => {
     const { currentUser, exercises } = get();
     if (!currentUser.isGuest) return;
 
+    const { createDummyWorkoutData, EXERCISE_CATALOG } = await import(
+      
+      "../../data/dummyGenerator.js"
+    );
     const seedData = createDummyWorkoutData({
       userId: currentUser?.id || "00000000-0000-0000-0000-000000000000",
-      existingExercises: exercises as unknown as typeof EXERCISE_CATALOG,
+      existingExercises: (exercises.length > 0
+        ? exercises
+        : EXERCISE_CATALOG) as unknown as typeof EXERCISE_CATALOG,
     }) as unknown as WorkoutDataState;
 
     set({ ...seedData, hasClearedDemoData: false });
