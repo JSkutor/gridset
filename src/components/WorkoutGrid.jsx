@@ -1,17 +1,40 @@
-import React, { useRef, useImperativeHandle, forwardRef, useEffect, useState, useMemo, useCallback } from 'react';
-import { Plus, ChevronDown, Check } from 'lucide-react';
-import { useWorkoutStore } from '../store/useWorkoutStore';
-import { useGridNavigation, COLUMNS, resolveBlockJumpTarget } from '../hooks/useGridNavigation';
-import { useWorkoutDraft } from '../hooks/useWorkoutDraft';
-import { getFormattedSessionName, isTemporarySession } from '../utils/sessionHelper';
-import { isBodyweightEquipment } from '../utils/logFormatters';
-import { scrollElementWithinContainer } from '../utils/focusUtils';
+import React, {
+  useRef,
+  useImperativeHandle,
+  forwardRef,
+  useEffect,
+  useState,
+  useMemo,
+  useCallback,
+} from "react";
+import { Plus, ChevronDown, Check } from "lucide-react";
+import { useWorkoutStore } from "../store/useWorkoutStore";
+import {
+  useGridNavigation,
+  COLUMNS,
+  resolveBlockJumpTarget,
+} from "../hooks/useGridNavigation";
+import { useWorkoutDraft } from "../hooks/useWorkoutDraft";
+import {
+  getFormattedSessionName,
+  isTemporarySession,
+} from "../utils/sessionHelper";
+import { isBodyweightEquipment } from "../utils/logFormatters";
+import { scrollElementWithinContainer } from "../utils/focusUtils";
 
 // ─── SetRow ───────────────────────────────────────────────────────────────────
 
 const NAVIGATION_KEYS = new Set([
-  'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter', 'Shift',
-  'Home', 'End', 'Escape',
+  "ArrowUp",
+  "ArrowDown",
+  "ArrowLeft",
+  "ArrowRight",
+  "Tab",
+  "Enter",
+  "Shift",
+  "Home",
+  "End",
+  "Escape",
 ]);
 
 function SetRow({
@@ -28,13 +51,14 @@ function SetRow({
   weightDisabled,
   onScrollCellIntoView,
 }) {
-  const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } = row;
+  const { globalIndex, blockIndex, rowIndex, set_number, exerciseId, side } =
+    row;
 
   return (
     <tr>
       <td className="cell-set">
         {set_number}
-        {side && side !== 'both' && (
+        {side && side !== "both" && (
           <span className={`side-badge side-badge--${side.toLowerCase()}`}>
             {side}
           </span>
@@ -42,13 +66,13 @@ function SetRow({
       </td>
 
       {COLUMNS.map(({ colIndex, field }) => {
-        const isWeightCell = field === 'weight';
+        const isWeightCell = field === "weight";
         const isDisabledWeight = isWeightCell && weightDisabled;
 
         return (
           <td
             key={field}
-            className={`cell-input${isDisabledWeight ? ' cell-input--weight-disabled' : ''}`}
+            className={`cell-input${isDisabledWeight ? " cell-input--weight-disabled" : ""}`}
           >
             <input
               ref={getCellRef(globalIndex, colIndex)}
@@ -59,14 +83,26 @@ function SetRow({
               tabIndex={isDisabledWeight ? -1 : undefined}
               aria-disabled={isDisabledWeight || undefined}
               onChange={(e) => {
-                if (isDisabledWeight) return;
+                if (isDisabledWeight) {
+                  // Guard: reset DOM value in case an input event fires despite readOnly
+                  // (e.g., testing environments that may not fully respect readOnly)
+                  e.currentTarget.value = row[field];
+                  return;
+                }
                 updateRow(blockIndex, rowIndex, field, e.target.value);
               }}
               maxLength={10}
               onKeyDown={(e) => {
                 if (
                   isScrolling &&
-                  ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) &&
+                  [
+                    "ArrowUp",
+                    "ArrowDown",
+                    "ArrowLeft",
+                    "ArrowRight",
+                    "Tab",
+                    "Enter",
+                  ].includes(e.key) &&
                   !e.metaKey &&
                   !e.ctrlKey
                 ) {
@@ -74,16 +110,30 @@ function SetRow({
                   return;
                 }
 
-                if (isDisabledWeight && !NAVIGATION_KEYS.has(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey) {
+                if (
+                  isDisabledWeight &&
+                  !NAVIGATION_KEYS.has(e.key) &&
+                  !e.metaKey &&
+                  !e.ctrlKey &&
+                  !e.altKey
+                ) {
                   e.preventDefault();
+                  // jsdom may not respect readOnly for input events,
+                  // so force-reset the value here as well
+                  e.currentTarget.value = row[field];
                   return;
                 }
 
-                if (field === 'weight' && e.key === 'Tab' && !e.shiftKey && !isDisabledWeight) {
+                if (
+                  field === "weight" &&
+                  e.key === "Tab" &&
+                  !e.shiftKey &&
+                  !isDisabledWeight
+                ) {
                   onFirstWeightTab?.(row, e.currentTarget.value);
                 }
 
-                if (field === 'reps' && e.key === 'Tab' && !e.shiftKey) {
+                if (field === "reps" && e.key === "Tab" && !e.shiftKey) {
                   onRepsTab?.(row, e.currentTarget.value);
                 }
 
@@ -106,12 +156,24 @@ function SetRow({
 
 // ─── WorkoutGrid ──────────────────────────────────────────────────────────────
 
-const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSessions = [], onSessionChange, onExerciseFocus, onRestStart, onSaveSuccess }, ref) {
-  const sessions              = useWorkoutStore((state) => state.sessions);
-  const sessionExercises      = useWorkoutStore((state) => state.sessionExercises);
-  const sessionExerciseGroups = useWorkoutStore((state) => state.sessionExerciseGroups);
-  const exercises             = useWorkoutStore((state) => state.exercises);
-  const saveWorkoutLog        = useWorkoutStore((state) => state.saveWorkoutLog);
+const WorkoutGrid = forwardRef(function WorkoutGrid(
+  {
+    session,
+    latestRoutineSessions = [],
+    onSessionChange,
+    onExerciseFocus,
+    onRestStart,
+    onSaveSuccess,
+  },
+  ref,
+) {
+  const sessions = useWorkoutStore((state) => state.sessions);
+  const sessionExercises = useWorkoutStore((state) => state.sessionExercises);
+  const sessionExerciseGroups = useWorkoutStore(
+    (state) => state.sessionExerciseGroups,
+  );
+  const exercises = useWorkoutStore((state) => state.exercises);
+  const saveWorkoutLog = useWorkoutStore((state) => state.saveWorkoutLog);
 
   const {
     blocks,
@@ -142,11 +204,14 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
     [exercises],
   );
 
-  const isWeightDisabledForRow = useCallback((globalIndex) => {
-    const row = flatRows[globalIndex];
-    if (!row?.exerciseId) return false;
-    return isBodyweightEquipment(exerciseById.get(row.exerciseId));
-  }, [exerciseById, flatRows]);
+  const isWeightDisabledForRow = useCallback(
+    (globalIndex) => {
+      const row = flatRows[globalIndex];
+      if (!row?.exerciseId) return false;
+      return isBodyweightEquipment(exerciseById.get(row.exerciseId));
+    },
+    [exerciseById, flatRows],
+  );
 
   const shouldSkipCellForTab = useCallback(
     (rowIndex, colIndex) => colIndex === 0 && isWeightDisabledForRow(rowIndex),
@@ -176,7 +241,9 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
   }, [flatRows]);
 
   const scrollFocusedCellIntoView = useCallback((element) => {
-    scrollElementWithinContainer(element, scrollContainerRef.current, { padding: 12 });
+    scrollElementWithinContainer(element, scrollContainerRef.current, {
+      padding: 12,
+    });
   }, []);
 
   const resolveBlockJump = useCallback(
@@ -194,18 +261,25 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
     [blockRowRangeByGlobalIndex, shouldSkipCellForTab],
   );
 
-  const { getCellRef, handleKeyDown, requestFocus, isKeyboardActive, focusLastOrFirst, recordFocus } = useGridNavigation(
-    totalRows + 1,
-    {
-      shouldSkipCellForTab,
-      resolveBlockJump,
-      onFocusCell: scrollFocusedCellIntoView,
-    },
-  );
+  const {
+    getCellRef,
+    handleKeyDown,
+    requestFocus,
+    isKeyboardActive,
+    focusLastOrFirst,
+    recordFocus,
+  } = useGridNavigation(totalRows + 1, {
+    shouldSkipCellForTab,
+    resolveBlockJump,
+    onFocusCell: scrollFocusedCellIntoView,
+  });
 
-  const requestFocusForRow = useCallback((globalIndex) => {
-    requestFocus(globalIndex, isWeightDisabledForRow(globalIndex) ? 1 : 0);
-  }, [isWeightDisabledForRow, requestFocus]);
+  const requestFocusForRow = useCallback(
+    (globalIndex) => {
+      requestFocus(globalIndex, isWeightDisabledForRow(globalIndex) ? 1 : 0);
+    },
+    [isWeightDisabledForRow, requestFocus],
+  );
 
   const exerciseHeaderRefs = useRef(new Map());
   const lastScrolledBlockIndexRef = useRef(-1);
@@ -222,14 +296,18 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
       }
     };
   }, []);
-  const regularSessionOptions = latestRoutineSessions.filter((item) => !isTemporarySession(item));
-  const temporarySessionOption = latestRoutineSessions.find((item) => isTemporarySession(item));
+  const regularSessionOptions = latestRoutineSessions.filter(
+    (item) => !isTemporarySession(item),
+  );
+  const temporarySessionOption = latestRoutineSessions.find((item) =>
+    isTemporarySession(item),
+  );
 
   const renderSessionOptions = () => (
     <>
       {regularSessionOptions.length > 0 && (
         <optgroup label="정규 세션">
-          {regularSessionOptions.map(s => (
+          {regularSessionOptions.map((s) => (
             <option key={s.id} value={s.id} className="session-inline-option">
               {getFormattedSessionName(s, sessions)}
             </option>
@@ -238,7 +316,10 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
       )}
       {temporarySessionOption && (
         <optgroup label="임시 세션">
-          <option value={temporarySessionOption.id} className="session-inline-option">
+          <option
+            value={temporarySessionOption.id}
+            className="session-inline-option"
+          >
             {getFormattedSessionName(temporarySessionOption, sessions)}
           </option>
         </optgroup>
@@ -278,7 +359,8 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
         const relativeTop = headerOffsetTop - containerOffsetTop;
 
         // 24px 더 내려서 이전 운동 블록의 경계선(border)을 완벽하게 감추고 헤더 텍스트를 상단에 정렬
-        const targetScrollTop = blockIndex === 0 ? 0 : Math.max(0, relativeTop + 24);
+        const targetScrollTop =
+          blockIndex === 0 ? 0 : Math.max(0, relativeTop + 24);
 
         // Lock inputs and key navigation only on actual block transition scrolls (not on initial mount scroll)
         if (!isFirstScroll) {
@@ -293,7 +375,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
 
         container.scrollTo({
           top: targetScrollTop,
-          behavior: 'smooth',
+          behavior: "smooth",
         });
 
         // Header scroll is async; re-check that the focused cell is still visible afterward.
@@ -314,12 +396,15 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
   }, [focusedSet.blockIndex]);
 
   // Expose imperative methods to parent (for ` / ₩ key focus toggle)
-  useImperativeHandle(ref, () => ({
-    focusGrid: () => focusLastOrFirst(),
-    focusNote: () => noteRef.current?.focus(),
-    isNoteFocused: () => document.activeElement === noteRef.current,
-  }), [focusLastOrFirst]);
-
+  useImperativeHandle(
+    ref,
+    () => ({
+      focusGrid: () => focusLastOrFirst(),
+      focusNote: () => noteRef.current?.focus(),
+      isNoteFocused: () => document.activeElement === noteRef.current,
+    }),
+    [focusLastOrFirst],
+  );
 
   // ── render ─────────────────────────────────────────────────────────────────
 
@@ -330,10 +415,13 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
         <div className="workout-grid-header">
           <div className="workout-grid-header-title-row">
             <div className="workout-grid-header-selector-group">
-              <h2 className="workout-grid-session-title" style={{ color: 'var(--text-muted)' }}>
+              <h2
+                className="workout-grid-session-title"
+                style={{ color: "var(--text-muted)" }}
+              >
                 세션 없음
               </h2>
-              
+
               {latestRoutineSessions && latestRoutineSessions.length > 0 && (
                 <div className="session-dropdown-wrapper">
                   <select
@@ -388,11 +476,11 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
             <h2 className="workout-grid-session-title">
               {getFormattedSessionName(session, sessions)}
             </h2>
-            
+
             {latestRoutineSessions && latestRoutineSessions.length > 0 && (
               <div className="session-dropdown-wrapper">
                 <select
-                  value={session?.id || ''}
+                  value={session?.id || ""}
                   onChange={(e) => onSessionChange?.(e.target.value)}
                   className="session-inline-select"
                 >
@@ -424,18 +512,28 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
       {/* Grid */}
       <div ref={scrollContainerRef} className="workout-grid-scroll-area">
         <div className="spreadsheet-wrap">
-          <table className={`spreadsheet ${isKeyboardActive ? 'keyboard-navigating' : ''}`}>
+          <table
+            className={`spreadsheet ${isKeyboardActive ? "keyboard-navigating" : ""}`}
+          >
             <thead>
               <tr style={{ height: 0 }}>
-                <th className="col-set" style={{ height: 0, padding: 0, border: 'none' }}></th>
+                <th
+                  className="col-set"
+                  style={{ height: 0, padding: 0, border: "none" }}
+                ></th>
                 {COLUMNS.map(({ field }) => (
-                  <th key={field} style={{ height: 0, padding: 0, border: 'none' }}></th>
+                  <th
+                    key={field}
+                    style={{ height: 0, padding: 0, border: "none" }}
+                  ></th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {blocks.map((block, blockIndex) => {
-                const blockRows = flatRows.filter((r) => r.blockIndex === blockIndex);
+                const blockRows = flatRows.filter(
+                  (r) => r.blockIndex === blockIndex,
+                );
                 const isFirst = blockIndex === 0;
 
                 return (
@@ -451,10 +549,14 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                       }}
                       className={`workout-grid-table-row-exercise-header ${
                         isFirst
-                          ? 'workout-grid-table-row-exercise-header--first'
-                          : 'workout-grid-table-row-exercise-header--subsequent'
+                          ? "workout-grid-table-row-exercise-header--first"
+                          : "workout-grid-table-row-exercise-header--subsequent"
                       }`}
-                      style={block.is_group ? { '--group-color': block.group_color || '#7aa2f7' } : {}}
+                      style={
+                        block.is_group
+                          ? { "--group-color": block.group_color || "#7aa2f7" }
+                          : {}
+                      }
                     >
                       <td colSpan={3}>
                         {block.is_group ? (
@@ -463,7 +565,7 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                               {block.group_name}
                             </span>
                             <span className="workout-grid-group-exercises-label">
-                              {` (${block.group_exercises.map(e => e.name).join(' + ')})`}
+                              {` (${block.group_exercises.map((e) => e.name).join(" + ")})`}
                             </span>
                           </>
                         ) : (
@@ -493,14 +595,20 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
 
                     {/* Centered Add Set Button Row */}
                     <tr>
-                      <td colSpan={3} className="workout-grid-table-cell-add-row">
+                      <td
+                        colSpan={3}
+                        className="workout-grid-table-cell-add-row"
+                      >
                         <button
                           onClick={() => addRow(blockIndex, requestFocusForRow)}
                           className="add-set-row-btn-minimal"
                           type="button"
                           title="세트 추가"
                         >
-                          <Plus size={12} className="workout-grid-add-set-icon" />
+                          <Plus
+                            size={12}
+                            className="workout-grid-add-set-icon"
+                          />
                           세트 추가
                         </button>
                       </td>
@@ -525,14 +633,21 @@ const WorkoutGrid = forwardRef(function WorkoutGrid({ session, latestRoutineSess
                     onKeyDown={(e) => {
                       if (
                         isScrolling &&
-                        ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Tab', 'Enter'].includes(e.key) &&
+                        [
+                          "ArrowUp",
+                          "ArrowDown",
+                          "ArrowLeft",
+                          "ArrowRight",
+                          "Tab",
+                          "Enter",
+                        ].includes(e.key) &&
                         !e.metaKey &&
                         !e.ctrlKey
                       ) {
                         e.preventDefault();
                         return;
                       }
-                      if (e.key === 'Enter') {
+                      if (e.key === "Enter") {
                         e.preventDefault();
                         saveWorkout();
                         return;
