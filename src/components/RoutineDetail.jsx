@@ -196,13 +196,7 @@ const RoutineDetail = forwardRef((props, ref) => {
         onDuplicateRoutine={handleDuplicateRoutine}
       />
 
-      <div className="routine-grid" style={{
-        flex: 1,
-        display: 'grid',
-        gridTemplateColumns: '1fr 1.8fr 1fr',
-        gap: '24px',
-        overflow: 'hidden',
-      }}>
+      <div className="routine-grid">
         <SessionListPanel
           routine={effectiveRoutine}
           routineSessions={effectiveRoutineSessions}
