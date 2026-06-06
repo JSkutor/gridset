@@ -6140,7 +6140,7 @@ export const EXERCISE_DICTIONARY = [
       "복근",
       "전완근"
     ],
-    "equipment": "기타",
+    "equipment": "맨몸",
     "synonyms": [
       "밴드 풀업",
       "밴드 어시스트 풀업",
@@ -6150,7 +6150,7 @@ export const EXERCISE_DICTIONARY = [
       "band assisted pull-up"
     ],
     "category": "strength",
-    "unit": "kg",
+    "unit": "reps",
     "is_unilateral": false,
     "user_id": null
   },
