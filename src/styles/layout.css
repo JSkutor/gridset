@@ -209,6 +209,14 @@
   display: none !important;
 }
 
+.routine-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1.8fr 1fr;
+  gap: 24px;
+  overflow: hidden;
+}
+
 .page-content-frame {
   flex: 1;
   min-height: 0;
@@ -263,4 +271,14 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   box-shadow: none;
+}
+
+/* ─── Wide Screen Layout Optimization (>= 1800px) ─── */
+@media (min-width: 1800px) {
+  .main-grid,
+  .page-main {
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+  }
 }
