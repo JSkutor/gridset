@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { buildCalendarCells, formatDate, getCalendarMarkerColors } from '../../utils/logFormatters';
+import { buildCalendarCells, formatDate, getCalendarMarkerColors, getDateKey } from '../../utils/logFormatters';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
 export default function LogCalendar({ monthDate, selectedDateKey, activityByDate, sessionsById, onSelectDate, onMonthChange }) {
   const cells = useMemo(() => buildCalendarCells(monthDate), [monthDate]);
+  const todayKey = useMemo(() => getDateKey(new Date()), []);
 
   return (
     <section className="log-panel log-calendar-panel">
@@ -37,24 +38,29 @@ export default function LogCalendar({ monthDate, selectedDateKey, activityByDate
           const markerColors = getCalendarMarkerColors(dayItems, sessionsById);
           const primaryMarkerColor = markerColors[0] || '#6B7394';
           const isSelected = selectedDateKey === cell.key;
+          const isToday = cell.key === todayKey;
 
           return (
             <button
               key={cell.key}
               type="button"
+              aria-current={isToday ? 'date' : undefined}
               className={[
                 'log-calendar-cell',
                 !cell.isCurrentMonth ? 'is-outside-month' : '',
                 count > 0 ? 'has-activity' : '',
                 isSelected ? 'is-selected' : '',
+                isToday ? 'is-today' : '',
               ].filter(Boolean).join(' ')}
               onClick={() => onSelectDate(cell.date)}
-              title={`${formatDate(cell.date, { month: 'long', day: 'numeric' })} 기록 ${count}개`}
+              title={`${isToday ? '오늘, ' : ''}${formatDate(cell.date, { month: 'long', day: 'numeric' })} 기록 ${count}개`}
               style={{
                 '--activity-border': `${primaryMarkerColor}4D`,
               }}
             >
-              <span>{cell.date.getDate()}</span>
+              <div className="log-calendar-cell-content">
+                <span className="log-calendar-cell-date">{cell.date.getDate()}</span>
+              </div>
               {count > 0 && (
                 <span className="log-calendar-activity-marks" aria-hidden="true">
                   {markerColors.slice(0, 3).map((color, markerIndex) => (
