@@ -24,6 +24,7 @@ import { useTabNavigation } from "./hooks/useTabNavigation";
 import { useGlobalShortcuts } from "./hooks/useGlobalShortcuts";
 import { useWorkoutSessionRotation } from "./hooks/useWorkoutSessionRotation";
 import { useAuthSessionBridge } from "./hooks/useAuthSessionBridge";
+import { playTimerNotificationSound } from "./utils/audioHelper";
 import {
   APP_NAV_TAB,
   APP_NAV_TAB_IDS,
@@ -97,6 +98,7 @@ function App() {
   const workoutGridRef = useRef(null);
   const routineDetailRef = useRef(null);
   const appContainerRef = useRef(null);
+  const hasTriggeredSoundRef = useRef(false);
 
   useEffect(() => {
     appContainerRef.current?.focus();
@@ -211,6 +213,21 @@ function App() {
     return () => {
       window.clearInterval(intervalId);
     };
+  }, [restTimer]);
+
+  // Play notification sound exactly once when the rest timer reaches 0
+  useEffect(() => {
+    if (!restTimer) {
+      hasTriggeredSoundRef.current = false;
+      return;
+    }
+
+    if (restTimer.remainingSeconds > 0) {
+      hasTriggeredSoundRef.current = false;
+    } else if (restTimer.remainingSeconds <= 0 && !hasTriggeredSoundRef.current) {
+      hasTriggeredSoundRef.current = true;
+      playTimerNotificationSound();
+    }
   }, [restTimer]);
 
   // Global listener to remove hover effects when keyboard navigating
