@@ -5,56 +5,11 @@
 
 TODO: 추후 단축키 지원 및 시스템 통합(OS 밀착형 기능)을 위해 **Tauri**를 사용하여 데스크톱 앱으로 패키징/감싸는 방식 도입 검토.
 
-TOFIX:
-
----
-
-TODO: typescript 점진적 도입
-
-- **현재 상태 (2026-06-02)**:
-  - `tsconfig.json`은 `allowJs: true`, `checkJs: false`, `strict: true` 상태.
-  - `data`, `utils`, `constants`, `types`, `api`, 주요 `hooks` 일부는 TS 전환 완료.
-  - `api/supabaseWorkoutRepository.ts`, `store/useWorkoutStore.ts`, `store/types.ts`, `store/slices/authSlice.ts`, `store/slices/exerciseSlice.ts`, `store/slices/routineSlice.ts`, `store/slices/workoutLogSlice.ts`, `store/workoutPersistenceMigration.ts` 전환 완료.
-  - store 타입 표면(`WorkoutStore`, slice/action 타입, remote sync 타입)을 추가했고, production store 경계는 TS 전환 완료.
-  - persisted migration은 `unknown` 입력 narrowing과 레거시 v0 migration 테스트를 추가해 TS 전환 완료.
-  - 남은 JS/JSX 축은 routine hooks, `components`, 테스트 파일.
-  - 최근 검증: `npm run typecheck`, `npm run lint`, `npm run test -- src/store`, `npm run build` 통과.
-  - 최근 커밋: `refactor: migrate workout persistence to TypeScript`
-
-- **다음 작업 순서 제안**:
-  1. 남은 routine hooks 전환
-     - 대상: `useRoutineDetailActions.js`, `useRoutineKeyboardNavigation.js`
-     - Reasoning: **medium-high**
-     - 이유: UI 이벤트 핸들러지만 store 액션, refs, routine/session/exercise shape를 넓게 사용. store 타입이 잡힌 뒤 진행하면 타입 중복을 줄일 수 있음.
-     - 검증: `npm run test -- src/hooks/useRoutineKeyboardNavigation.test.jsx src/components/RoutineDetail.test.jsx`
-
-  2. leaf component부터 `.tsx` 전환
-     - 우선 후보: `SyncStatusBanner`, `RestTimer`, `Navigation`, `DemoClearAction`, `HelpModal`, `ExerciseAutocomplete`
-     - Reasoning: **medium**
-     - 이유: props와 DOM 이벤트 중심이라 전환 단위가 작고 회귀 위험이 낮음. 공통 타입을 import해 컴포넌트 props를 안정화.
-     - 검증: 관련 컴포넌트 테스트와 `npm run typecheck`
-
-  3. log 화면 컴포넌트 묶음 전환
-     - 대상: `components/log/*`, `LogPage.jsx`, `ExerciseInfo.jsx`, `ExercisePastLogs.jsx`
-     - Reasoning: **medium-high**
-     - 이유: 이미 `logSummaries.ts`, `logFormatters.ts`, `exerciseHistory.ts`가 TS라 연결 타입 효과가 큼. 차트/날짜/집계 props가 많아 한 묶음으로 보되 leaf부터 진행.
-     - 검증: log 관련 utility 테스트, 화면 smoke 확인.
-
-  4. 큰 컨테이너 컴포넌트 전환
-     - 대상: `WorkoutGrid.jsx`, `RoutineDetail.jsx`, `WorkoutCompletionModal.jsx`, `App.jsx`, `main.jsx`
-     - Reasoning: **high**
-     - 이유: forwardRef/useImperativeHandle, store selector, session/routine action wiring이 많아 타입 여파가 큼. 하위 hooks/store 타입 정리 후 마지막에 진행.
-     - 검증: 전체 `npm run test`, `npm run build`
-
-  5. 테스트 파일 TS/TSX 전환
-     - Reasoning: **medium**
-     - 이유: production 타입 안정화 뒤 mock 타입을 맞추면 편함. `*.test.jsx`는 컴포넌트 전환과 같이 `*.test.tsx`로 이동.
-     - 검증: `npm run test`
-
-  6. TypeScript strictness 강화
-     - Reasoning: **high**
-     - 순서: `checkJs: true` 임시 적용으로 남은 JS 경고 점검 → 남은 production JS 제거 → `allowJs: false` 검토.
-     - 주의: 테스트/설정 파일까지 한 번에 막으면 잡음이 커지므로 production src를 먼저 닫기.
+[x] TypeScript 완전 전환 완료 (2026-06-15)
+  - 소스 코드(`src/` 및 하위 전체), hooks, utils, store, components 모두 `.ts`/`.tsx`로 전환 완료.
+  - 모든 테스트 파일(`*.test.ts`/`*.test.tsx` 및 Playwright `*.spec.ts`) 전환 완료.
+  - `tsconfig.json`에서 `allowJs`를 `false`로 설정하여 완전히 JavaScript 유입을 차단하고 strict 타입 지정을 완료.
+  - 전체 빌드(`npm run build`), 타입 체크(`npm run typecheck`), 린트(`npm run lint`), 전체 테스트(`npm run test`, `npm run test:e2e`) 모두 오류 없이 성공적으로 통과함.
 
 TODO: 1.0 완성 시 GitHub Flow 브랜치 관리 전략 도입
 
@@ -67,5 +22,7 @@ TODO: 1.0 완성 시 GitHub Flow 브랜치 관리 전략 도입
   - 이를 통해 전체 커밋 히스토리 중 중요 배포 시점을 쉽고 직관적으로 찾아갈 수 있습니다.
 
 TODO: en/ko 사이트 분기, 번역, SEO.
+
+TODO: m. url로 모바일 입력 구현. 입력만. 군대에서 써야돼.
 
 ---
