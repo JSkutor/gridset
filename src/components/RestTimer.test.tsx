@@ -4,7 +4,7 @@ import React from 'react';
 import { test, describe, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import RestTimer from './RestTimer.jsx';
+import RestTimer from './RestTimer';
 
 describe('RestTimer React Component', () => {
   test('should not render anything when isVisible is false', () => {

@@ -2,7 +2,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
-import WorkoutCompletionModal from './WorkoutCompletionModal.jsx';
+import WorkoutCompletionModal from './WorkoutCompletionModal';
 import { useWorkoutStore } from '../store/useWorkoutStore.js';
 
 // Polyfill scrollTo on HTML elements if needed
